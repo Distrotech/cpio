@@ -65,10 +65,19 @@ Backward space
 file marks.
 The tape is positioned on the beginning-of-the-tape side of
 the file mark.
+.IP fsfm
+Forward space
+.I count
+file marks.
+The tape is positioned on the beginning-of-the-tape side of
+the file mark.
 .IP asf
 Absolute space to file number
 .IR count .
 Equivalent to rewind followed by fsf
+.IR count .
+.IP seek
+Seek to block number
 .IR count .
 .IP eom
 Space to the end of the recorded media on the tape

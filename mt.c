@@ -1,5 +1,5 @@
 /* mt -- control magnetic tape drive operation
-   Copyright (C) 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1995 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,9 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+   */
+
 
 /* If -f is not given, the environment variable TAPE is used;
    if that is not set, a default device defined in sys/mtio.h is used.
@@ -112,7 +114,13 @@ char *opnames[] =
 #ifdef MTERASE
   "erase",
 #endif
- "asf",
+  "asf",
+#ifdef MTFSFM
+  "fsfm",
+#endif
+#ifdef MTSEEK
+  "seek",
+#endif
   NULL
 };
 
@@ -133,7 +141,14 @@ short operations[] =
 #ifdef MTERASE
   MTERASE,
 #endif
-  MTASF
+  MTASF,
+#ifdef MTFSFM
+  MTFSFM,
+#endif
+#ifdef MTSEEK
+  MTSEEK,
+#endif
+  0
 };
 
 /* If nonzero, don't consider file names that contain a `:' to be
