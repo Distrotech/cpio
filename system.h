@@ -50,6 +50,9 @@
 #endif
 
 #ifndef _POSIX_VERSION
+#if defined(__MSDOS__) && !defined(__GNUC__)
+typedef long off_t;
+#endif
 off_t lseek ();
 #endif
 
