@@ -25,7 +25,13 @@ char copyright[] =
  * rmt
  */
 #include <stdio.h>
+#ifndef __linux
+/* Kludge alert:  We should really fix this by having configure figure
+   out if we need sgtty.h or not, so it can define HAVE_SGGTY_H and
+   also add rmt to the build targets.  For now we'll just add this
+   ifndef so make rmt will work on Linux.  */
 #include <sgtty.h>
+#endif
 #include <sys/types.h>
 #include <sys/socket.h>
 #ifdef HAVE_SYS_GENTAPE_H	/* e.g., ISC UNIX */
