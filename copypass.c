@@ -31,10 +31,6 @@
 #define lchown chown
 #endif
 
-/* Debian hack to fix a bug in the --sparse option.  This bug has been
-   reported to "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
-extern int delayed_seek_count;
-
 /* Copy files listed on the standard input into directory `directory_name'.
    If `link_flag', link instead of copying.  */
 

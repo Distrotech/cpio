@@ -36,10 +36,6 @@
 #define lchown chown
 #endif
 
-/* Debian hack to fix a bug in the --sparse option.  This bug has been
-   reported to "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
-extern int delayed_seek_count;
-
 static void read_pattern_file ();
 static void tape_skip_padding ();
 static void defer_copyin ();
