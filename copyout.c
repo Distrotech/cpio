@@ -461,6 +461,7 @@ process_copy_out ()
 		    free (link_name);
 		    continue;
 		  }
+		file_hdr.c_filesize = link_size;
 		if (archive_format == arf_tar || archive_format == arf_ustar)
 		  {
 		    if (link_size + 1 > 100)
@@ -478,8 +479,8 @@ process_copy_out ()
 		else
 		  {
 		    write_out_header (&file_hdr, out_file_des);
-		    tape_buffered_write (link_name, out_file_des, file_stat.st_size);
-		    tape_pad_output (out_file_des, file_hdr.c_filesize);
+		    tape_buffered_write (link_name, out_file_des, link_size);
+		    tape_pad_output (out_file_des, link_size);
 		  }
 		free (link_name);
 	      }
