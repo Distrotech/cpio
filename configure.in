@@ -4,19 +4,19 @@ PROGS="cpio"
 AC_SUBST(PROGS)dnl
 AC_PROG_CC
 AC_PROG_CPP
-AC_GCC_TRADITIONAL
+AC_PROG_GCC_TRADITIONAL
 AC_PROG_INSTALL
 AC_AIX
 AC_MINIX
 AC_ISC_POSIX
-AC_RETSIGTYPE
-AC_MAJOR_HEADER
+AC_TYPE_SIGNAL
+AC_HEADER_MAJOR
 
 AC_CHECKING(for remote tape and socket header files)
-AC_HEADER_CHECK(sys/mtio.h,
+AC_CHECK_HEADER(sys/mtio.h,
 [AC_DEFINE(HAVE_SYS_MTIO_H)
 PROGS="$PROGS mt"
-AC_TEST_CPP([#include <sgtty.h>
+AC_TRY_CPP([#include <sgtty.h>
 #include <sys/socket.h>], PROGS="$PROGS rmt")])
 
 AC_CHECKING(for remote shell)
@@ -24,20 +24,20 @@ if test -f /usr/ucb/rsh || test -f /usr/bin/remsh || test -f /usr/bin/rsh ||
   test -f /usr/bsd/rsh || test -f /usr/bin/nsh; then
   RTAPELIB=rtapelib.o
 else
-  AC_HEADER_CHECK(netdb.h, AC_DEFINE(HAVE_NETDB_H) RTAPELIB=rtapelib.o,
+  AC_CHECK_HEADER(netdb.h, AC_DEFINE(HAVE_NETDB_H) RTAPELIB=rtapelib.o,
     AC_DEFINE(NO_REMOTE))
 fi
 AC_SUBST(RTAPELIB)dnl
 
-AC_CONST
-AC_UID_T
-AC_STDC_HEADERS
-AC_HAVE_HEADERS(unistd.h string.h fcntl.h utime.h sys/io/trioctl.h)
+AC_C_CONST
+AC_TYPE_UID_T
+AC_HEADER_STDC
+AC_CHECK_HEADERS(unistd.h string.h fcntl.h utime.h sys/io/trioctl.h)
 AC_REPLACE_FUNCS(fnmatch bcopy mkdir strdup)
-AC_HAVE_FUNCS(strerror lchown)
-AC_VPRINTF
-AC_ALLOCA
-AC_XENIX_DIR
-AC_HAVE_LIBRARY(socket, [LIBS="$LIBS -lsocket"])
-AC_HAVE_LIBRARY(nsl, [LIBS="$LIBS -lnsl"])
+AC_CHECK_FUNCS(strerror lchown)
+AC_FUNC_VPRINTF
+AC_FUNC_ALLOCA
+AC_HEADER_DIRENT
+AC_CHECK_LIB(nsl, gethostname, [LIBS="$LIBS -lnsl"])
+AC_CHECK_LIB(socket, setsockopt, [LIBS="$LIBS -lsocket"])
 AC_OUTPUT(Makefile)
