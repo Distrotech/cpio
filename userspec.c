@@ -57,15 +57,21 @@ char *alloca ();
 #include <unistd.h>
 #endif
 
-#ifndef _POSIX_VERSION
-struct passwd *getpwnam ();
-struct group *getgrnam ();
-struct group *getgrgid ();
+#if !HAVE_DECL_GETPWNAM
+extern struct passwd *getpwnam (const char *name);
+#endif
+#if !HAVE_DECL_GETGRNAM
+extern struct group *getgrnam (const char *name);
+#endif
+#if !HAVE_DECL_GETGRGID
+extern struct group *getgrgid (gid_t gid);
 #endif
 
-#ifdef _POSIX_SOURCE
-#define endpwent()
-#define endgrent()
+#ifndef HAVE_ENDPWENT
+# define endpwent()
+#endif
+#ifndef HAVE_ENDGRENT
+# define endgrent()
 #endif
 
 /* Perform the equivalent of the statement `dest = strdup (src);',
