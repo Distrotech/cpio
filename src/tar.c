@@ -396,7 +396,7 @@ read_in_tar_header (struct new_cpio_header *file_hdr, int in_des)
       break;
     }
   if (bytes_skipped > 0)
-    error (0, 0, _("warning: skipped %ld bytes of junk"), bytes_skipped);
+    warn_junk_bytes (bytes_skipped);
 }
 
 /* Convert the string of octal digits S into a number and store
