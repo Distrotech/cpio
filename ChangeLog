@@ -1,3 +1,43 @@
+2004-08-30  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* Makefile.am: Added headers to SUBDIRS.
+	* configure.ac: Check for AC_SYS_LARGEFILE.
+	Use AC_CONFIG_LINKS to provide for fnmatch.h and getopt.h on
+	the systems where these are missing
+	Check for argp and replace it if necessary.
+	* src/Makefile.am: Updated
+	* src/fnmatch.h: Moved to headers/
+	* src/getopt.h: Likewise.
+	* src/main.c: Option parsing rewritten using argp. Improved
+	option consistency checking.
+	* src/rmt.c: Include getopt.h
+
+	* src/argp-ba.c: New file
+	* src/argp-eexst.c: New file
+	* src/argp-fmtstream.c: New file
+	* src/argp-fs-xinl.c: New file
+	* src/argp-help.c: New file
+	* src/argp-parse.c: New file
+	* src/argp-pv.c: New file
+	* src/argp-pvh.c: New file
+	* src/argp-xinl.c: New file
+	* src/pin.c: New file
+
+	* headers: New directory
+	* headers/Makefile.am: New file
+	* headers/getopt.h: New file
+	* headers/argp.h: New file
+	* headers/fnmatch.h: New file
+	* headers/.cvsignore: New file
+	
+2004-03-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/util.c (copy_files_disk_to_disk): Bugfix. If a file
+	grew n bytes in copy-pass mode, these n bytes got prepended
+	to the contents of all subsequent files. Fix provided by
+	Holger Fleischmann <holger_fleischmann@mra.man.de>
+	* THANKS: Added Holger Fleischmann.
+
 2004-02-27  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/makepath.c: Remove unneded typedefs

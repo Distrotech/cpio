@@ -51,9 +51,7 @@ noinst_HEADERS =\
  gettext.h\
  system.h\
  rmt.h\
- safe-stat.h\
- fnmatch.h\
- getopt.h
+ safe-stat.h
 
 cpio_LDADD = @LIBOBJS@ $(INTLLIBS)
 
@@ -70,7 +68,17 @@ EXTRA_DIST=\
  bcopy.c\
  fnmatch.c\
  mkdir.c\
- strdup.c
+ strdup.c\
+ argp-ba.c\
+ argp-eexst.c\
+ argp-fmtstream.c\
+ argp-fs-xinl.c\
+ argp-help.c\
+ argp-parse.c\
+ argp-pv.c\
+ argp-pvh.c\
+ argp-xinl.c\
+ pin.c
 
 localedir = $(datadir)/locale
 
