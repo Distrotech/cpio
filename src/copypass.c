@@ -51,6 +51,9 @@ process_copy_pass ()
   int cdf_char;
 #endif
 
+  umask (0);                    /* Reset umask to preserve modes of
+				   created files  */
+
   /* Initialize the copy pass.  */
   dirname_len = strlen (directory_name);
   ds_init (&input_name, 128);
