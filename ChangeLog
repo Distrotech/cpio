@@ -3,6 +3,9 @@
 	* src/main.c (enum cpio_options): Bugfix: Initialize first enum
 	value to 256.
 	* bootstrap: Add unlocked-io
+	* headers/argp.h: Removed
+	* headers/getopt.h: Removed
+	* headers/Makefile.am: Updated
 
 2004-10-14  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
