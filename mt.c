@@ -283,7 +283,7 @@ print_status (dev, desc)
     error (2, errno, "%s", dev);
 
   printf ("drive type = %d\n", (int) status.mt_type);
-#if defined(hpux) || defined(__hpux__)
+#if defined(hpux) || defined(__hpux)
   printf ("drive status (high) = %d\n", (int) status.mt_dsreg1);
   printf ("drive status (low) = %d\n", (int) status.mt_dsreg2);
 #else
@@ -291,7 +291,7 @@ print_status (dev, desc)
 #endif
   printf ("sense key error = %d\n", (int) status.mt_erreg);
   printf ("residue count = %d\n", (int) status.mt_resid);
-#if !defined(ultrix) && !defined(__ultrix__) && !defined(hpux) && !defined(__hppux__) && !defined(__osf__)
+#if !defined(ultrix) && !defined(__ultrix__) && !defined(hpux) && !defined(__hpux) && !defined(__osf__)
   printf ("file number = %d\n", (int) status.mt_fileno);
   printf ("block number = %d\n", (int) status.mt_blkno);
 #endif
