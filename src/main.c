@@ -526,9 +526,6 @@ process_args (int argc, char *argv[])
 
   if (copy_function == copy_in)
     {
-      if (index != argc)
-	USAGE_ERROR ((0, 0, _("Too many arguments")));
-  
       archive_des = 0;
       CHECK_USAGE(link_flag, "--link", "--extract");
       CHECK_USAGE(reset_time_flag, "--reset", "--extract");
@@ -541,8 +538,8 @@ process_args (int argc, char *argv[])
 
       if (archive_format == arf_crcascii)
 	crc_i_flag = true;
-      num_patterns = argc - optind;
-      save_patterns = &argv[optind];
+      num_patterns = argc - index;
+      save_patterns = &argv[index];
       if (input_archive_name)
 	archive_name = input_archive_name;
     }
