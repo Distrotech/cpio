@@ -48,7 +48,14 @@ cpio_GNULIB
 AC_SUBST(CPIO_MT_PROG)
 PU_RMT
 
-AC_CHECK_HEADERS(unistd.h stdlib.h string.h fcntl.h sys/io/trioctl.h utmp.h getopt.h locale.h libintl.h sys/wait.h utime.h)
+AC_ARG_ENABLE(mt,
+ AC_HELP_STRING([--enable-mt], [Enable building of mt program]),
+ [case $enableval in
+  yes) CPIO_MT_PROG='mt$(EXEEXT)';;
+  no)  ;;
+  esac])
+
+AC_CHECK_HEADERS(unistd.h stdlib.h string.h fcntl.h sys/io/trioctl.h utmp.h getopt.h locale.h libintl.h sys/wait.h utime.h locale.h)
 AC_REPLACE_FUNCS(bcopy mkdir strdup strerror)
 
 AC_MSG_CHECKING(for sys_errlist and sys_nerr)
