@@ -44,7 +44,8 @@ extern int set_group_flag;
 extern gid_t set_group;
 extern int no_chown_flag;
 extern int sparse_flag;
-extern int ignore_disk_input_errors_flag;
+extern int quiet_flag;
+extern int only_verify_crc_flag;
 extern int no_abs_paths_flag;
 
 extern int last_header_start;
@@ -65,7 +66,11 @@ extern char *input_buffer, *output_buffer;
 extern char *in_buff, *out_buff;
 extern long input_buffer_size;
 extern long input_size, output_size;
+#ifdef __GNUC__
+extern long long input_bytes, output_bytes;
+#else
 extern long input_bytes, output_bytes;
+#endif
 extern char zeros_512[];
 extern char *directory_name;
 extern char **save_patterns;
