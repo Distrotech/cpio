@@ -15,76 +15,85 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#if defined(STDC_HEADERS) || defined(HAVE_STRING_H)
-#include <string.h>
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
+#if defined(HAVE_STRING_H)
+# include <string.h>
+#else
+# include <strings.h>
+#endif
+
 #ifndef index
-#define index	strchr
+# define index	strchr
 #endif
 #ifndef rindex
-#define rindex	strrchr
+# define rindex	strrchr
 #endif
 #ifndef bcmp
-#define bcmp(s1, s2, n)	memcmp ((s1), (s2), (n))
+# define bcmp(s1, s2, n)	memcmp ((s1), (s2), (n))
 #endif
 #ifndef bzero
-#define bzero(s, n)	memset ((s), 0, (n))
+# define bzero(s, n)	memset ((s), 0, (n))
 #endif
-#else
-#include <strings.h>
+
+#if !HAVE_DECL_STRDUP
+# ifdef __STDC__
+char *strdup (const char *s);
+# else /* !__STDC__ */
+char *strdup ();
+# endif /* __STDC__ */
 #endif
 
 #include <time.h>
 
-#ifdef STDC_HEADERS
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
 #ifndef SEEK_SET
-#define SEEK_SET 0
-#define SEEK_CUR 1
-#define SEEK_END 2
+# define SEEK_SET 0
+# define SEEK_CUR 1
+# define SEEK_END 2
 #endif
 
 #ifndef _POSIX_VERSION
-#if defined(__MSDOS__) && !defined(__GNUC__)
+# if defined(__MSDOS__) && !defined(__GNUC__)
 typedef long off_t;
-#endif
+# endif
 off_t lseek ();
 #endif
 
 /* Since major is a function on SVR4, we can't use `ifndef major'.  */
 #ifdef MAJOR_IN_MKDEV
-#include <sys/mkdev.h>
-#define HAVE_MAJOR
+# include <sys/mkdev.h>
+# define HAVE_MAJOR
 #endif
 
 #ifdef MAJOR_IN_SYSMACROS
-#include <sys/sysmacros.h>
-#define HAVE_MAJOR
+# include <sys/sysmacros.h>
+# define HAVE_MAJOR
 #endif
 
 #ifdef major			/* Might be defined in sys/types.h.  */
-#define HAVE_MAJOR
+# define HAVE_MAJOR
 #endif
 
 #ifndef HAVE_MAJOR
-#define major(dev) (((dev) >> 8) & 0xff)
-#define minor(dev) ((dev) & 0xff)
-#define	makedev(ma, mi) (((ma) << 8) | (mi))
+# define major(dev) (((dev) >> 8) & 0xff)
+# define minor(dev) ((dev) & 0xff)
+# defin makedev(ma, mi) (((ma) << 8) | (mi))
 #endif
 #undef HAVE_MAJOR
 
 #if defined(__MSDOS__) || defined(_POSIX_VERSION) || defined(HAVE_FCNTL_H)
-#include <fcntl.h>
+# include <fcntl.h>
 #else
-#include <sys/file.h>
+# include <sys/file.h>
 #endif
 #ifndef O_BINARY
-#define O_BINARY 0
+# define O_BINARY 0
 #endif
 
 #include <errno.h>
@@ -92,12 +101,12 @@ off_t lseek ();
 extern int errno;
 #endif
 #ifdef __EMX__			/* gcc on OS/2.  */
-#define EPERM EACCES
-#define ENXIO EIO
+# define EPERM EACCES
+# define ENXIO EIO
 #endif
 
 #ifdef HAVE_UTIME_H
-#include <utime.h>
+# include <utime.h>
 #else
 struct utimbuf
 {
@@ -107,11 +116,11 @@ struct utimbuf
 #endif
 
 #ifdef TRUE
-#undef TRUE
+# undef TRUE
 #endif
 #define TRUE 1
 #ifdef FALSE
-#undef FALSE
+# undef FALSE
 #endif
 #define FALSE 0
 
@@ -119,11 +128,6 @@ struct utimbuf
 #define CONSOLE "/dev/tty"
 #else
 #define CONSOLE "con"
-#endif
-
-#if defined(__MSDOS__) && !defined(__GNUC__)
-typedef int uid_t;
-typedef int gid_t;
 #endif
 
 /* On most systems symlink() always creates links with rwxrwxrwx
@@ -135,8 +139,8 @@ typedef int gid_t;
    symlink(). */
 
 #ifndef SYMLINK_USES_UMASK
-#define UMASKED_SYMLINK(name1,name2,mode)    symlink(name1,name2)
+# define UMASKED_SYMLINK(name1,name2,mode)    symlink(name1,name2)
 #else
-#define UMASKED_SYMLINK(name1,name2,mode)    umasked_symlink(name1,name2,mode)
+# define UMASKED_SYMLINK(name1,name2,mode)    umasked_symlink(name1,name2,mode)
 #endif /* SYMLINK_USES_UMASK */
 

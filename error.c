@@ -22,6 +22,11 @@
 #endif
 
 #include <stdio.h>
+#include "system.h"
+
+#if !HAVE_DECL_STRERROR
+extern const char *strerror (int en);
+#endif
 
 #if HAVE_VPRINTF || HAVE_DOPRNT || _LIBC
 # if __STDC__
@@ -36,13 +41,6 @@
 # define va_dcl char *a1, *a2, *a3, *a4, *a5, *a6, *a7, *a8;
 #endif
 
-#if STDC_HEADERS || _LIBC
-# include <stdlib.h>
-# include <string.h>
-#else
-void exit ();
-#endif
-
 /* This variable is incremented each time `error' is called.  */
 unsigned int error_message_count;
 
@@ -52,31 +50,12 @@ unsigned int error_message_count;
 void (*error_print_progname) () = NULL;
 
 #ifdef _LIBC
-#define program_name program_invocation_name
+# define program_name program_invocation_name
 #endif
 
 /* The calling program should define program_name and set it to the
    name of the executing program.  */
 extern char *program_name;
-
-#if HAVE_STRERROR || _LIBC
-# ifndef strerror		/* On some systems, strerror is a macro */
-char *strerror ();
-# endif
-#else
-static char *
-private_strerror (errnum)
-     int errnum;
-{
-  extern char *sys_errlist[];
-  extern int sys_nerr;
-
-  if (errnum > 0 && errnum <= sys_nerr)
-    return sys_errlist[errnum];
-  return "Unknown system error";
-}
-#define strerror private_strerror
-#endif
 
 /* Print the program name and error message MESSAGE, which is a printf-style
    format string with optional args.

@@ -8,6 +8,14 @@
 	* userspec.c: Changed the way of handling declared vs. undeclared
 	system calls.
 	* strerror.c: New file. Borrowed from GNU Radius.
+
+	* copyin.c: Removed kludgy declaration of delayed_seek_count.
+	* copypass.c: Likewise
+	* extern.h: Declare delayed_seek_count.
+	* mkdir.c: Fixed handling of undeclared errno
+	* mt.c: Likewise
+	* util.c: Likewise
+	* rtapelib.c: Likewise
 	
 2003-11-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
