@@ -36,6 +36,7 @@ AC_TYPE_SIGNAL
 AC_HEADER_MAJOR
 AC_C_CONST
 AC_TYPE_UID_T
+AC_CHECK_TYPE(gid_t, int)
 AC_HEADER_STDC
 AC_HEADER_DIRENT
 
@@ -62,8 +63,30 @@ else
                  AC_DEFINE(NO_REMOTE,1,[Define if rmt is not needed]))
 fi
 
-AC_CHECK_HEADERS(unistd.h string.h fcntl.h sys/io/trioctl.h utmp.h getopt.h locale.h)
-AC_REPLACE_FUNCS(bcopy mkdir strdup)
+AC_CHECK_HEADERS(unistd.h stdlib.h string.h fcntl.h sys/io/trioctl.h utmp.h getopt.h locale.h)
+AC_REPLACE_FUNCS(bcopy mkdir strdup strerror)
+
+AC_MSG_CHECKING(for sys_errlist and sys_nerr)
+AC_TRY_RUN(
+extern char *sys_errlist[[]];
+extern int sys_nerr;
+main() { char *s = sys_errlist[[0]]; return 0; },
+        AC_DEFINE(HAVE_SYS_ERRLIST,1,
+                  [Define if your system has sys_errlist global variable])
+        AC_MSG_RESULT(yes),
+        AC_MSG_RESULT(no),
+        AC_MSG_RESULT(don't know))
+
+AC_CHECK_DECLS([errno, sys_nerr, sys_errlist, getpwnam, getgrnam, getgrgid, strdup, strerror], , , [
+#include <stdio.h>
+#include <errno.h>
+#ifdef HAVE_STRING_H
+# include <string.h>
+#else
+# include <strings.h>
+#endif
+#include <pwd.h>
+#include <grp.h>])
 
 dnl Checks for fnmatch
 have_fnmatch=no
@@ -82,7 +105,7 @@ else
   AC_LIBOBJ(fnmatch)
 fi
 
-AC_CHECK_FUNCS(strerror lchown)
+AC_CHECK_FUNCS(lchown endpwent endgrent)
 AC_FUNC_VPRINTF
 AC_FUNC_ALLOCA
 AC_CHECK_LIB(nsl, gethostname, [LIBS="$LIBS -lnsl"])
