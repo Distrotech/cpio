@@ -32,8 +32,14 @@ AC_SUBST(RTAPELIB)dnl
 AC_C_CONST
 AC_TYPE_UID_T
 AC_HEADER_STDC
-AC_CHECK_HEADERS(unistd.h string.h fcntl.h utime.h sys/io/trioctl.h)
+AC_CHECK_HEADERS(unistd.h string.h fcntl.h sys/io/trioctl.h)
 AC_REPLACE_FUNCS(bcopy mkdir strdup)
+
+AC_MSG_CHECKING(for utime.h)
+AC_TRY_COMPILE([#include <sys/types.h>
+#include <utime.h>], [struct utimbuf foo],
+  [AC_MSG_RESULT(yes); AC_DEFINE(HAVE_UTIME_H)], [AC_MSG_RESULT(no)])
+
 dnl Checks for fnmatch
 have_fnmatch=no
 AC_MSG_CHECKING(for working fnmatch)
