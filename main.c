@@ -27,6 +27,11 @@
 #include <getopt.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#ifdef HAVE_LOCALE_H
+#  include <locale.h>
+#endif
+
 #include "filetypes.h"
 #include "system.h"
 #include "cpiohdr.h"
@@ -514,6 +519,10 @@ main (argc, argv)
      int argc;
      char *argv[];
 {
+#ifdef HAVE_LOCALE_H
+  setlocale (LC_ALL, "");
+#endif
+
   program_name = argv[0];
   umask (0);
 
