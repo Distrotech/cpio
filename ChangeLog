@@ -1,5 +1,7 @@
 2005-03-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/util.c (disk_buffered_write): Fix typo introduced
+	2005-01-11.
 	* src/main.c (process_args): Fixed error message
 
 2005-01-31  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
