@@ -99,7 +99,7 @@ void usage ();
 char *opnames[] =
 {
   "eof", "weof", "fsf", "bsf", "fsr", "bsr",
-  "rewind", "offline", "rewoffl", "status",
+  "rewind", "offline", "rewoffl", "eject", "status",
 #ifdef MTBSFM
   "bsfm",
 #endif
@@ -120,7 +120,7 @@ char *opnames[] =
 short operations[] =
 {
   MTWEOF, MTWEOF, MTFSF, MTBSF, MTFSR, MTBSR,
-  MTREW, MTOFFL, MTOFFL, MTNOP,
+  MTREW, MTOFFL, MTOFFL, MTOFFL, MTNOP,
 #ifdef MTBSFM
   MTBSFM,
 #endif
@@ -168,11 +168,12 @@ main (argc, argv)
   tapedev = NULL;
   count = 1;
 
-  while ((i = getopt_long (argc, argv, "f:V:H", longopts, (int *) 0)) != -1)
+  while ((i = getopt_long (argc, argv, "f:t:V:H", longopts, (int *) 0)) != -1)
     {
       switch (i)
 	{
 	case 'f':
+	case 't':
 	  tapedev = optarg;
 	  break;
 
@@ -214,7 +215,14 @@ main (argc, argv)
 #endif
     }
 
-  tapedesc = rmtopen (tapedev, O_RDONLY, 0);
+  if ( (operation == MTWEOF)
+#ifdef MTERASE
+       || (operation == MTERASE)
+#endif
+	)
+    tapedesc = rmtopen (tapedev, O_WRONLY, 0);
+  else
+    tapedesc = rmtopen (tapedev, O_RDONLY, 0);
   if (tapedesc == -1)
     error (1, errno, "%s", tapedev);
   check_type (tapedev, tapedesc);
