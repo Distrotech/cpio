@@ -71,3 +71,5 @@ alloca.h
 localedir.h
 stdbool.h
 sysexits.h
+getopt.h
+fileblocks.c
