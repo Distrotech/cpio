@@ -404,7 +404,8 @@ tape_toss_input (int in_des, long num_bytes)
 }
 
 static void
-write_nuls_to_file (long num_bytes, int out_des)
+write_nuls_to_file (long num_bytes, int out_des, 
+                    void (*writer) (char *in_buf, int out_des, long num_bytes))
 {
   long	blocks;
   long	extra_bytes;
@@ -412,16 +413,10 @@ write_nuls_to_file (long num_bytes, int out_des)
 
   blocks = num_bytes / 512;
   extra_bytes = num_bytes % 512;
-  for (i = 0; i < extra_bytes; ++i)
-    {
-      if (write (out_des, zeros_512, 512) != 512)
-	error (1, errno, _("error writing NUL's"));
-    }
-  if (extra_bytes != 0)
-    {
-      if (write (out_des, zeros_512, extra_bytes) != extra_bytes)
-	error (1, errno, _("error writing NUL's"));
-    }
+  for (i = 0; i < blocks; ++i)
+    writer (zeros_512, out_des, 512);
+  if (extra_bytes)
+    writer (zeros_512, out_des, extra_bytes);
 }
 
 /* Copy a file using the input and output buffers, which may start out
@@ -486,7 +481,7 @@ copy_files_disk_to_tape (int in_des, int out_des, long num_bytes,
 	    else
 	      error (0, 0, _("Read error at byte %ld in file %s, padding with zeros"),
 			original_num_bytes - num_bytes, filename);
-	    write_nuls_to_file (num_bytes, out_des);
+	    write_nuls_to_file (num_bytes, out_des, tape_buffered_write);
 	    break;
 	  }
       size = (input_size < num_bytes) ? input_size : num_bytes;
@@ -530,7 +525,7 @@ copy_files_disk_to_disk (int in_des, int out_des, long num_bytes,
 	    else
 	      error (0, 0, _("Read error at byte %ld in file %s, padding with zeros"),
 			original_num_bytes - num_bytes, filename);
-	    write_nuls_to_file (num_bytes, out_des);
+	    write_nuls_to_file (num_bytes, out_des, disk_buffered_write);
 	    break;
 	  }
       size = (input_size < num_bytes) ? input_size : num_bytes;
