@@ -546,7 +546,22 @@ process_copy_out ()
 	  file_hdr.c_filesize = file_stat.st_size;
 	  file_hdr.c_chksum = 0;
 	  file_hdr.c_tar_linkname = NULL;
-
+	  
+	  if (archive_format == arf_tar || archive_format == arf_ustar)
+	    {
+	      if (file_hdr.c_mode & CP_IFDIR)
+		{
+		  int len = strlen (input_name.ds_string);
+		  /* Make sure the name ends with a slash */
+		  if (input_name.ds_string[len-1] != '/')
+		    {
+		      ds_resize (&input_name, len + 2);
+		      input_name.ds_string[len] = '/';
+		      input_name.ds_string[len+1] = 0;
+		    }
+		}
+	    }
+	  
 	  /* Strip leading `./' from the filename.  */
 	  p = input_name.ds_string;
 	  while (*p == '.' && *(p + 1) == '/')
@@ -581,10 +596,11 @@ process_copy_out ()
 	  if ((archive_format == arf_tar || archive_format == arf_ustar)
 	      && is_tar_filename_too_long (file_hdr.c_name))
 	    {
-	      error (0, 0, _("%s: file name too long"), file_hdr.c_name);
+	      error (0, 0, _("%s: file name too long"),
+		     file_hdr.c_name);
 	      continue;
 	    }
-
+	  
 	  /* Copy the named file to the output.  */
 	  switch (file_hdr.c_mode & CP_IFMT)
 	    {
