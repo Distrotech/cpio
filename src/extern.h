@@ -81,7 +81,6 @@ extern long long input_bytes, output_bytes;
 #else
 extern long input_bytes, output_bytes;
 #endif
-extern char zeros_512[];
 extern char *directory_name;
 extern char **save_patterns;
 extern int num_patterns;
@@ -189,7 +188,9 @@ int utime P_((char *filename, struct utimbuf *utb));
 #ifdef HPUX_CDF
 char *add_cdf_double_slashes P_((char *filename));
 #endif
-
+void write_nuls_to_file P_((long num_bytes, int out_des, 
+			    void (*writer) (char *in_buf,
+					    int out_des, long num_bytes)));
 #define DISK_IO_BLOCK_SIZE	(512)
 
 /* FIXME: Move to system.h? */
