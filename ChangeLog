@@ -1,3 +1,11 @@
+2005-03-24  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/main.c (process_args): Fixed discrepancy I have been
+	overlooking so far: cpio still does not handle --sparse option
+	the same way tar is handling it. --sparse is allowed in copy-in
+	and copy-pass modes, just as docs say it. Thanks Dmitry Levin.
+	* THANKS: Updated
+
 2005-03-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/util.c (disk_buffered_write): Fix typo introduced
