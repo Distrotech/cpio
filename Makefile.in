@@ -114,8 +114,8 @@ HDRS = cpio.h cpiohdr.h tar.h tarhdr.h defer.h dstring.h extern.h filetypes.h \
 system.h fnmatch.h getopt.h rmt.h safe-stat.h
 DISTFILES = $(SRCS) $(HDRS) COPYING COPYING.LIB ChangeLog Makefile.in \
 README NEWS INSTALL cpio.1 mt.1 makefile.pc makefile.os2 cpio.def \
-configure configure.in mkinstalldirs $(MT_SRCS) rmt.c tcexparg.c alloca.c \
-cpio.texi texinfo.tex
+configure configure.in mkinstalldirs install-sh $(MT_SRCS) rmt.c tcexparg.c \
+alloca.c cpio.texi texinfo.tex
 
 all:	@PROGS@
 
@@ -205,8 +205,8 @@ distclean: clean
 	rm -f Makefile config.status
 
 maintainer-clean: distclean
-        @echo "This command is intended only for maintainers to use;"
-        @echo "rebuilding the deleted files may require special tools."
+	@echo "This command is intended only for maintainers to use;"
+	@echo "rebuilding the deleted files may require special tools."
 	rm -f TAGS
 
 dist: $(DISTFILES)
