@@ -268,7 +268,7 @@ disk_buffered_write (char *in_buf, int out_des, long num_bytes)
 	{
 	  if (bytes_left < space_left)
 	    space_left = bytes_left;
-	  memcpy (out_buff, in_buff, (unsigned) space_left);
+	  memcpy (out_buff, in_buf, (unsigned) space_left);
 	  out_buff += space_left;
 	  output_size += space_left;
 	  in_buf += space_left;
