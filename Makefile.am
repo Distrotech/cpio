@@ -17,4 +17,4 @@
 
 AUTOMAKE_OPTIONS = gnits 1.8 dist-bzip2 std-options
 
-SUBDIRS = doc src po
+SUBDIRS = doc headers src po
