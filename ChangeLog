@@ -1,3 +1,58 @@
+2003-11-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: Added to the repository
+	* Makefile.am: Likewise
+	* NEWS: Likewise
+	* README: Likewise
+	* AUTHORS: Likewise
+	* .cvsignore: Likewise
+	
+	* configure.in: Removed
+	* Makefile.in: Removed
+	* makefile.pc: Removed
+	* configure: Removed
+	
+	* alloca.c: Added to the repository
+	* argmatch.c: Likewise
+	* bcopy.c: Likewise
+	* cpio.h: Likewise
+	* cpiohdr.h: Likewise
+	* defer.c: Likewise
+	* defer.h: Likewise
+	* dirname.c: Likewise
+	* dstring.c: Likewise
+	* dstring.h: Likewise
+	* error.c: Likewise
+	* filemode.c: Likewise
+	* filetypes.h: Likewise
+	* fnmatch.c: Likewise
+	* fnmatch.h: Likewise
+	* getopt.c: Likewise
+	* getopt.h: Likewise
+	* getopt1.c: Likewise
+	* idcache.c: Likewise
+	* mkdir.c: Likewise
+	* rmt.h: Likewise
+	* rtapelib.c: Likewise
+	* safe-stat.h: Likewise
+	* strdup.c: Likewise
+	* stripslash.c: Likewise
+	* tar.c: Likewise
+	* tar.h: Likewise
+	* tarhdr.h: Likewise
+	* xmalloc.c: Likewise
+	* xstrdup.c: Likewise
+	
+	* makepath.c: Updated
+	* mt.c: Likewise.
+	* rmt.c: Likewise.
+	* util.c: Likewise.
+	* copyin.c: Likewise.
+	* copyout.c: Likewise.
+	* copypass.c: Likewise.
+	* global.c: Likewise.
+	* main.c: Likewise.
+	
 Thu Jun 13 20:14:48 2002  John Oleynick  (juo@gnu.org)
 	* copyin.c:  Strip leading / on absolute filenames after
 	comparing to the list of files specified on the command line
