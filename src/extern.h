@@ -47,6 +47,14 @@ extern int sparse_flag;
 extern int quiet_flag;
 extern int only_verify_crc_flag;
 extern int no_abs_paths_flag;
+extern unsigned int warn_option;
+
+/* Values for warn_option */
+#define CPIO_WARN_NONE     0
+#define CPIO_WARN_TRUNCATE 0x01
+#define CPIO_WARN_ALL      (unsigned int)-1
+
+extern bool to_stdout_option;
 
 extern int last_header_start;
 extern int copy_matching_files;
@@ -93,6 +101,7 @@ extern void (*copy_function) ();
 #endif
 
 /* copyin.c */
+void warn_junk_bytes P_((long bytes_skipped));
 void read_in_header P_((struct new_cpio_header *file_hdr, int in_des));
 void read_in_old_ascii P_((struct new_cpio_header *file_hdr, int in_des));
 void read_in_new_ascii P_((struct new_cpio_header *file_hdr, int in_des));

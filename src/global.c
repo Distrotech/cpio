@@ -186,6 +186,12 @@ char input_is_seekable = false;
 /* true if lseek works on the output.  */
 char output_is_seekable = false;
 
+/* Print extra warning messages */
+unsigned int warn_option = 0;
+
+/* Extract to standard output? */
+bool to_stdout_option = false;
+
 /* The name this program was run with.  */
 char *program_name;
 
