@@ -80,7 +80,7 @@ update_po() {
 
 # Parse options.
 
-DOWNLOAD_PO=no
+DOWNLOAD_PO=yes
 for option
 do
   case $option in
@@ -267,6 +267,8 @@ copy_files() {
 }
 
 copy_files ${PAXUTILS_SRCDIR}/m4 m4 
+
+copy_files ${PAXUTILS_SRCDIR}/tests tests
 
 if [ -d rmt ]; then
    :
