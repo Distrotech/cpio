@@ -1,3 +1,9 @@
+Tue Jan 16 19:03:05 1996  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
+	* util.c: An I/O error reading a file would cause the last byte
+	of the next file to be corrupted in the archive.  Thanks to a
+	buggy NT NFS server for pointing out this problem.
+	* Version 2.4.2 released.
+
 Tue Jan  9 23:19:37 1996  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	* copyout.c: missed 1 part of last bug fix.
 
@@ -6,7 +12,6 @@ Mon Jan  8 16:49:01 1996  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	of link name instead of size from lstat().  On some OS's lstat() 
 	doesn't return the true length in size.  Bug reported by
 	Robert Joop (rj@rainbow.IN-berlin.DE).
-	* Version 2.4.2 released.
 
 Wed Dec 20 10:52:56 1995  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	* rmt.c:  Added temporary kludge so make rmt will work on Linux.
