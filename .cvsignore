@@ -12,3 +12,5 @@ config.status
 config.h
 nonexistent
 ABOUT-NLS
+m4
+scripts

@@ -13,7 +13,7 @@ gettext	        0.13
 
 To build the configuration suite, run
 
-	autoreconf -f -i -s
+	./autogen.sh
 
 Then, configure and build the package as usual.
 

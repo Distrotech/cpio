@@ -15,6 +15,6 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
-AUTOMAKE_OPTIONS = gnits 1.7.1 dist-bzip2 std-options
+AUTOMAKE_OPTIONS = gnits 1.8 dist-bzip2 std-options
 
 SUBDIRS = doc src po
