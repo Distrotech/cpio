@@ -241,7 +241,7 @@ tape_buffered_write (char *in_buf, int out_des, long num_bytes)
 	{
 	  if (bytes_left < space_left)
 	    space_left = bytes_left;
-	  bcopy (in_buf, out_buff, (unsigned) space_left);
+	  memcpy (out_buff, in_buf, (unsigned) space_left);
 	  out_buff += space_left;
 	  output_size += space_left;
 	  in_buf += space_left;
@@ -268,7 +268,7 @@ disk_buffered_write (char *in_buf, int out_des, long num_bytes)
 	{
 	  if (bytes_left < space_left)
 	    space_left = bytes_left;
-	  bcopy (in_buf, out_buff, (unsigned) space_left);
+	  memcpy (out_buff, in_buff, (unsigned) space_left);
 	  out_buff += space_left;
 	  output_size += space_left;
 	  in_buf += space_left;
@@ -295,7 +295,7 @@ tape_buffered_read (char *in_buf, int in_des, long num_bytes)
 	space_left = bytes_left;
       else
 	space_left = input_size;
-      bcopy (in_buff, in_buf, (unsigned) space_left);
+      memcpy (in_buf, in_buff, (unsigned) space_left);
       in_buff += space_left;
       in_buf += space_left;
       input_size -= space_left;
@@ -345,7 +345,7 @@ tape_buffered_peek (char *peek_buf, int in_des, int num_bytes)
 	     first block to make room.  */
 	  int half;
 	  half = input_buffer_size / 2;
-	  bcopy (input_buffer + half, input_buffer, half);
+	  memmove (input_buffer, input_buffer + half, half);
 	  in_buff = in_buff - half;
 	  append_buf = append_buf - half;
 	}
@@ -369,7 +369,7 @@ tape_buffered_peek (char *peek_buf, int in_des, int num_bytes)
     got_bytes = num_bytes;
   else
     got_bytes = input_size;
-  bcopy (in_buff, peek_buf, (unsigned) got_bytes);
+  memcpy (peek_buf, in_buff, (unsigned) got_bytes);
   return got_bytes;
 }
 
@@ -403,18 +403,19 @@ tape_toss_input (int in_des, long num_bytes)
     }
 }
 
-static void
+void
 write_nuls_to_file (long num_bytes, int out_des, 
                     void (*writer) (char *in_buf, int out_des, long num_bytes))
 {
   long	blocks;
   long	extra_bytes;
   long	i;
-
-  blocks = num_bytes / 512;
-  extra_bytes = num_bytes % 512;
+  static char zeros_512[512];
+  
+  blocks = num_bytes / sizeof zeros_512;
+  extra_bytes = num_bytes % sizeof zeros_512;
   for (i = 0; i < blocks; ++i)
-    writer (zeros_512, out_des, 512);
+    writer (zeros_512, out_des, sizeof zeros_512);
   if (extra_bytes)
     writer (zeros_512, out_des, extra_bytes);
 }
@@ -770,7 +771,7 @@ add_inode (unsigned long node_num, char *file_name, unsigned long major_num,
       hash_size = 2 * hash_size + 3;
       hash_table = (struct inode_val **)
 	xmalloc (hash_size * sizeof (struct inode_val *));
-      bzero (hash_table, hash_size * sizeof (struct inode_val *));
+      memset (hash_table, 0, hash_size * sizeof (struct inode_val *));
 
       /* Insert the values from the old table into the new table.  */
       for (i = 0; i < hash_num; i++)
@@ -1109,7 +1110,7 @@ islastparentcdf (char *path)
   int slash_count;
   int length;			/* Length of result, not including NUL.  */
 
-  slash = rindex (path, '/');
+  slash = strrchr (path, '/');
   if (slash == 0)
     return 0;
   else
