@@ -204,7 +204,9 @@ mostlyclean: clean
 distclean: clean
 	rm -f Makefile config.status
 
-realclean: distclean
+maintainer-clean: distclean
+        @echo "This command is intended only for maintainers to use;"
+        @echo "rebuilding the deleted files may require special tools."
 	rm -f TAGS
 
 dist: $(DISTFILES)
