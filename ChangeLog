@@ -1,3 +1,7 @@
+Wed Nov  3 18:18:07 1994  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
+	* safe-stat.h: new file used by mkdir.c.  this will go
+	away when we get the real safe-xstat.[ch]in for mkdir.c.
+
 Mon Oct  3 00:46:30 1994  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	* makefile.pc, system.h:  Changes to compile with Borland C++ 4.0.
 
