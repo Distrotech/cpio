@@ -102,6 +102,11 @@ AC_CHECK_LIB(socket, setsockopt, [LIBS="$LIBS -lsocket"])
 AM_GNU_GETTEXT([external], [need-ngettext])
 AM_GNU_GETTEXT_VERSION(0.13)
 
+# Initialize the test suite.
+AC_CONFIG_TESTDIR(tests)
+AC_CONFIG_FILES([tests/Makefile tests/atlocal]) # FIXME: tests/preset?
+AM_MISSING_PROG([AUTOM4TE], [autom4te])
+
 AC_CONFIG_FILES([Makefile
  doc/Makefile
  headers/Makefile

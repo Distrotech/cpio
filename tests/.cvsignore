@@ -1,0 +1,11 @@
+Makefile.in
+Makefile
+.deps
+genfile
+atconfig
+atlocal
+testsuite
+genfile.c
+testsuite.dir
+testsuite.log
+package.m4

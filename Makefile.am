@@ -19,4 +19,4 @@ ACLOCAL_AMFLAGS = -I m4
 
 AUTOMAKE_OPTIONS = gnits 1.8 dist-bzip2 std-options
 
-SUBDIRS = doc headers lib rmt src po
+SUBDIRS = doc headers lib rmt src po tests
