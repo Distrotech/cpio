@@ -33,6 +33,9 @@ AC_PROG_INSTALL
 AC_AIX
 AC_MINIX
 AC_ISC_POSIX
+
+AC_SYS_LARGEFILE
+
 AC_TYPE_SIGNAL
 AC_HEADER_MAJOR
 AC_C_CONST
@@ -105,6 +108,7 @@ if test $have_fnmatch = yes ; then
 else
   AC_MSG_RESULT(no)
   AC_LIBOBJ(fnmatch)
+  AC_CONFIG_LINKS(src/fnmatch.h:headers/fnmatch.h)
 fi
 
 AC_CHECK_FUNCS(lchown endpwent endgrent)
@@ -135,10 +139,66 @@ int argc; char **argv;
    cpio_cv_have_gnu_getopt=no)
 
 if test x"$cpio_cv_have_gnu_getopt" != xyes ; then
-   dnl MU_HEADER(getopt.h)
+   AC_CONFIG_LINKS(src/getopt.h:headers/getopt.h)
    AC_LIBOBJ(getopt)
    AC_LIBOBJ(getopt1)
 fi
+
+USE_INCLUDED_ARGP=
+AC_ARG_WITH([included-argp],
+            AC_HELP_STRING([--with-included-argp],
+                           [Use included argp library]),
+            [USE_INCLUDED_ARGP=${withval}],
+            [AC_CHECK_HEADER(argp.h,
+                             [AC_CHECK_FUNCS(argp_parse, :,
+                                             [USE_INCLUDED_ARGP=yes])],
+                             [USE_INCLUDED_ARGP=yes])])
+
+if test "$USE_INCLUDED_ARGP" = yes; then
+       AC_LIBOBJ(argp-ba)
+       AC_LIBOBJ(argp-eexst)
+       AC_LIBOBJ(argp-fmtstream)
+       AC_LIBOBJ(argp-fs-xinl)
+       AC_LIBOBJ(argp-help)
+       AC_LIBOBJ(argp-parse)
+       AC_LIBOBJ(argp-pv)
+       AC_LIBOBJ(argp-pvh)
+       AC_LIBOBJ(argp-xinl)
+       AC_LIBOBJ(pin)
+       AC_CONFIG_LINKS(src/argp.h:headers/argp.h)
+fi
+
+save_CPPFLAGS=$CPPFLAGS
+CPPFLAGS="$CPPFLAGS -Isrc"
+AC_MSG_CHECKING(whether extern program_invocation_name is present)
+AC_TRY_COMPILE([#include <argp.h>
+#include <errno.h>],
+[ program_invocation_name = "test"; ],
+[AC_DEFINE(PROGRAM_INVOCATION_NAME_DECLARED,1,
+           [Define if program_invocation_name is declared in argp.h])
+ AC_MSG_RESULT(yes)],
+[AC_MSG_RESULT(no)])
+
+AH_BOTTOM([
+#ifndef PROGRAM_INVOCATION_NAME_DECLARED
+extern char *program_invocation_short_name;
+extern char *program_invocation_name;
+#endif])
+
+AC_MSG_CHECKING(whether program_invocation_name is declared)
+AC_TRY_COMPILE([#include <argp.h>
+#include <errno.h>],
+[
+#ifndef PROGRAM_INVOCATION_NAME_DECLARED
+	extern char *program_invocation_name;
+#endif
+	program_invocation_name = "test";
+],
+[AC_DEFINE(HAVE_PROGRAM_INVOCATION_NAME,1,
+           [Define if the variable program_invocation_name exists])
+ AC_MSG_RESULT(yes)],
+[AC_MSG_RESULT(no)])
+CPPFLAGS=$save_CPPFLAGS
 
 # Gettext.
 AM_GNU_GETTEXT([external], [need-ngettext])
@@ -150,4 +210,9 @@ AH_BOTTOM([
 #define N_(s) gettext_noop(s)
 ])
 
-AC_OUTPUT(Makefile doc/Makefile src/Makefile po/Makefile.in)
+AC_CONFIG_FILES([Makefile
+ doc/Makefile
+ headers/Makefile
+ src/Makefile
+ po/Makefile.in])
+AC_OUTPUT
