@@ -65,13 +65,8 @@ read_for_checksum (int in_file_des, int file_size, char *file_name)
 static void
 tape_clear_rest_of_block (int out_file_des)
 {
-  while (output_size < io_block_size)
-    {
-      if ((io_block_size - output_size) > 512)
-	tape_buffered_write (zeros_512, out_file_des, 512);
-      else
-	tape_buffered_write (zeros_512, out_file_des, io_block_size - output_size);
-    }
+  write_nuls_to_file (io_block_size - output_size, out_file_des, 
+                      tape_buffered_write);
 }
 
 /* Write NULs on OUT_FILE_DES to move from OFFSET (the current location)
@@ -80,7 +75,7 @@ tape_clear_rest_of_block (int out_file_des)
 static void
 tape_pad_output (int out_file_des, int offset)
 {
-  int pad;
+  size_t pad;
 
   if (archive_format == arf_newascii || archive_format == arf_crcascii)
     pad = (4 - (offset % 4)) % 4;
@@ -92,7 +87,7 @@ tape_pad_output (int out_file_des, int offset)
     pad = 0;
 
   if (pad != 0)
-    tape_buffered_write (zeros_512, out_file_des, pad);
+    write_nuls_to_file (pad, out_file_des, tape_buffered_write);
 }
 
 
@@ -213,7 +208,7 @@ writeout_defered_file (struct new_cpio_header *header, int out_file_des)
   struct new_cpio_header file_hdr;
   struct utimbuf times;		/* For setting file times.  */
   /* Initialize this in case it has members we don't know to set.  */
-  bzero (&times, sizeof (struct utimbuf));
+  memset (&times, 0, sizeof (struct utimbuf));
 
   file_hdr = *header;
 
@@ -457,7 +452,7 @@ process_copy_out ()
   /* Initialize the copy out.  */
   ds_init (&input_name, 128);
   /* Initialize this in case it has members we don't know to set.  */
-  bzero (&times, sizeof (struct utimbuf));
+  memset (&times, 0, sizeof (struct utimbuf));
   file_hdr.c_magic = 070707;
 
   /* Check whether the output file might be a tape.  */
@@ -783,10 +778,7 @@ process_copy_out ()
   if (archive_format != arf_tar && archive_format != arf_ustar)
     write_out_header (&file_hdr, out_file_des);
   else
-    {
-      tape_buffered_write (zeros_512, out_file_des, 512);
-      tape_buffered_write (zeros_512, out_file_des, 512);
-    }
+    write_nuls_to_file (1024, out_file_des, tape_buffered_write);
 
   /* Fill up the output block.  */
   tape_clear_rest_of_block (out_file_des);

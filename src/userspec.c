@@ -1,5 +1,6 @@
 /* userspec.c -- Parse a user and group string.
-   Copyright (C) 1989, 1990, 1991, 1992, 2001, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1990, 1991, 1992, 2001, 
+   2004, 2005 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -72,7 +73,7 @@ extern struct group *getgrgid (gid_t gid);
    otherwise return 0. */
 
 static int
-isnumber (const char *str)
+isnumber_p (const char *str)
 {
   for (; *str; str++)
     if (!isdigit (*str))
@@ -111,9 +112,9 @@ parse_user_spec (const char *spec_arg, uid_t *uid, gid_t *gid,
   V_STRDUP (spec, spec_arg);
 
   /* Find the separator if there is one.  */
-  separator = index (spec, ':');
+  separator = strchr (spec, ':');
   if (separator == NULL)
-    separator = index (spec, '.');
+    separator = strchr (spec, '.');
 
   /* Replace separator with a NUL.  */
   if (separator != NULL)
@@ -136,7 +137,7 @@ parse_user_spec (const char *spec_arg, uid_t *uid, gid_t *gid,
       if (pwd == NULL)
 	{
 
-	  if (!isnumber (u))
+	  if (!isnumber_p (u))
 	    error_msg = _("invalid user");
 	  else
 	    {
@@ -182,7 +183,7 @@ parse_user_spec (const char *spec_arg, uid_t *uid, gid_t *gid,
       grp = getgrnam (g);
       if (grp == NULL)
 	{
-	  if (!isnumber (g))
+	  if (!isnumber_p (g))
 	    error_msg = _("invalid group");
 	  else
 	    *gid = atoi (g);
