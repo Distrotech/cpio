@@ -552,13 +552,44 @@ process_copy_in ()
 	  else
 	    printf ("%s\n", file_hdr.c_name);
 
+	  crc = 0;
 	  tape_toss_input (in_file_des, file_hdr.c_filesize);
 	  tape_skip_padding (in_file_des, file_hdr.c_filesize);
+	  if (only_verify_crc_flag)
+	    {
+#ifdef CP_IFLNK
+	      if ((file_hdr.c_mode & CP_IFMT) == CP_IFLNK)
+		continue;   /* links don't have a checksum */
+#endif
+	      if (crc != file_hdr.c_chksum)
+		error (0, 0, "%s: checksum error (0x%x, should be 0x%x)",
+		       file_hdr.c_name, crc, file_hdr.c_chksum);
+	    }
 	}
       else if (append_flag)
 	{
 	  tape_toss_input (in_file_des, file_hdr.c_filesize);
 	  tape_skip_padding (in_file_des, file_hdr.c_filesize);
+	}
+      else if (only_verify_crc_flag)
+	{
+#ifdef CP_IFLNK
+	  if ((file_hdr.c_mode & CP_IFMT) == CP_IFLNK)
+	    {
+	      if (archive_format != arf_tar && archive_format != arf_ustar)
+		{
+		  tape_toss_input (in_file_des, file_hdr.c_filesize);
+		  tape_skip_padding (in_file_des, file_hdr.c_filesize);
+		  continue;
+		}
+	    }
+#endif
+	    crc = 0;
+	    tape_toss_input (in_file_des, file_hdr.c_filesize);
+	    tape_skip_padding (in_file_des, file_hdr.c_filesize);
+	    if (crc != file_hdr.c_chksum)
+	      error (0, 0, "%s: checksum error (0x%x, should be 0x%x)",
+		     file_hdr.c_name, crc, file_hdr.c_chksum);
 	}
       else
 	{
@@ -984,11 +1015,14 @@ process_copy_in ()
 
   if (archive_format == arf_newascii || archive_format == arf_crcascii)
     create_final_defers ();
-  res = (input_bytes + io_block_size - 1) / io_block_size;
-  if (res == 1)
-    fprintf (stderr, "1 block\n");
-  else
-    fprintf (stderr, "%d blocks\n", res);
+  if (!quiet_flag)
+    {
+      res = (input_bytes + io_block_size - 1) / io_block_size;
+      if (res == 1)
+	fprintf (stderr, "1 block\n");
+      else
+	fprintf (stderr, "%d blocks\n", res);
+    }
 }
 
 /* Print the file described by FILE_HDR in long format.
