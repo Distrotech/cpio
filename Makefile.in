@@ -105,7 +105,7 @@ userspec.c xstrdup.c bcopy.c fnmatch.c mkdir.c strdup.c
 OBJS = copyin.o copyout.o copypass.o defer.o dstring.o global.o \
 main.o tar.o util.o error.o getopt.o getopt1.o filemode.o version.o \
 $(RTAPELIB) dirname.o idcache.o makepath.o xmalloc.o stripslash.o \
-userspec.o xstrdup.o @LIBOBJS@ @ALLOCA@ 
+userspec.o xstrdup.o @LIBOBJS@ @FNMATCH@ @ALLOCA@ 
 # mt source files not shared with cpio.
 MT_SRCS = mt.c argmatch.c
 MT_OBJS = mt.o argmatch.o error.o getopt.o getopt1.o \
