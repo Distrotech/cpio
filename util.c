@@ -1340,11 +1340,11 @@ write_nuls_to_file (num_bytes, out_des)
   for (i = 0; i < extra_bytes; ++i)
     {
       if (write (out_des, zeros_512, 512) != 512)
-	error (1, errno, "error writing nuls");
+	error (1, errno, "error writing NUL's");
     }
   if (extra_bytes != 0)
     {
       if (write (out_des, zeros_512, extra_bytes) != extra_bytes)
-	error (1, errno, "error writing nuls");
+	error (1, errno, "error writing NUL's");
     }
 }
