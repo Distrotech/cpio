@@ -7,8 +7,9 @@ software to build it:
 Package		Version (>=)
 ---------	------------
 autoconf	2.54
-automake	1.7.1
+automake	1.8
 libtool		1.4.3
+gettext	        0.13
 
 To build the configuration suite, run
 
@@ -16,15 +17,14 @@ To build the configuration suite, run
 
 Then, configure and build the package as usual.
 
-Report bugs to <bug-mailutils@gnu.org>
+Report bugs to <bug-cpio@gnu.org>
 
-To retrieve the sources from CVS issue the following commands:
+To retrieve the sources from CVS issue the following command:
 
-cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/cpio login
+CVS_RSH=ssh \
+ cvs -d :ext:anoncvs@savannah.gnu.org:/cvsroot/cpio checkout cpio
 
-Press enter when prompted for a password.
-
-cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/cpio checkout cpio
+Make sure SSHv2 is used.
 
 This will give you read-only access. If you think you need write access,
 contact the maintainer.

@@ -1,11 +1,5 @@
 Makefile.in
 Makefile
-.deps
-.libs
-cpio
-mt
-rmt
-.gdbinit
 config.h.in
 autom4te.cache
 aclocal.m4
@@ -17,3 +11,4 @@ config.log
 config.status
 config.h
 nonexistent
+ABOUT-NLS

@@ -1,5 +1,5 @@
 # This file is part of GNU cpio
-# Copyright (C) 2003 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,58 +17,4 @@
 
 AUTOMAKE_OPTIONS = gnits 1.7.1 dist-bzip2 std-options
 
-bin_PROGRAMS=cpio @CPIO_MT_PROG@
-libexec_PROGRAMS=@CPIO_RMT_PROG@
-EXTRA_PROGRAMS=mt rmt
-
-cpio_SOURCES = \
- copyin.c\
- copyout.c\
- copypass.c\
- defer.c\
- dstring.c\
- global.c\
- main.c\
- tar.c\
- util.c\
- error.c\
- filemode.c\
- dirname.c\
- idcache.c\
- makepath.c\
- xmalloc.c\
- stripslash.c\
- userspec.c\
- xstrdup.c
-
-noinst_HEADERS =\
- cpio.h\
- cpiohdr.h\
- tar.h\
- tarhdr.h\
- defer.h\
- dstring.h\
- extern.h\
- filetypes.h\
- system.h\
- rmt.h\
- safe-stat.h\
- fnmatch.h\
- getopt.h
-
-cpio_LDADD = @LIBOBJS@
-
-mt_SOURCES = \
- mt.c argmatch.c
-mt_LDADD = @LIBOBJS@
-
-rmt_SOURCES = rmt.c
-rmt_LDADD = @LIBOBJS@
-
-EXTRA_DIST=\
- getopt.c\
- getopt1.c\
- bcopy.c\
- fnmatch.c\
- mkdir.c\
- strdup.c
+SUBDIRS = doc src po
