@@ -44,9 +44,9 @@ AC_HEADER_STDC
 AC_HEADER_DIRENT
 
 cpio_GNULIB
+cpio_PAXUTILS
 
 AC_SUBST(CPIO_MT_PROG)
-PU_RMT
 
 AC_ARG_ENABLE(mt,
  AC_HELP_STRING([--enable-mt], [Enable building of mt program]),
