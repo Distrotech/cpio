@@ -64,8 +64,6 @@ extern int errno;
 #include <strings.h>
 #endif
 
-void error ();
-
 /* Ensure that the directory ARGPATH exists.
    Remove any trailing slashes from ARGPATH before calling this function.
 
