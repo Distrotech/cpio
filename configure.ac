@@ -77,8 +77,9 @@ main() { char *s = sys_errlist[[0]]; return 0; },
         AC_MSG_RESULT(no),
         AC_MSG_RESULT(don't know))
 
-AC_CHECK_DECLS([errno, sys_nerr, sys_errlist, getpwnam, getgrnam, getgrgid, strdup, strerror], , , [
+AC_CHECK_DECLS([errno, sys_nerr, sys_errlist, getpwnam, getgrnam, getgrgid, strdup, strerror, getenv, atoi, exit], , , [
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #ifdef HAVE_STRING_H
 # include <string.h>
