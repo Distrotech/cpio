@@ -86,7 +86,7 @@ Usage: %s {-o|--create} [-0acvABLV] [-C bytes] [-H format] [-M message]\n\
        [-O [[user@]host:]archive] [-F [[user@]host:]archive]\n\
        [--file=[[user@]host:]archive] [--format=format] [--message=message]\n\
        [--null] [--reset-access-time] [--verbose] [--dot] [--append]\n\
-       [--block-size=blocks] [--dereference] [--io-size=bytes]\n\
+       [--block-size=blocks] [--dereference] [--io-size=bytes] [--quiet]\n\
        [--force-local] [--help] [--version] < name-list [> archive]\n", program_name);
   fprintf (fp, "\
        %s {-i|--extract} [-bcdfmnrtsuvBSV] [-C bytes] [-E file] [-H format]\n\
@@ -97,12 +97,12 @@ Usage: %s {-o|--create} [-0acvABLV] [-C bytes] [-H format] [-M message]\n\
        [--unconditional] [--verbose] [--block-size=blocks] [--swap-halfwords]\n\
        [--io-size=bytes] [--pattern-file=file] [--format=format]\n\
        [--owner=[user][:.][group]] [--no-preserve-owner] [--message=message]\n\
-       [--force-local] [--no-absolute-paths] [--sparse]\n\
-       [--help] [--version] [pattern...] [< archive]\n",
+       [--force-local] [--no-absolute-paths] [--sparse] [--only-verify-crc]\n\
+       [--quiet] [--help] [--version] [pattern...] [< archive]\n",
 	   program_name);
   fprintf (fp, "\
        %s {-p|--pass-through} [-0adlmuvLV] [-R [user][:.][group]] [--null]\n\
-       [--null] [--reset-access-time] [--make-directories] [--link]\n\
+       [--null] [--reset-access-time] [--make-directories] [--link] [--quiet]\n\
        [--preserve-modification-time] [--unconditional] [--verbose] [--dot]\n\
        [--dereference] [--owner=[user][:.][group]] [--no-preserve-owner]\n\
        [--sparse] [--help] [--version] destination-directory < name-list\n", program_name);
