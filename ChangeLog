@@ -1,3 +1,12 @@
+2003-11-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* README-alpha: New file
+	* Makefile.am: Require at least version 1.7.1
+	* configure.ac: Check for locale.h
+	* main.c (main): Call setlocale. Thanks
+	Mitsuru Chinen <mchinen@yamato.ibm.com>	for the patch.
+	* THANKS: Updated
+	
 2003-11-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Added to the repository
