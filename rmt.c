@@ -66,6 +66,11 @@ long lseek ();
 extern char *malloc ();
 #endif
 
+#include <errno.h>
+#if !HAVE_DECL_STRERROR
+extern const char *strerror (int en);
+#endif
+
 int tape = -1;
 
 char *record;
@@ -78,30 +83,6 @@ void error ();
 char device[SSIZE];
 char count[SSIZE], mode[SSIZE], pos[SSIZE], op[SSIZE];
 
-extern errno;
-extern const char *const _sys_errlist[];
-/* Debian hack: rmt has problems on systems (such as the Hurd) where
-   sys_errlist is not available therefore I borrowed some code from
-   error.c to fix this problem.  This has been reported to the upstream
-   maintainers.  (7/22/99) - BEM */
-#if HAVE_STRERROR || _LIBC
-# ifndef strerror		/* On some systems, strerror is a macro */
-char *strerror ();
-# endif
-#else
-static char *
-private_strerror (errnum)
-     int errnum;
-{
-  extern char *sys_errlist[];
-  extern int sys_nerr;
-
-  if (errnum > 0 && errnum <= sys_nerr)
-    return sys_errlist[errnum];
-  return "Unknown system error";
-}
-#define strerror private_strerror
-#endif
 char resp[BUFSIZ];
 
 FILE *debug;
