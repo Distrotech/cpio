@@ -66,11 +66,6 @@ extern int errno;
 #include <strings.h>
 #endif
 
-#if defined(__MSDOS__) && !defined(__GNUC__)
-typedef int uid_t;
-typedef int gid_t;
-#endif
-
 void error ();
 
 /* Ensure that the directory ARGPATH exists.
