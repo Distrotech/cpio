@@ -1,6 +1,35 @@
+Thu Sep 29 11:21:31 1994  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
+	* extern.h, util.c, copyout.c, copypass.c, main.c, global.c:
+	Never mind --ignore-disk-input-errors flag, we'll just always
+	do that, like tar.
+
+	* global.c, extern.h, main.c, copyin.c, copyout.c, copypass.c:
+	Added --quiet flag to supress printing number of blocks copied.
+
+	* global.c, extern.h:  If compiled with gcc, make input_bytes
+	and output_bytes `long long' instead of `long'.  We need more
+	than 32 bits to keep track of the number of bytes copied to
+	and from tape drives that hold more than 4Gbytes.
+
+	* util.c, copyin.c, main.c, global.c, extern.h:  Added
+	--only-verify-crc flag to read a CRC format archive and verify
+	its contents' CRCs.
+
+	* copyout.c:  Fixed problem with creating oldc format archives
+	on machines with 16 bit ints.  Reported by mpoole@cix.compulink.co.uk
+	(Martin Poole).
+
+	* mt.c: Need to open tape WR_ONLY for erase command (and probably
+	others?).  Reported by robert@hst.e.technik.uni-kl.de (Robert
+	Vogelgesan).  Accept `eject' as a synonym for `offline'.  Accept
+	`-t' as a synonym for `-f' (to be compatible with HPUX mt, which 
+	only accepts `-t').
+
 Wed Sep 28 12:01:55 1994  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	* extern.h, global.c, main.c, util.c: only write sparse files
 	when given --sparse flag.
+	* extern.h, util.c, copyout.c, copypass.c, main.c, global.c:
+	Added support for --ignore-disk-input-errors flag.
 
 Wed Aug 24 12:55:38 1994  David J. MacKenzie  (djm@churchy.gnu.ai.mit.edu)
 
