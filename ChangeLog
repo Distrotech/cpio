@@ -1,3 +1,73 @@
+2004-09-06  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	Started merging with tar into paxutils. Sources before
+	this point are tagged alpha-2_50_90.
+	
+	* bootstrap: New file
+	* autogen.sh: Removed
+	* Makefile.am: Updated
+	* NEWS: Updated
+	* README-alpha: Updated
+	* configure.ac: Updated
+	* doc/cpio.1: Updated
+	* po/POTFILES.in: Updated
+
+	* src/Makefile.am: Updated
+	* src/error.c: Removed
+	* src/dirname.c: Likewise
+	* src/xmalloc.c: Likewise
+	* src/stripslash.c: Likewise
+	* src/xstrdup.c
+	* src/gettext.h: Likewise
+	* src/system.h: Likewise
+	* src/rmt.h: Likewise
+	* src/getopt.c: Likewise
+	* src/getopt1.c: Likewise
+	* src/bcopy.c: Likewise
+	* src/fnmatch.c: Likewise
+	* src/mkdir.c: Likewise
+	* src/strdup.c: Likewise
+	* src/argp-ba.c: Likewise
+	* src/argp-eexst.c: Likewise
+	* src/argp-fmtstream.c: Likewise
+	* src/argp-fs-xinl.c: Likewise
+	* src/argp-help.c: Likewise
+	* src/argp-parse.c: Likewise
+	* src/argp-pv.c: Likewise
+	* src/argp-pvh.c: Likewise
+	* src/argp-xinl.c: Likewise
+	* src/pin.c: Likewise
+	* src/alloca.c: Likewise
+	* src/argmatch.c: Likewise
+	* src/rmt.c: Likewise
+	* src/rtapelib.c: Likewise
+	* src/strerror.c: Likewise
+	
+	* src/copyin.c: Switched to ANSI C (sigh)
+	* src/copyout.c: Likewise
+	* src/copypass.c: Likewise
+	* src/defer.c: Likewise
+	* src/defer.h: Likewise
+	* src/dstring.c: Likewise
+	* src/dstring.h: Likewise
+	* src/extern.h: Likewise
+	* src/filemode.c: Likewise
+	* src/global.c: Likewise
+	* src/idcache.c: Likewise
+	* src/main.c: Likewise
+	* src/makepath.c: Likewise
+	* src/mt.c: Likewise
+	* src/tar.c: Likewise
+	* src/userspec.c: Likewise
+	* src/util.c: Likewise
+
+	* lib: New directory
+	* lib/Makefile.tmpl: New file
+	* lib/bcopy.c: Moved from ../src
+	* lib/mkdir.c: Likewise.
+	* lib/strdup.c: Likewise.
+	* lib/strerror.c: Likewise.
+	
 2004-08-30  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* Makefile.am: Added headers to SUBDIRS.

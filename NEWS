@@ -8,6 +8,14 @@ Version 2.5.90
 
 * Added NLS support
 
+* Improved configure script
+
+* Improved invocation consistency checking and help output
+
+* Bugfixes:
+** If a file grew n bytes in copy-pass mode, these n bytes got prepended
+to the contents of all subsequent files. 
+
 
 Major changes in version 2.5:
 

@@ -15,9 +15,10 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
+INCLUDES=-I. -I.. -I$(top_srcdir)/lib 
+
 bin_PROGRAMS=cpio @CPIO_MT_PROG@
-libexec_PROGRAMS=@CPIO_RMT_PROG@
-EXTRA_PROGRAMS=mt rmt
+EXTRA_PROGRAMS=mt
 
 cpio_SOURCES = \
  copyin.c\
@@ -29,15 +30,10 @@ cpio_SOURCES = \
  main.c\
  tar.c\
  util.c\
- error.c\
  filemode.c\
- dirname.c\
  idcache.c\
  makepath.c\
- xmalloc.c\
- stripslash.c\
- userspec.c\
- xstrdup.c
+ userspec.c
 
 noinst_HEADERS =\
  cpio.h\
@@ -48,42 +44,11 @@ noinst_HEADERS =\
  dstring.h\
  extern.h\
  filetypes.h\
- gettext.h\
- system.h\
- rmt.h\
  safe-stat.h
 
-cpio_LDADD = @LIBOBJS@ $(INTLLIBS)
+cpio_LDADD = ../lib/libcpio.a $(INTLLIBS)
 
-mt_SOURCES = \
- mt.c argmatch.c
-mt_LDADD = @LIBOBJS@ $(INTLLIBS)
+mt_SOURCES = mt.c 
+mt_LDADD = ../lib/lib$(PACKAGE).a $(INTLLIBS)
 
-rmt_SOURCES = rmt.c
-rmt_LDADD = @LIBOBJS@ $(INTLLIBS)
-
-EXTRA_DIST=\
- getopt.c\
- getopt1.c\
- bcopy.c\
- fnmatch.c\
- mkdir.c\
- strdup.c\
- argp-ba.c\
- argp-eexst.c\
- argp-fmtstream.c\
- argp-fs-xinl.c\
- argp-help.c\
- argp-parse.c\
- argp-pv.c\
- argp-pvh.c\
- argp-xinl.c\
- pin.c
-
-localedir = $(datadir)/locale
-
-DISTCLEANFILES = localedir.h
-localedir.h : Makefile
-	echo '#define LOCALEDIR "$(localedir)"' >$@
-
-mt.o main.o: localedir.h
+mt.o main.o: ../lib/localedir.h

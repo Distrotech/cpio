@@ -2,12 +2,13 @@ src/copyin.c
 src/copyout.c
 src/copypass.c
 src/dstring.c
-src/getopt.c
 src/main.c
 src/makepath.c
 src/mt.c
-src/rtapelib.c
-src/strerror.c
 src/tar.c
 src/userspec.c
 src/util.c
+
+lib/getopt.c
+lib/rtapelib.c
+lib/strerror.c

@@ -15,6 +15,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
+ACLOCAL_AMFLAGS = -I m4
+
 AUTOMAKE_OPTIONS = gnits 1.8 dist-bzip2 std-options
 
-SUBDIRS = doc headers src po
+SUBDIRS = doc headers lib rmt src po
