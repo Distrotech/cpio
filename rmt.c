@@ -135,6 +135,20 @@ FILE *debug;
 #define MTS_BF		'b'
 #endif /* EXTENDED_RMT_PROTOCOL */
 
+static struct option gnu_options[] =
+  {
+    {"version",     no_argument,       0, 'v'},
+    {"help",        no_argument,       0, 'h'},
+    {0, 0, 0, 0}
+  };
+
+void
+rmt_help ()
+{
+  printf ("GNU rmt: remote magtape protocol module\n");
+  printf ("usage: rmt [debug_file]\n");
+}
+
 int
 main (argc, argv)
      int argc;
@@ -144,7 +158,20 @@ main (argc, argv)
   char c;
   int n, i, cc;
 
-  argc--, argv++;
+  while ((c = getopt_long (argc, argv, "vh", gnu_options, &n)) != EOF)
+    switch (c) {
+    case 'v':
+      printf ("rmt (%s)\n", PACKAGE_STRING);
+      return 0;
+
+    case 'h':
+      rmt_help ();
+      return 0;
+    }
+  
+  argc -= optind;
+  argv += optind;
+  
   if (argc > 0)
     {
       debug = fopen (*argv, "w");
