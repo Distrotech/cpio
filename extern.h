@@ -59,6 +59,7 @@ extern int archive_des;
 extern char *archive_name;
 extern char *rsh_command_option;
 extern unsigned long crc;
+extern int delayed_seek_count;
 #ifdef DEBUG_CPIO
 extern int debug_flag;
 #endif
