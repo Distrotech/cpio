@@ -76,124 +76,142 @@ Examples:\n\
  if (cond) USAGE_ERROR((0, 0, _("%s is meaningless with %s"), opt, mode_opt));
 
 static struct argp_option options[] = {
+  /* ********** */
+#define GRID 10
   {NULL, 0, NULL, 0,
-   N_("Main operation mode:"), 10},
+   N_("Main operation mode:"), GRID },
   {"create", 'o', 0, 0,
-   N_("Create the archive (run in copy-out mode)"), 10},
+   N_("Create the archive (run in copy-out mode)"), GRID },
   {"extract", 'i', 0, 0,
-   N_("Extract files from an archive (run in copy-in mode)")},
+   N_("Extract files from an archive (run in copy-in mode)"), GRID },
   {"pass-through", 'p', 0, 0,
-   N_("Run in copy-pass mode"), 10},
+   N_("Run in copy-pass mode"), GRID },
   {"list", 't', 0, 0,
-   N_("Print a table of contents of the input"), 10},
-
-  {NULL, 0, NULL, 0,
-   N_("Operation modifiers valid in any mode:"), 100},
-
-  {"file", 'F', N_("[[USER@]HOST:]FILE-NAME"), 0,
-   N_("Use this FILE-NAME instead of standard input or output. Optional USER and HOST specify the user and host names in case of a remote archive"), 110},
-  {"force-local", FORCE_LOCAL_OPTION, 0, 0,
-   N_("Archive file is local, even if its name contains colons"), 110},
-  {"format", 'H', N_("FORMAT"), 0,
-   N_("Use given archive FORMAT"), 110},
-  {NULL, 'B', NULL, 0,
-   N_("Set the I/O block size to 5120 bytes"), 110},
-  {"block-size", BLOCK_SIZE_OPTION, N_("BLOCK-SIZE"), 0,
-   N_("Set the I/O block size to BLOCK-SIZE * 512 bytes"), 110},
-  {NULL, 'c', NULL, 0,
-   N_("Use the old portable (ASCII) archive format"), 0},
-  {"dot", 'V', NULL, 0, 
-   N_("Print a \".\" for each file processed"), 110},
-  {"io-size", 'C', N_("NUMBER"), 0,
-   N_("Set the I/O block size to the given NUMBER of bytes"), 110},
-  {"message", 'M', N_("STRING"), 0,
-   N_("Print STRING when the end of a volume of the backup media is reached"),
-   110},
-  {"nonmatching", 'f', 0, 0,
-   N_("Only copy files that do not match any of the given patterns"), 110},
-  {"numeric-uid-gid", 'n', 0, 0,
-   N_("In the verbose table of contents listing, show numeric UID and GID"),
-   110},
-  {"rsh-command", RSH_COMMAND_OPTION, N_("COMMAND"), 0,
-   N_("Use remote COMMAND instead of rsh"), 110},
-  {"quiet", QUIET_OPTION, NULL, 0,
-   N_("Do not print the number of blocks copied"), 110},
-  {"verbose", 'v', NULL, 0,
-   N_("Verbosely list the files processed"), 110},
-#ifdef DEBUG_CPIO
-  {"debug", DEBUG_OPTION, NULL, 0,
-   N_("Enable debugging info"), 110},
-#endif
-  {"warning", 'W', N_("FLAG"), 0,
-   N_("Control warning display. Currently FLAG is one of 'none', 'truncate', 'all'. Multiple options accumulate."), 110 },
-
-  /* ********** */
-  {NULL, 0, NULL, 0,
-   N_("Operation modifiers valid only in copy-in mode:"), 200},
-  {"pattern-file", 'E', N_("FILE"), 0,
-   N_("In copy-in mode, read additional patterns specifying filenames to extract or list from FILE"), 210},
-  {"no-absolute-filenames", NO_ABSOLUTE_FILENAMES_OPTION, 0, 0,
-   N_("Create all files relative to the current directory"), 210},
-  {"only-verify-crc", ONLY_VERIFY_CRC_OPTION, 0, 0,
-   N_("When reading a CRC format archive in copy-in mode, only verify the CRC's of each file in the archive, don't actually extract the files"), 210},
-  {"rename", 'r', 0, 0,
-   N_("Interactively rename files"), 210},
-  {"rename-batch-file", RENAME_BATCH_FILE_OPTION, N_("FILE"), OPTION_HIDDEN,
-   "", 210},
-  {"swap", 'b', NULL, 0,
-   N_("Swap both halfwords of words and bytes of halfwords in the data. Equivalent to -sS"), 210},
-  {"swap-bytes", 's', NULL, 0,
-   N_("Swap the bytes of each halfword in the files"), 210},
-  {"swap-halfwords", 'S', NULL, 0,
-   N_("Swap the halfwords of each word (4 bytes) in the files"),
-   210},
-  {"to-stdout", TO_STDOUT_OPTION, NULL, 0,
-   N_("Extract files to standard output"), 210},
-
-  /* ********** */
-  {NULL, 0, NULL, 0,
-   N_("Operation modifiers valid only in copy-out mode:"), 300},
-  {"append", 'A', 0, 0,
-   N_("Append to an existing archive."), 310 },
-  {NULL, 'O', N_("[[USER@]HOST:]FILE-NAME"), 0,
-   N_("Archive filename to use instead of standard output. Optional USER and HOST specify the user and host names in case of a remote archive"), 310},
+   N_("Print a table of contents of the input"), GRID },
+#undef GRID
   
   /* ********** */
+#define GRID 100  
   {NULL, 0, NULL, 0,
-   N_("Operation modifiers valid only in copy-pass mode:"), 400},
+   N_("Operation modifiers valid in any mode:"), GRID },
+
+  {"file", 'F', N_("[[USER@]HOST:]FILE-NAME"), 0,
+   N_("Use this FILE-NAME instead of standard input or output. Optional USER and HOST specify the user and host names in case of a remote archive"), GRID+1 },
+  {"force-local", FORCE_LOCAL_OPTION, 0, 0,
+   N_("Archive file is local, even if its name contains colons"), GRID+1 },
+  {"format", 'H', N_("FORMAT"), 0,
+   N_("Use given archive FORMAT"), GRID+1 },
+  {NULL, 'B', NULL, 0,
+   N_("Set the I/O block size to 5120 bytes"), GRID+1 },
+  {"block-size", BLOCK_SIZE_OPTION, N_("BLOCK-SIZE"), 0,
+   N_("Set the I/O block size to BLOCK-SIZE * 512 bytes"), GRID+1 },
+  {NULL, 'c', NULL, 0,
+   N_("Use the old portable (ASCII) archive format"), GRID+1 },
+  {"dot", 'V', NULL, 0, 
+   N_("Print a \".\" for each file processed"), GRID+1 },
+  {"io-size", 'C', N_("NUMBER"), 0,
+   N_("Set the I/O block size to the given NUMBER of bytes"), GRID+1 },
+  {"message", 'M', N_("STRING"), 0,
+   N_("Print STRING when the end of a volume of the backup media is reached"),
+   GRID+1 },
+  {"nonmatching", 'f', 0, 0,
+   N_("Only copy files that do not match any of the given patterns"), GRID+1 },
+  {"numeric-uid-gid", 'n', 0, 0,
+   N_("In the verbose table of contents listing, show numeric UID and GID"),
+   GRID+1 },
+  {"rsh-command", RSH_COMMAND_OPTION, N_("COMMAND"), 0,
+   N_("Use remote COMMAND instead of rsh"), GRID+1 },
+  {"quiet", QUIET_OPTION, NULL, 0,
+   N_("Do not print the number of blocks copied"), GRID+1 },
+  {"verbose", 'v', NULL, 0,
+   N_("Verbosely list the files processed"), GRID+1 },
+#ifdef DEBUG_CPIO
+  {"debug", DEBUG_OPTION, NULL, 0,
+   N_("Enable debugging info"), GRID+1 },
+#endif
+  {"warning", 'W', N_("FLAG"), 0,
+   N_("Control warning display. Currently FLAG is one of 'none', 'truncate', 'all'. Multiple options accumulate."), GRID+1 },
+#undef GRID
+  
+  /* ********** */
+#define GRID 200  
+  {NULL, 0, NULL, 0,
+   N_("Operation modifiers valid only in copy-in mode:"), GRID },
+  {"pattern-file", 'E', N_("FILE"), 0,
+   N_("In copy-in mode, read additional patterns specifying filenames to extract or list from FILE"), GRID+1 },
+  {"no-absolute-filenames", NO_ABSOLUTE_FILENAMES_OPTION, 0, 0,
+   N_("Create all files relative to the current directory"), GRID+1 },
+  {"only-verify-crc", ONLY_VERIFY_CRC_OPTION, 0, 0,
+   N_("When reading a CRC format archive in copy-in mode, only verify the CRC's of each file in the archive, don't actually extract the files"), GRID+1 },
+  {"rename", 'r', 0, 0,
+   N_("Interactively rename files"), GRID+1 },
+  {"rename-batch-file", RENAME_BATCH_FILE_OPTION, N_("FILE"), OPTION_HIDDEN,
+   "", GRID+1 },
+  {"swap", 'b', NULL, 0,
+   N_("Swap both halfwords of words and bytes of halfwords in the data. Equivalent to -sS"), GRID+1 },
+  {"swap-bytes", 's', NULL, 0,
+   N_("Swap the bytes of each halfword in the files"), GRID+1 },
+  {"swap-halfwords", 'S', NULL, 0,
+   N_("Swap the halfwords of each word (4 bytes) in the files"),
+   GRID+1 },
+  {"to-stdout", TO_STDOUT_OPTION, NULL, 0,
+   N_("Extract files to standard output"), GRID+1 },
+#undef GRID   
+
+  /* ********** */
+#define GRID 300
+  {NULL, 0, NULL, 0,
+   N_("Operation modifiers valid only in copy-out mode:"), GRID },
+  {"append", 'A', 0, 0,
+   N_("Append to an existing archive."), GRID+1 },
+  {NULL, 'O', N_("[[USER@]HOST:]FILE-NAME"), 0,
+   N_("Archive filename to use instead of standard output. Optional USER and HOST specify the user and host names in case of a remote archive"), GRID+1 },
+  
+#undef GRID   
+  /* ********** */
+#define GRID 400
+  {NULL, 0, NULL, 0,
+   N_("Operation modifiers valid only in copy-pass mode:"), GRID},
   {"link", 'l', 0, 0,
-   N_("Link files instead of copying them, when  possible"), 410},
+   N_("Link files instead of copying them, when  possible"), GRID+1 },
 
+#undef GRID   
   /* ********** */
+#define GRID 500
   {NULL, 0, NULL, 0,
-   N_("Operation modifiers valid for copy-out and copy-pass modes:"), 500},
+   N_("Operation modifiers valid for copy-out and copy-pass modes:"), GRID },
   {"null", '0', 0, 0,
-   N_("A list of filenames is terminated by a null character instead of a newline"), 510 },
+   N_("A list of filenames is terminated by a null character instead of a newline"), GRID+1 },
   {NULL, 'I', N_("[[USER@]HOST:]FILE-NAME"), 0,
-   N_("Archive filename to use instead of standard input. Optional USER and HOST specify the user and host names in case of a remote archive"), 510},
+   N_("Archive filename to use instead of standard input. Optional USER and HOST specify the user and host names in case of a remote archive"), GRID+1 },
   {"dereference", 'L', 0, 0,
-   N_("Dereference  symbolic  links  (copy  the files that they point to instead of copying the links)."), 510},
+   N_("Dereference  symbolic  links  (copy  the files that they point to instead of copying the links)."), GRID+1 },
   {"owner", 'R', N_("[USER][:.][GROUP]"), 0,
-   N_("Set the ownership of all files created to the specified USER and/or GROUP"), 510},
-  {"sparse", SPARSE_OPTION, NULL, 0,
-   N_("Write files with large blocks of zeros as sparse files"), 510},
+   N_("Set the ownership of all files created to the specified USER and/or GROUP"), GRID+1 },
   {"reset-access-time", 'a', NULL, 0,
-   N_("Reset the access times of files after reading them"), 510},
+   N_("Reset the access times of files after reading them"), GRID+1 },
 
+#undef GRID   
   /* ********** */
+#define GRID 600
   {NULL, 0, NULL, 0,
-   N_("Operation modifiers valid for copy-in and copy-pass modes:"), 600},
+   N_("Operation modifiers valid for copy-in and copy-pass modes:"), GRID },
   {"preserve-modification-time", 'm', 0, 0,
-   N_("Retain previous file modification times when creating files"), 610},
+   N_("Retain previous file modification times when creating files"), GRID+1 },
   {"make-directories", 'd', 0, 0,
-   N_("Create leading directories where needed"), 610},
+   N_("Create leading directories where needed"), GRID+1 },
   {"no-preserve-owner", NO_PRESERVE_OWNER_OPTION, 0, 0,
-   N_("Do not change the ownership of the files"), 610},
+   N_("Do not change the ownership of the files"), GRID+1 },
   {"unconditional", 'u', NULL, 0,
-   N_("Replace all files unconditionally"), 610},
-
+   N_("Replace all files unconditionally"), GRID+1 },
+  {"sparse", SPARSE_OPTION, NULL, 0,
+   N_("Write files with large blocks of zeros as sparse files"), GRID+1 },
+#undef GRID
+  
+  /* ********** */
+#define GRID 700
   {NULL, 0, NULL, 0,
-   N_("Informative options:"), 700 },
+   N_("Informative options:"), GRID },
 
   {"help",  '?', 0, 0,  N_("Give this help list"), -1},
   {"usage", USAGE_OPTION, 0, 0,  N_("Give a short usage message"), -1},
@@ -201,7 +219,7 @@ static struct argp_option options[] = {
   {"version", VERSION_OPTION, 0, 0,  N_("Print program version"), -1},
   /* FIXME -V (--dot) conflicts with the default short option for
      --version */
-  
+#undef GRID     
   {0, 0, 0, 0}
 };
 
@@ -584,7 +602,6 @@ process_args (int argc, char *argv[])
       CHECK_USAGE(reset_time_flag, "--reset", "--extract");
       CHECK_USAGE(xstat != lstat, "--dereference", "--extract");
       CHECK_USAGE(append_flag, "--append", "--extract");
-      CHECK_USAGE(sparse_flag, "--sparse", "--extract");
       CHECK_USAGE(output_archive_name, "-O", "--extract");
       if (to_stdout_option)
 	{
@@ -617,6 +634,7 @@ process_args (int argc, char *argv[])
       CHECK_USAGE(table_flag, "--list", "--create");
       CHECK_USAGE(unconditional_flag, "--unconditional", "--create");
       CHECK_USAGE(link_flag, "--link", "--create");
+      CHECK_USAGE(sparse_flag, "--sparse", "--create");
       CHECK_USAGE(retain_time_flag, "--preserve-modification-time",
 		  "--create");
       CHECK_USAGE(no_chown_flag, "--no-preserve-owner", "--create");
