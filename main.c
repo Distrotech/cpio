@@ -43,6 +43,7 @@ struct option long_opts[] =
   {"force-local", 0, &f_force_local, 1},
   {"format", 1, 0, 'H'},
   {"help", 0, 0, 132},
+  {"ignore-disk-input-errors", 0, 0, 138},
   {"io-size", 1, 0, 'C'},
   {"link", 0, &link_flag, TRUE},
   {"list", 0, &table_flag, TRUE},
@@ -58,6 +59,7 @@ struct option long_opts[] =
   {"preserve-modification-time", 0, &retain_time_flag, TRUE},
   {"rename", 0, &rename_flag, TRUE},
   {"rename-batch-file", 1, 0, 137},
+  {"sparse", 0, 0, 135},
   {"swap", 0, 0, 'b'},
   {"swap-bytes", 0, 0, 's'},
   {"swap-halfwords", 0, 0, 'S'},
@@ -65,7 +67,6 @@ struct option long_opts[] =
   {"unconditional", 0, &unconditional_flag, TRUE},
   {"verbose", 0, &verbose_flag, TRUE},
   {"version", 0, 0, 131},
-  {"sparse", 0, 0, 135},
 #ifdef DEBUG_CPIO
   {"debug", 0, &debug_flag, TRUE},
 #endif
@@ -225,6 +226,10 @@ crc newc odc bin ustar tar (all-caps also recognized)", optarg);
 	  if (copy_function != 0)
 	    usage (stderr, 2);
 	  copy_function = process_copy_in;
+	  break;
+
+	case 138:
+	  ignore_disk_input_errors_flag = TRUE;
 	  break;
 
 	case 'I':		/* Input archive file name.  */

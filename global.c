@@ -91,6 +91,9 @@ int no_chown_flag = FALSE;
 /* If TRUE, try to write sparse ("holey") files.  */
 int sparse_flag = FALSE;
 
+/* If TRUE, ignore disk input errors.  */
+int ignore_disk_input_errors_flag = FALSE;
+
 /* If TRUE, don't use any absolute paths, prefix them by `./'.  */
 int no_abs_paths_flag = FALSE;
 

@@ -383,7 +383,7 @@ process_copy_out ()
 						       input_name.ds_string);
 
 	      write_out_header (&file_hdr, out_file_des);
-	      copy_files_disk_to_tape (in_file_des, out_file_des, file_hdr.c_filesize);
+	      copy_files_disk_to_tape (in_file_des, out_file_des, file_hdr.c_filesize, input_name.ds_string);
 
 #ifndef __MSDOS__
 	      if (archive_format == arf_tar || archive_format == arf_ustar)
@@ -778,7 +778,7 @@ writeout_defered_file (header, out_file_des)
 					   header->c_name);
 
   write_out_header (&file_hdr, out_file_des);
-  copy_files_disk_to_tape (in_file_des, out_file_des, file_hdr.c_filesize);
+  copy_files_disk_to_tape (in_file_des, out_file_des, file_hdr.c_filesize, header->c_name);
 
 #ifndef __MSDOS__
   if (archive_format == arf_tar || archive_format == arf_ustar)

@@ -40,7 +40,7 @@
 #endif
 
 static void tape_fill_input_buffer P_((int in_des, int num_bytes));
-static void disk_fill_input_buffer P_((int in_des, int num_bytes));
+static int disk_fill_input_buffer P_((int in_des, int num_bytes));
 static void hash_insert ();
 
 /* Write `output_size' bytes of `output_buffer' to file
@@ -217,7 +217,7 @@ tape_fill_input_buffer (in_des, num_bytes)
    Set `input_size' to the number of bytes read and reset `in_buff'.
    Exit with an error if end of file is reached.  */
 
-static void
+static int
 disk_fill_input_buffer (in_des, num_bytes)
      int in_des;
      int num_bytes;
@@ -226,13 +226,16 @@ disk_fill_input_buffer (in_des, num_bytes)
   num_bytes = (num_bytes < DISK_IO_BLOCK_SIZE) ? num_bytes : DISK_IO_BLOCK_SIZE;
   input_size = read (in_des, input_buffer, num_bytes);
   if (input_size < 0)
+    return (-1);
     error (1, errno, "read error");
   if (input_size == 0)
     {
+      return (1);
       error (0, 0, "premature end of file");
       exit (1);
     }
   input_bytes += input_size;
+  return (0);
 }
 
 /* Copy NUM_BYTES of buffer IN_BUF to `out_buff', which may be partly full.
@@ -463,18 +466,39 @@ copy_files_tape_to_disk (in_des, out_des, num_bytes)
    NUM_BYTES is the number of bytes to copy.  */
 
 void
-copy_files_disk_to_tape (in_des, out_des, num_bytes)
+copy_files_disk_to_tape (in_des, out_des, num_bytes, filename)
      int in_des;
      int out_des;
      long num_bytes;
 {
   long size;
   long k;
+  int rc;
+  long original_num_bytes;
+
+  original_num_bytes = num_bytes;
 
   while (num_bytes > 0)
     {
       if (input_size == 0)
-	disk_fill_input_buffer (in_des, DISK_IO_BLOCK_SIZE);
+	if (rc = disk_fill_input_buffer (in_des, DISK_IO_BLOCK_SIZE))
+	  {
+	    if (ignore_disk_input_errors_flag)
+	      {
+		error (0, errno, 
+		   "%s reading %s at byte offset; filling archive copy with NUL's",
+		   (rc > 0) ? "Premature end of file" : "Input error",
+		   filename, original_num_bytes - num_bytes);
+		fill_bogus (num_bytes);
+		break;
+	      }
+	    else
+	      {
+		error (1, errno, "%s: %s", 
+			(rc > 0) ? "Premature end of file" : "Input error",
+			filename);
+	      }
+	  }
       size = (input_size < num_bytes) ? input_size : num_bytes;
       if (crc_i_flag)
 	{
@@ -496,18 +520,38 @@ copy_files_disk_to_tape (in_des, out_des, num_bytes)
    NUM_BYTES is the number of bytes to copy.  */
 
 void
-copy_files_disk_to_disk (in_des, out_des, num_bytes)
+copy_files_disk_to_disk (in_des, out_des, num_bytes, filename)
      int in_des;
      int out_des;
      long num_bytes;
+     char *filename;
 {
   long size;
   long k;
+  long original_num_bytes;
+  int rc;
 
+  original_num_bytes = num_bytes;
   while (num_bytes > 0)
     {
       if (input_size == 0)
-	disk_fill_input_buffer (in_des, DISK_IO_BLOCK_SIZE);
+	if (rc = disk_fill_input_buffer (in_des, DISK_IO_BLOCK_SIZE))
+	  {
+	    if (ignore_disk_input_errors_flag)
+	      {
+		error (0, errno, 
+		   "%s reading %s; truncating copy at byte offset %d",
+		   (rc > 0) ? "Premature end of file" : "Input error",
+		   filename, original_num_bytes - num_bytes);
+		break;
+	      }
+	    else
+	      {
+		error (1, errno, "%s : %s", 
+		          (rc > 0) ? "Premature end of file" : "Input error",
+		          filename);
+	      }
+	  }
       size = (input_size < num_bytes) ? input_size : num_bytes;
       if (crc_i_flag)
 	{

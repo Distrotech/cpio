@@ -169,7 +169,7 @@ process_copy_pass ()
 		  continue;
 		}
 
-	      copy_files_disk_to_disk (in_file_des, out_file_des, in_file_stat.st_size);
+	      copy_files_disk_to_disk (in_file_des, out_file_des, in_file_stat.st_size, input_name.ds_string);
 	      disk_empty_output_buffer (out_file_des);
 	      if (close (in_file_des) < 0)
 		error (0, errno, "%s", input_name.ds_string);
