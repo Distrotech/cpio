@@ -62,7 +62,7 @@ else
                  AC_DEFINE(NO_REMOTE,1,[Define if rmt is not needed]))
 fi
 
-AC_CHECK_HEADERS(unistd.h string.h fcntl.h sys/io/trioctl.h utmp.h getopt.h)
+AC_CHECK_HEADERS(unistd.h string.h fcntl.h sys/io/trioctl.h utmp.h getopt.h locale.h)
 AC_REPLACE_FUNCS(bcopy mkdir strdup)
 
 dnl Checks for fnmatch
