@@ -228,13 +228,8 @@ disk_fill_input_buffer (in_des, num_bytes)
   input_size = read (in_des, input_buffer, num_bytes);
   if (input_size < 0)
     return (-1);
-    error (1, errno, "read error");
-  if (input_size == 0)
-    {
-      return (1);
-      error (0, 0, "premature end of file");
-      exit (1);
-    }
+  else if (input_size == 0)
+    return (1);
   input_bytes += input_size;
   return (0);
 }
@@ -419,6 +414,14 @@ tape_toss_input (in_des, num_bytes)
 	space_left = bytes_left;
       else
 	space_left = input_size;
+
+      if (crc_i_flag && only_verify_crc_flag)
+	{
+ 	  int k;
+	  for (k = 0; k < space_left; ++k)
+	    crc += in_buff[k] & 0xff;
+	}
+
       in_buff += space_left;
       input_size -= space_left;
       bytes_left -= space_left;
@@ -485,21 +488,14 @@ copy_files_disk_to_tape (in_des, out_des, num_bytes, filename)
       if (input_size == 0)
 	if (rc = disk_fill_input_buffer (in_des, DISK_IO_BLOCK_SIZE))
 	  {
-	    if (ignore_disk_input_errors_flag)
-	      {
-		error (0, errno, 
-		   "%s reading %s at byte offset; filling archive copy with NUL's",
-		   (rc > 0) ? "Premature end of file" : "Input error",
-		   filename, original_num_bytes - num_bytes);
-		write_nuls_to_file (num_bytes, out_des);
-		break;
-	      }
+	    if (rc > 0)
+	      error (0, 0, "File %s shrunk by %ld bytes, padding with zeros",
+				filename, num_bytes);
 	    else
-	      {
-		error (1, errno, "%s: %s", 
-			(rc > 0) ? "Premature end of file" : "Input error",
-			filename);
-	      }
+	      error (0, 0, "Read error at byte %ld in file %s, padding with zeros",
+			original_num_bytes - num_bytes, filename);
+	    write_nuls_to_file (num_bytes, out_des);
+	    break;
 	  }
       size = (input_size < num_bytes) ? input_size : num_bytes;
       if (crc_i_flag)
@@ -539,20 +535,14 @@ copy_files_disk_to_disk (in_des, out_des, num_bytes, filename)
       if (input_size == 0)
 	if (rc = disk_fill_input_buffer (in_des, DISK_IO_BLOCK_SIZE))
 	  {
-	    if (ignore_disk_input_errors_flag)
-	      {
-		error (0, errno, 
-		   "%s reading %s; truncating copy at byte offset %d",
-		   (rc > 0) ? "Premature end of file" : "Input error",
-		   filename, original_num_bytes - num_bytes);
-		break;
-	      }
+	    if (rc > 0)
+	      error (0, 0, "File %s shrunk by %ld bytes, padding with zeros",
+				filename, num_bytes);
 	    else
-	      {
-		error (1, errno, "%s : %s", 
-		          (rc > 0) ? "Premature end of file" : "Input error",
-		          filename);
-	      }
+	      error (0, 0, "Read error at byte %ld in file %s, padding with zeros",
+			original_num_bytes - num_bytes, filename);
+	    write_nuls_to_file (num_bytes, out_des);
+	    break;
 	  }
       size = (input_size < num_bytes) ? input_size : num_bytes;
       if (crc_i_flag)
