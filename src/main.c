@@ -733,9 +733,7 @@ initialize_buffers ()
 int
 main (int argc, char *argv[])
 {
-#ifdef HAVE_LOCALE_H
   setlocale (LC_ALL, "");
-#endif
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
 

@@ -238,9 +238,7 @@ main (int argc, char **argv)
   int i;
   char *rsh_command_option = NULL;
 
-#ifdef HAVE_LOCALE_H
   setlocale (LC_ALL, "");
-#endif
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
   
