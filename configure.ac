@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl This file is part of GNU cpio
-dnl Copyright (C) 2003 Free Software Foundation, Inc.
+dnl Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 dnl
 dnl This program is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -17,7 +17,8 @@ dnl with this program; if not, write to the Free Software Foundation, Inc.,
 dnl 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
 AC_INIT([GNU cpio], [2.5.90], [bug-cpio@gnu.org], [cpio])
-AC_CONFIG_SRCDIR(cpio.h)
+AC_CONFIG_SRCDIR(src/cpio.h)
+AC_CONFIG_AUX_DIR([scripts])
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS([config.h])
 
@@ -63,7 +64,7 @@ else
                  AC_DEFINE(NO_REMOTE,1,[Define if rmt is not needed]))
 fi
 
-AC_CHECK_HEADERS(unistd.h stdlib.h string.h fcntl.h sys/io/trioctl.h utmp.h getopt.h locale.h)
+AC_CHECK_HEADERS(unistd.h stdlib.h string.h fcntl.h sys/io/trioctl.h utmp.h getopt.h locale.h libintl.h)
 AC_REPLACE_FUNCS(bcopy mkdir strdup strerror)
 
 AC_MSG_CHECKING(for sys_errlist and sys_nerr)
@@ -139,5 +140,14 @@ if test x"$cpio_cv_have_gnu_getopt" != xyes ; then
    AC_LIBOBJ(getopt1)
 fi
 
+# Gettext.
+AM_GNU_GETTEXT([external], [need-ngettext])
+AM_GNU_GETTEXT_VERSION(0.13)
 
-AC_OUTPUT(Makefile)
+AH_BOTTOM([
+#include "gettext.h"
+#define _(s) gettext(s)
+#define N_(s) gettext_noop(s)
+])
+
+AC_OUTPUT(Makefile doc/Makefile src/Makefile po/Makefile.in)

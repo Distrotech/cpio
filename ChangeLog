@@ -1,5 +1,16 @@
 2004-02-27  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/makepath.c: Remove unneded typedefs
+	
+	* src/copyin.c: Remove __MSDOS__ conditionals
+	* src/copyout.c: Likewise
+	* src/copypass.c: Likewise
+	* src/main.c: Likewise
+	* src/tar.c: Likewise
+	* src/util.c: Likewise
+	
+2004-02-27  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+	
 	Changed from flat to deep package layout. Added the framework
 	for NLS support.
 	
