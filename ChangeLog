@@ -1,3 +1,10 @@
+Mon Jan  8 16:49:01 1996  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
+	* copyout.c, copypass.c: Use result of readlink() as length
+	of link name instead of size from lstat().  On some OS's lstat() 
+	doesn't return the true length in size.  Bug reported by
+	Robert Joop (rj@rainbow.IN-berlin.DE).
+	* Version 2.4.2 released.
+
 Wed Dec 20 10:52:56 1995  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	* rmt.c:  Added temporary kludge so make rmt will work on Linux.
 	* configure.in:  Only define HAVE_UTIME_H if utime.h declares
