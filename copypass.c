@@ -195,7 +195,7 @@ process_copy_pass ()
 		  if (utime (output_name.ds_string, &times) < 0)
 		    error (0, errno, "%s", output_name.ds_string);
 		}
-	      else if (retain_time_flag)
+	      if (retain_time_flag)
 		{
 		  times.actime = times.modtime = in_file_stat.st_mtime;
 		  if (utime (output_name.ds_string, &times) < 0)
