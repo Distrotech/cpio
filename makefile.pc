@@ -20,11 +20,11 @@
 
 CC = bcc
 MODEL = s
-DEFS = -DSTDC_HEADERS -DHAVE_VPRINTF -DHAVE_STRERROR -DNO_REMOTE -Dmain=_main
+DEFS = -DSTDC_HEADERS=1 -DHAVE_VPRINTF -DHAVE_STRERROR -DNO_REMOTE -Dmain=_main
 CFLAGS = -m$(MODEL) -I. $(DEFS)
 LDFLAGS = -m$(MODEL)
 LIBS =
-OBJS = copyin.obj copyout.obj copypass.obj dstring.obj fnmatch.obj \
+OBJS = copyin.obj copyout.obj copypass.obj defer.obj dstring.obj fnmatch.obj \
 global.obj main.obj tar.obj util.obj error.obj getopt.obj getopt1.obj \
 filemode.obj version.obj alloca.obj xmalloc.obj xstrdup.obj \
 makepath.obj bcopy.obj dirname.obj stripslash.obj tcexparg.obj
