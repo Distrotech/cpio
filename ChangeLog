@@ -12,7 +12,7 @@ Wed Nov  3 18:18:07 1994  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	Changed --no-absolute-paths to --no-absolute-filenames.
 	* cpio.1:  Updated man page with new features.
 	* cpio.texi, texinfo.tex, Makefile.in:  Added texi documentation
-	from Bruce Carleton (rbc@gnu.ai.mit.edu).
+	from Robert Carleton (rbc@gnu.ai.mit.edu).
 
 Mon Oct  3 00:46:30 1994  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	* makefile.pc, system.h:  Changes to compile with Borland C++ 4.0.
