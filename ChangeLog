@@ -993,7 +993,6 @@ Sat Dec  2 13:22:37 1989  David J. MacKenzie  (djm at hobbes.ai.mit.edu)
 	(usage): Mention long options in message.
 
 Local Variables:
-mode: indented-text
-left-margin: 8
+mode: change-log
 version-control: never
 End:
