@@ -355,7 +355,7 @@ write_out_header (struct new_cpio_header *file_hdr, int out_des)
 	    }
 	}
 
-      if ((file_hdr->c_ino >> 16) != 0)
+      if ((warn_option & CPIO_WARN_TRUNCATE) && (file_hdr->c_ino >> 16) != 0)
 	error (0, 0, _("%s: truncating inode number"), file_hdr->c_name);
 
       /* Debian hack: The type of dev_t has changed in glibc.  Fixed output
@@ -385,7 +385,7 @@ write_out_header (struct new_cpio_header *file_hdr, int out_des)
       short_hdr.c_magic = 070707;
       short_hdr.c_dev = makedev (file_hdr->c_dev_maj, file_hdr->c_dev_min);
 
-      if ((file_hdr->c_ino >> 16) != 0)
+      if ((warn_option & CPIO_WARN_TRUNCATE) && (file_hdr->c_ino >> 16) != 0)
 	error (0, 0, _("%s: truncating inode number"), file_hdr->c_name);
 
       short_hdr.c_ino = file_hdr->c_ino & 0xFFFF;
