@@ -11,3 +11,8 @@ autom4te.cache
 aclocal.m4
 *.tar.gz
 *.tar.bz2
+configure
+stamp-h1
+config.log
+config.status
+config.h

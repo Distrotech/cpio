@@ -53,15 +53,19 @@
 
    David MacKenzie <djm@gnu.ai.mit.edu> */
 
+#if defined(HAVE_CONFIG_H)
+# include <config.h>
+#endif
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
 #ifdef HAVE_SYS_MTIO_H
-#ifdef HAVE_SYS_IO_TRIOCTL_H
-#include <sys/io/trioctl.h>
-#endif
-#include <sys/mtio.h>
+# ifdef HAVE_SYS_IO_TRIOCTL_H
+#  include <sys/io/trioctl.h>
+# endif
+# include <sys/mtio.h>
 #endif
 #include <sys/file.h>
 #include <fcntl.h>
@@ -173,7 +177,6 @@ main (argc, argv)
      int argc;
      char **argv;
 {
-  extern char *version_string;
   short operation;
   int count;
   char *tapedev;
@@ -201,7 +204,7 @@ main (argc, argv)
 	  break;
 
 	case 'V':
-	  printf ("GNU mt %s", version_string);
+	  printf ("mt (%s)\n", PACKAGE_STRING);
 	  exit (0);
 	  break;
 

@@ -22,6 +22,10 @@
    changes for HPUX CDF's.  Maybe the 2 versions of makepath can
    come together again in the future.  */
 
+#if defined(HAVE_CONFIG_H)
+# include <config.h>
+#endif
+
 #ifdef __GNUC__
 #define alloca __builtin_alloca
 #else

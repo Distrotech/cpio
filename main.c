@@ -1,5 +1,5 @@
 /* main.c - main program and argument processing for cpio.
-   Copyright (C) 1990, 1991, 1992, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001, 2003 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,6 +18,10 @@
 /* Written by Phil Nelson <phil@cs.wwu.edu>,
    David MacKenzie <djm@gnu.ai.mit.edu>,
    and John Oleynick <juo@klinzhai.rutgers.edu>.  */
+
+#if defined(HAVE_CONFIG_H)
+# include <config.h>
+#endif
 
 #include <stdio.h>
 #include <getopt.h>
@@ -120,7 +124,6 @@ process_args (argc, argv)
      int argc;
      char *argv[];
 {
-  extern char *version_string;
   void (*copy_in) ();		/* Work around for pcc bug.  */
   void (*copy_out) ();
   int c;
@@ -356,7 +359,7 @@ crc newc odc bin ustar tar (all-caps also recognized)", optarg);
 	  break;
 
 	case 131:
-	  printf ("GNU cpio %s", version_string);
+	  printf ("%s\n", PACKAGE_STRING);
 	  exit (0);
 	  break;
 
