@@ -16,7 +16,7 @@ dnl You should have received a copy of the GNU General Public License along
 dnl with this program; if not, write to the Free Software Foundation, Inc.,
 dnl 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
-AC_INIT([GNU cpio], [2.5.90], [bug-cpio@gnu.org], [cpio])
+AC_INIT([GNU cpio], [2.6], [bug-cpio@gnu.org], [cpio])
 AC_CONFIG_SRCDIR(src/cpio.h)
 AC_CONFIG_AUX_DIR([scripts])
 AM_INIT_AUTOMAKE
