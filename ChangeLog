@@ -1,3 +1,8 @@
+Tue Jun 27 19:14:27 1995  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
+        * configure.in: fixed for new autoconf.
+        * Makefile.in: changed realclean to maintainer-clean.
+        * cpio.texi:  More changes for 2.4.
+
 Wed Dec 14 16:14:27 1994  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	* copypass.h:  When given the -a option, set the access time of
 	the copy to be the access time of the original (instead of the
