@@ -25,6 +25,8 @@ default. See below.
   like in gcc.
 
 * New option --to-stdout extracts files to standard output.
+
+* The output of `cpio --help' is largely improved.
        
 * Bugfixes:
 ** If a file grew n bytes in copy-pass mode, these n bytes got prepended

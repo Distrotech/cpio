@@ -1,3 +1,14 @@
+2004-10-14  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/copyout.c: Add trailing slash to directory names in
+	ustar format.
+	* src/makepath.c: Removed redeclaration of error().
+	* src/tar.c: Fixed deviations from POSIX.1-1988:
+	Properly split long file names. Fill in octal fields with zeros,
+	not spaces. Save only protection modes, not the whole mode.
+	
+	* NEWS: Updated
+
 2004-09-08  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* NEWS: Updated
