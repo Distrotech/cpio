@@ -21,6 +21,8 @@
 #include <config.h>
 #endif
 
+#include "system.h"
+
 #ifdef __GNUC__
 #define alloca __builtin_alloca
 #else
@@ -36,26 +38,10 @@ char *alloca ();
 #endif
 
 #include <stdio.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <pwd.h>
 #include <grp.h>
-
-#if defined(STDC_HEADERS) || defined(HAVE_STRING_H)
-#include <string.h>
-#ifndef index
-#define index strchr
-#endif
-#else
-#include <strings.h>
-#endif
-
-#ifdef STDC_HEADERS
-#include <stdlib.h>
-#endif
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
 
 #if !HAVE_DECL_GETPWNAM
 extern struct passwd *getpwnam (const char *name);
@@ -85,19 +71,6 @@ extern struct group *getgrgid (gid_t gid);
       strcpy (dest, src);						\
     }									\
   while (0)
-
-#define isdigit(c) ((c) >= '0' && (c) <= '9')
-
-/* Debian hack: required to compile in glibc_2.1 (provided by Juan
-   Cespedes) <cespedes@debian.org>.  This bug has been reported to
-   "bug-gnu-utils@prep.ai.mit.edu".  (98/5/19) -BEM */
-#ifndef __GLIBC__
-#ifdef __STDC__
-char *strdup (const char *s);
-#else /* !__STDC__ */
-char *strdup ();
-#endif /* __STDC__ */
-#endif
 
 /* Return nonzero if STR represents an unsigned decimal integer,
    otherwise return 0. */
