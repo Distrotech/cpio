@@ -55,14 +55,14 @@ noinst_HEADERS =\
  fnmatch.h\
  getopt.h
 
-cpio_LDADD = @LIBOBJS@
+cpio_LDADD = @LIBOBJS@ $(INTLLIBS)
 
 mt_SOURCES = \
  mt.c argmatch.c
-mt_LDADD = @LIBOBJS@
+mt_LDADD = @LIBOBJS@ $(INTLLIBS)
 
 rmt_SOURCES = rmt.c
-rmt_LDADD = @LIBOBJS@
+rmt_LDADD = @LIBOBJS@ $(INTLLIBS)
 
 EXTRA_DIST=\
  getopt.c\
