@@ -280,7 +280,7 @@ main (int argc, char **argv)
   i = argmatch (argv[optind], opnames);
   if (i < 0)
     {
-      invalid_arg ("tape operation", argv[optind], i);
+      argmatch_invalid ("tape operation", argv[optind], i);
       exit (1);
     }
   operation = operations[i];
