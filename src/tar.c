@@ -39,6 +39,22 @@ stash_tar_linkname (char *linkname)
   return hold_tar_linkname;
 }
 
+/* Try to split a long file name into prefix and suffix parts separated
+   by a slash. Return the length of the prefix (not counting the slash). */
+   
+static size_t
+split_long_name (const char *name, size_t length)
+{
+  size_t i;
+
+  if (length > TARPREFIXSIZE)
+    length = TARPREFIXSIZE+2;
+  for (i = length - 1; i > 0; i--)
+    if (name[i] == '/')
+      break;
+  return i;
+}
+
 /* Stash the tar filename and optional prefix in static storage.  */
 
 static char *
@@ -86,9 +102,9 @@ to_oct (register long value, register int digits, register char *where)
     }
   while (digits > 0 && value != 0);
 
-  /* Add leading spaces, if necessary.  */
+  /* Add leading zeroes, if necessary.  */
   while (digits > 0)
-    where[--digits] = ' ';
+    where[--digits] = '0';
 }
 
 
@@ -139,22 +155,16 @@ write_out_tar_header (struct new_cpio_header *file_hdr, int out_des)
   else
     {
       /* Fit as much as we can into `name', the rest into `prefix'.  */
-      char *suffix = file_hdr->c_name + name_len - TARNAMESIZE;
+      int prefix_len = split_long_name (file_hdr->c_name, name_len);
 
-      /* We have to put the boundary at a slash.  */
-      name_len = TARNAMESIZE;
-      while (*suffix != '/')
-	{
-	  --name_len;
-	  ++suffix;
-	}
-      strncpy (tar_hdr->name, suffix + 1, name_len);
-      strncpy (tar_hdr->prefix, file_hdr->c_name, suffix - file_hdr->c_name);
+      strncpy (tar_hdr->prefix, file_hdr->c_name, prefix_len);
+      strncpy (tar_hdr->name, file_hdr->c_name + prefix_len + 1,
+	       name_len - prefix_len - 1);
     }
 
-  /* SVR4 seems to want the whole mode, not just protection modes.
-     Nobody else seems to care, so we might as well put it all in.  */
-  to_oct (file_hdr->c_mode, 8, tar_hdr->mode);
+  /* Ustar standard (POSIX.1-1988) requires the mode to contain only 3 octal
+     digits */
+  to_oct (file_hdr->c_mode & MODE_ALL, 8, tar_hdr->mode);
   to_oct (file_hdr->c_uid, 8, tar_hdr->uid);
   to_oct (file_hdr->c_gid, 8, tar_hdr->gid);
   to_oct (file_hdr->c_filesize, 12, tar_hdr->size);
@@ -476,20 +486,14 @@ is_tar_filename_too_long (char *name)
     return true;
 
   /* See whether we can split up the name into acceptably-sized
-     `prefix' and `name' (`p') pieces.  Start out by making `name'
-     as big as possible, then shrink it by looking for the first '/'.  */
-  p = name + whole_name_len - TARNAMESIZE;
-  while (*p != '/' && *p != '\0')
-    ++p;
-  if (*p == '\0')
-    /* The last component of the path is longer than TARNAMESIZE.  */
-    return true;
+     `prefix' and `name' (`p') pieces. */
+  prefix_name_len = split_long_name (name, whole_name_len);
 
-  prefix_name_len = p - name - 1;
   /* Interestingly, a name consisting of a slash followed by
      TARNAMESIZE characters can't be stored, because the prefix
      would be empty, and thus ignored.  */
-  if (prefix_name_len > TARPREFIXSIZE || prefix_name_len == 0)
+  if (prefix_name_len == 0
+      || whole_name_len - prefix_name_len - 1 > TARNAMESIZE)
     return true;
 
   return false;
