@@ -628,7 +628,7 @@ process_args (int argc, char *argv[])
       
       if (append_flag && !(archive_name || output_archive_name))
 	USAGE_ERROR ((0, 0,
-		      _("--append is used but no archive file name is given (use -F or -O options")));
+		      _("--append is used but no archive file name is given (use -F or -O options)")));
 
       CHECK_USAGE(rename_batch_file, "--rename-batch-file", "--create");
       CHECK_USAGE(no_abs_paths_flag, "--no-absolute-pathnames", "--create");
