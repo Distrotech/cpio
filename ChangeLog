@@ -1,3 +1,9 @@
+Wed Nov 22 19:37:05 1995  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
+        * cpio.texi:  Updated release date and FSF's address.
+        * NEWS: Listed major new features for 2.4.
+	* mt.c, mt.1: Added seek and fsfm commands.
+	* Version 2.4 released.
+
 Tue Jun 27 19:14:27 1995  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
         * configure.in: fixed for new autoconf.  Added check to make
 	sure fnmatch() works.
