@@ -1352,6 +1352,9 @@ process_copy_in ()
   char skip_file;		/* Flag for use with patterns.  */
   int i;			/* Loop index variable.  */
 
+  umask (0);                    /* Reset umask to preserve modes of
+				   created files  */
+  
   /* Initialize the copy in.  */
   if (pattern_file_name)
     {
