@@ -101,7 +101,7 @@ Usage: %s {-o|--create} [-0acvABLV] [-C bytes] [-H format] [-M message]\n\
        [--quiet] [--help] [--version] [pattern...] [< archive]\n",
 	   program_name);
   fprintf (fp, "\
-       %s {-p|--pass-through} [-0adlmuvLV] [-R [user][:.][group]] [--null]\n\
+       %s {-p|--pass-through} [-0adlmuvLV] [-R [user][:.][group]]\n\
        [--null] [--reset-access-time] [--make-directories] [--link] [--quiet]\n\
        [--preserve-modification-time] [--unconditional] [--verbose] [--dot]\n\
        [--dereference] [--owner=[user][:.][group]] [--no-preserve-owner]\n\
