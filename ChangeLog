@@ -1,10 +1,18 @@
+Wed Dec 14 16:14:27 1994  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
+	* copypass.h:  When given the -a option, set the access time of
+	the copy to be the access time of the original (instead of the
+	modification time of the original).  Reported by
+	karney@pppl.gov (Charles Karney).
+	* cpio.texi:  Updated with changes for 2.4.
+
 Wed Nov  3 18:18:07 1994  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	* safe-stat.h, Makefile.in:  New file used by mkdir.c.  This will go
 	away when we get the real safe-xstat.[ch]in for mkdir.c.
 	* main.c:  Don't mention [--null] twice in -p's usage message.
 	Changed --no-absolute-paths to --no-absolute-filenames.
 	* cpio.1:  Updated man page with new features.
-	* cpio.texi, texinfo.tex, Makefile.in:  Added texi documentation.
+	* cpio.texi, texinfo.tex, Makefile.in:  Added texi documentation
+	from Bruce Carleton (rbc@gnu.ai.mit.edu).
 
 Mon Oct  3 00:46:30 1994  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	* makefile.pc, system.h:  Changes to compile with Borland C++ 4.0.
