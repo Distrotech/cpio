@@ -1,3 +1,6 @@
+Tue Jan  9 23:19:37 1996  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
+	* copyout.c: missed 1 part of last bug fix.
+
 Mon Jan  8 16:49:01 1996  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	* copyout.c, copypass.c: Use result of readlink() as length
 	of link name instead of size from lstat().  On some OS's lstat() 
