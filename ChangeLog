@@ -1,3 +1,11 @@
+2005-01-31  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/main.c (main): Remove umask(0). Fixes CAN-1999-1572.
+	[__TURBOC__,__EMX__]: Removed
+	* src/copypass.c (process_copy_pass): Set umask 0
+	* src/copyin.c (process_copy_in): Likewise
+	* src/util.c (open_archive): Use MODE_RW.
+	
 2005-01-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* doc/gendocs_template: Template file for gendocs.sh.
