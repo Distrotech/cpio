@@ -1,3 +1,34 @@
+Thu Jun 13 20:14:48 2002  John Oleynick  (juo@gnu.org)
+	* copyin.c:  Strip leading / on absolute filenames after
+	comparing to the list of files specified on the command line
+	(instead of before).  Problem reported by Jeff Holt.
+	* Version 2.5 released.
+
+Thu Jun 13 00:20:30 2002  John Oleynick  (juo@gnu.org)
+	* Makefile.in:  Fixed problem of looking in srcdir for info files.
+	Bug reported by Mike Castle.
+	* cpio.texi:  Fixed typo.  Problem reported by Fabrice Bauzac.
+
+Sun Jan 13 18:45:02 2002  John Oleynick  (juo@gnu.org)
+	* copyin.c:  Fixed a problem skipping files with multiple links
+	in a newc or CRC format archive.  If the file with the shared copy
+	of the data was skipped, but other links were not skipped, the
+	other links were created as empty files.  Bug reported by 
+	Hendrik-Jan Thomassen.
+
+Thu Dec  6 20:05:10 2001  John Oleynick  (juo@gnu.org)
+	* mt.c, mt.1:  Merged Debian --rsh-command option and -V fix.
+	* copyout.c, copypass.c, util.c, extern.h:  Modified to warn
+	  if a file grows or its mtime is changed while it is being
+	  copied.
+
+Wed Dec  6 00:02:04 2001  John Oleynick  (juo@gnu.org)
+	* Many files:  Updated FSF's address in copyright notices.
+
+Wed Aug 29 23:57:05 2001  John Oleynick  (juo@gnu.org)
+	* Many files:  Numerous fixes from Debian, Red Hat and SuSE
+	GNU/Linux distributions.
+
 Tue Jan 16 19:03:05 1996  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	* util.c: An I/O error reading a file would cause the last byte
 	of the next file to be corrupted in the archive.  Thanks to a

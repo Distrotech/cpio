@@ -1,5 +1,5 @@
 /* main.c - main program and argument processing for cpio.
-   Copyright (C) 1990, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   You should have received a copy of the GNU General Public License along
+   with this program; if not, write to the Free Software Foundation, Inc.,
+   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* Written by Phil Nelson <phil@cs.wwu.edu>,
    David MacKenzie <djm@gnu.ai.mit.edu>,
@@ -59,6 +59,7 @@ struct option long_opts[] =
   {"preserve-modification-time", 0, &retain_time_flag, TRUE},
   {"rename", 0, &rename_flag, TRUE},
   {"rename-batch-file", 1, 0, 137},
+  {"rsh-command", 1, 0, 140},
   {"quiet", 0, 0, 138},
   {"sparse", 0, 0, 135},
   {"swap", 0, 0, 'b'},
@@ -87,7 +88,8 @@ Usage: %s {-o|--create} [-0acvABLV] [-C bytes] [-H format] [-M message]\n\
        [--file=[[user@]host:]archive] [--format=format] [--message=message]\n\
        [--null] [--reset-access-time] [--verbose] [--dot] [--append]\n\
        [--block-size=blocks] [--dereference] [--io-size=bytes] [--quiet]\n\
-       [--force-local] [--help] [--version] < name-list [> archive]\n", program_name);
+       [--force-local] [--rsh-command=command] [--help] [--version] < name-list\n\
+       [> archive]\n", program_name);
   fprintf (fp, "\
        %s {-i|--extract} [-bcdfmnrtsuvBSV] [-C bytes] [-E file] [-H format]\n\
        [-M message] [-R [user][:.][group]] [-I [[user@]host:]archive]\n\
@@ -98,7 +100,8 @@ Usage: %s {-o|--create} [-0acvABLV] [-C bytes] [-H format] [-M message]\n\
        [--io-size=bytes] [--pattern-file=file] [--format=format]\n\
        [--owner=[user][:.][group]] [--no-preserve-owner] [--message=message]\n\
        [--force-local] [--no-absolute-filenames] [--sparse] [--only-verify-crc]\n\
-       [--quiet] [--help] [--version] [pattern...] [< archive]\n",
+       [--quiet] [--rsh-command=command] [--help] [--version] [pattern...]\n\
+       [< archive]\n",
 	   program_name);
   fprintf (fp, "\
        %s {-p|--pass-through} [-0adlmuvLV] [-R [user][:.][group]]\n\
@@ -288,6 +291,10 @@ crc newc odc bin ustar tar (all-caps also recognized)", optarg);
 	  copy_function = process_copy_pass;
 	  break;
 
+	case 140:
+	  rsh_command_option = optarg;
+	  break;
+
 	case 'r':		/* Interactively rename.  */
 	  rename_flag = TRUE;
 	  break;
@@ -376,8 +383,9 @@ crc newc odc bin ustar tar (all-caps also recognized)", optarg);
 	usage (stderr, 2);
     }
 
-  if ((!table_flag || !verbose_flag) && numeric_uid)
-    usage (stderr, 2);
+  /* Debian hack: This version of cpio uses the -n flag also to extract
+     tar archives using the numeric UID/GID instead of the user/group
+     names in /etc/passwd and /etc/groups.  (98/10/15) -BEM */
 
   /* Work around for pcc bug.  */
   copy_in = process_copy_in;
@@ -387,7 +395,9 @@ crc newc odc bin ustar tar (all-caps also recognized)", optarg);
     {
       archive_des = 0;
       if (link_flag || reset_time_flag || xstat != lstat || append_flag
-	  || sparse_flag
+	  /* Debian hack: The sparse option is used with copy-in not
+             copy-out.  This bug has been reported to
+             "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
 	  || output_archive_name
 	  || (archive_name && input_archive_name))
 	usage (stderr, 2);
@@ -407,6 +417,10 @@ crc newc odc bin ustar tar (all-caps also recognized)", optarg);
 	  || set_group_flag || swap_bytes_flag || swap_halfwords_flag
 	  || (append_flag && !(archive_name || output_archive_name))
 	  || rename_batch_file || no_abs_paths_flag
+	  /* Debian hack: The sparse option is used with copy-in not
+             copy-out.  This bug has been reported to
+             "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
+	  || sparse_flag
 	  || input_archive_name || (archive_name && output_archive_name))
 	usage (stderr, 2);
       if (archive_format == arf_unknown)
@@ -492,7 +506,7 @@ initialize_buffers ()
   bzero (zeros_512, 512);
 }
 
-void
+int
 main (argc, argv)
      int argc;
      char *argv[];

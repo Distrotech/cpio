@@ -1,5 +1,5 @@
 /* copypass.c - cpio copy pass sub-function.
-   Copyright (C) 1990, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   You should have received a copy of the GNU General Public License along
+   with this program; if not, write to the Free Software Foundation, Inc.,
+   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -27,6 +27,10 @@
 #ifndef HAVE_LCHOWN
 #define lchown chown
 #endif
+
+/* Debian hack to fix a bug in the --sparse option.  This bug has been
+   reported to "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
+extern int delayed_seek_count;
 
 /* Copy files listed on the standard input into directory `directory_name'.
    If `link_flag', link instead of copying.  */
@@ -171,6 +175,15 @@ process_copy_pass ()
 
 	      copy_files_disk_to_disk (in_file_des, out_file_des, in_file_stat.st_size, input_name.ds_string);
 	      disk_empty_output_buffer (out_file_des);
+	      /* Debian hack to fix a bug in the --sparse option.
+                 This bug has been reported to
+                 "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
+	      if (delayed_seek_count > 0)
+		{
+		  lseek (out_file_des, delayed_seek_count-1, SEEK_CUR);
+		  write (out_file_des, "", 1);
+		  delayed_seek_count = 0;
+		}
 	      if (close (in_file_des) < 0)
 		error (0, errno, "%s", input_name.ds_string);
 	      if (close (out_file_des) < 0)
@@ -190,9 +203,16 @@ process_copy_pass ()
 		{
 		  times.actime = in_file_stat.st_atime;
 		  times.modtime = in_file_stat.st_mtime;
-		  if (utime (input_name.ds_string, &times) < 0)
+		  /* Debian hack: Silently ignore EROFS because
+                     reading the file won't have upset its timestamp
+                     if it's on a read-only filesystem.  This has been
+                     submitted as a suggestion to
+                     "bug-gnu-utils@prep.ai.mit.edu".  -BEM */
+		  if (utime (input_name.ds_string, &times) < 0
+		      && errno != EROFS)
 		    error (0, errno, "%s", input_name.ds_string);
-		  if (utime (output_name.ds_string, &times) < 0)
+		  if (utime (output_name.ds_string, &times) < 0
+		      && errno != EROFS)
 		    error (0, errno, "%s", output_name.ds_string);
 		}
 	      if (retain_time_flag)
@@ -201,6 +221,8 @@ process_copy_pass ()
 		  if (utime (output_name.ds_string, &times) < 0)
 		    error (0, errno, "%s", output_name.ds_string);
 		}
+	      warn_if_file_changed(input_name.ds_string, in_file_stat.st_size,
+                                   in_file_stat.st_mtime);
 	    }
 	}
       else if (S_ISDIR (in_file_stat.st_mode))

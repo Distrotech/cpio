@@ -1,5 +1,5 @@
 /* extern.h - External declarations for cpio.  Requires system.h.
-   Copyright (C) 1990, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   You should have received a copy of the GNU General Public License along
+   with this program; if not, write to the Free Software Foundation, Inc.,
+   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 enum archive_format
 {
@@ -57,6 +57,7 @@ extern char *new_media_message_with_number;
 extern char *new_media_message_after_number;
 extern int archive_des;
 extern char *archive_name;
+extern char *rsh_command_option;
 extern unsigned long crc;
 #ifdef DEBUG_CPIO
 extern int debug_flag;
@@ -164,6 +165,8 @@ void tape_toss_input P_((int in_des, long num_bytes));
 void copy_files_tape_to_disk P_((int in_des, int out_des, long num_bytes));
 void copy_files_disk_to_tape P_((int in_des, int out_des, long num_bytes, char *filename));
 void copy_files_disk_to_disk P_((int in_des, int out_des, long num_bytes, char *filename));
+void warn_if_file_changed P_((char *file_name, unsigned long old_file_size,
+                              unsigned long old_file_mtime));
 void create_all_directories P_((char *name));
 void prepare_append P_((int out_file_des));
 char *find_inode_file P_((unsigned long node_num,

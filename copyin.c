@@ -1,5 +1,5 @@
 /* copyin.c - extract or list a cpio archive
-   Copyright (C) 1990, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001, 2002 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   You should have received a copy of the GNU General Public License along
+   with this program; if not, write to the Free Software Foundation, Inc.,
+   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -33,11 +33,24 @@
 #define lchown chown
 #endif
 
+/* Debian hack to fix a bug in the --sparse option.  This bug has been
+   reported to "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
+extern int delayed_seek_count;
+
 static void read_pattern_file ();
 static void tape_skip_padding ();
 static void defer_copyin ();
 static void create_defered_links ();
 static void create_final_defers ();
+static int create_defered_links_to_skipped ();
+static int query_rename();
+static void list_file();
+static void copyin_file();
+static int try_existing_file();
+static void copyin_regular_file();
+static void copyin_directory();
+static void copyin_device();
+static void copyin_link();
 
 /* Return 16-bit integer I with the bytes swapped.  */
 #define swab_short(i) ((((i) << 8) & 0xff00) | (((i) >> 8) & 0x00ff))
@@ -370,54 +383,50 @@ void
 process_copy_in ()
 {
   char done = FALSE;		/* True if trailer reached.  */
-  int res;			/* Result of various function calls.  */
-  dynamic_string new_name;	/* New file name for rename option.  */
   FILE *tty_in;			/* Interactive file for rename option.  */
   FILE *tty_out;		/* Interactive file for rename option.  */
   FILE *rename_in;		/* Batch file for rename option.  */
-  char *str_res;		/* Result for string function.  */
-  struct utimbuf times;		/* For setting file times.  */
   struct stat file_stat;	/* Output file stat record.  */
   struct new_cpio_header file_hdr;	/* Output header information.  */
-  int out_file_des;		/* Output file descriptor.  */
   int in_file_des;		/* Input file descriptor.  */
   char skip_file;		/* Flag for use with patterns.  */
-  int existing_dir;		/* True if file is a dir & already exists.  */
   int i;			/* Loop index variable.  */
-  char *link_name = NULL;	/* Name of hard and symbolic links.  */
-#ifdef HPUX_CDF
-  int cdf_flag;                 /* True if file is a CDF.  */
-  int cdf_char;                 /* Index of `+' char indicating a CDF.  */
-#endif
 
   /* Initialize the copy in.  */
   if (pattern_file_name)
-    read_pattern_file ();
+    {
+      read_pattern_file ();
+    }
   file_hdr.c_name = NULL;
-  ds_init (&new_name, 128);
-  /* Initialize this in case it has members we don't know to set.  */
-  bzero (&times, sizeof (struct utimbuf));
 
   if (rename_batch_file)
     {
       rename_in = fopen (rename_batch_file, "r");
       if (rename_in == NULL)
-	error (2, errno, CONSOLE);
+	{
+	  error (2, errno, CONSOLE);
+	}
     }
   else if (rename_flag)
     {
       /* Open interactive file pair for rename operation.  */
       tty_in = fopen (CONSOLE, "r");
       if (tty_in == NULL)
-	error (2, errno, CONSOLE);
+	{
+	  error (2, errno, CONSOLE);
+	}
       tty_out = fopen (CONSOLE, "w");
       if (tty_out == NULL)
-	error (2, errno, CONSOLE);
+	{
+	  error (2, errno, CONSOLE);
+	}
     }
 
   /* Get date and time if needed for processing the table option.  */
   if (table_flag && verbose_flag)
-    time (&current_time);
+    {
+      time (&current_time);
+    }
 
 #ifdef __MSDOS__
   setmode (archive_des, O_BINARY);
@@ -445,7 +454,6 @@ process_copy_in ()
   /* While there is more input in the collection, process the input.  */
   while (!done)
     {
-      link_name = NULL;
       swapping_halfwords = swapping_bytes = FALSE;
 
       /* Start processing the next file by reading the header.  */
@@ -494,12 +502,13 @@ process_copy_in ()
 	    }
 	  else
 	    {
-	      char *non_abs_name;
-
-	      non_abs_name = (char *) xmalloc (strlen (p) + 1);
-	      strcpy (non_abs_name, p);
-	      free (file_hdr.c_name);
-	      file_hdr.c_name = non_abs_name;
+              /* Debian hack: file_hrd.c_name is sometimes set to
+                 point to static memory by code in tar.c.  This
+                 causes a segfault.  Therefore, memmove is used
+                 instead of freeing and reallocating.  (Reported by
+                 Horst Knobloch.)  This bug has been reported to
+                 "bug-gnu-utils@prep.ai.mit.edu". (99/1/6) -BEM */
+	      (void)memmove (file_hdr.c_name, p, (size_t)(strlen (p) + 1));
 	    }
 	}
 
@@ -519,52 +528,28 @@ process_copy_in ()
 
       if (skip_file)
 	{
-	  tape_toss_input (in_file_des, file_hdr.c_filesize);
-	  tape_skip_padding (in_file_des, file_hdr.c_filesize);
+	  /* If we're skipping a file with links, there might be other
+	     links that we didn't skip, and this file might have the
+	     data for the links.  If it does, we'll copy in the data
+	     to the links, but not to this file.  */
+	  if (file_hdr.c_nlink > 1 && (archive_format == arf_newascii
+	      || archive_format == arf_crcascii) )
+	    {
+	      if (create_defered_links_to_skipped(&file_hdr, in_file_des) < 0)
+	        {
+		  tape_toss_input (in_file_des, file_hdr.c_filesize);
+		  tape_skip_padding (in_file_des, file_hdr.c_filesize);
+		}
+	    }
+	  else
+	    {
+	      tape_toss_input (in_file_des, file_hdr.c_filesize);
+	      tape_skip_padding (in_file_des, file_hdr.c_filesize);
+	    }
 	}
       else if (table_flag)
 	{
-	  if (verbose_flag)
-	    {
-#ifdef CP_IFLNK
-	      if ((file_hdr.c_mode & CP_IFMT) == CP_IFLNK)
-		{
-		  if (archive_format != arf_tar && archive_format != arf_ustar)
-		    {
-		      link_name = (char *) xmalloc ((unsigned int) file_hdr.c_filesize + 1);
-		      link_name[file_hdr.c_filesize] = '\0';
-		      tape_buffered_read (link_name, in_file_des, file_hdr.c_filesize);
-		      long_format (&file_hdr, link_name);
-		      free (link_name);
-		      tape_skip_padding (in_file_des, file_hdr.c_filesize);
-		      continue;
-		    }
-		  else
-		    {
-		      long_format (&file_hdr, file_hdr.c_tar_linkname);
-		      continue;
-		    }
-		}
-	      else
-#endif
-		long_format (&file_hdr, (char *) 0);
-	    }
-	  else
-	    printf ("%s\n", file_hdr.c_name);
-
-	  crc = 0;
-	  tape_toss_input (in_file_des, file_hdr.c_filesize);
-	  tape_skip_padding (in_file_des, file_hdr.c_filesize);
-	  if (only_verify_crc_flag)
-	    {
-#ifdef CP_IFLNK
-	      if ((file_hdr.c_mode & CP_IFMT) == CP_IFLNK)
-		continue;   /* links don't have a checksum */
-#endif
-	      if (crc != file_hdr.c_chksum)
-		error (0, 0, "%s: checksum error (0x%x, should be 0x%x)",
-		       file_hdr.c_name, crc, file_hdr.c_chksum);
-	    }
+	  list_file(&file_hdr, in_file_des);
 	}
       else if (append_flag)
 	{
@@ -588,8 +573,20 @@ process_copy_in ()
 	    tape_toss_input (in_file_des, file_hdr.c_filesize);
 	    tape_skip_padding (in_file_des, file_hdr.c_filesize);
 	    if (crc != file_hdr.c_chksum)
-	      error (0, 0, "%s: checksum error (0x%x, should be 0x%x)",
-		     file_hdr.c_name, crc, file_hdr.c_chksum);
+	      {
+		error (0, 0, "%s: checksum error (0x%x, should be 0x%x)",
+		       file_hdr.c_name, crc, file_hdr.c_chksum);
+	      }
+         /* Debian hack: -v and -V now work with --only-verify-crc.
+            (99/11/10) -BEM */
+	    if (verbose_flag)
+	      {
+		fprintf (stderr, "%s\n", file_hdr.c_name);
+	      }
+	    if (dot_flag)
+	      {
+		fputc ('.', stderr);
+	      }
 	}
       else
 	{
@@ -598,407 +595,15 @@ process_copy_in ()
 	  /* Do we need to rename the file? */
 	  if (rename_flag || rename_batch_file)
 	    {
-	      if (rename_flag)
-		{
-		  fprintf (tty_out, "rename %s -> ", file_hdr.c_name);
-		  fflush (tty_out);
-		  str_res = ds_fgets (tty_in, &new_name);
-		}
-	      else
-		{
-		  str_res = ds_fgetstr (rename_in, &new_name, '\n');
-		}
-	      if (str_res == NULL || str_res[0] == 0)
-		{
+	      if (query_rename(&file_hdr, tty_in, tty_out, rename_in) < 0)
+	        {
 		  tape_toss_input (in_file_des, file_hdr.c_filesize);
 		  tape_skip_padding (in_file_des, file_hdr.c_filesize);
 		  continue;
 		}
-	      else
-		file_hdr.c_name = xstrdup (new_name.ds_string);
 	    }
 
-	  /* See if the file already exists.  */
-	  existing_dir = FALSE;
-	  if (lstat (file_hdr.c_name, &file_stat) == 0)
-	    {
-	      if (S_ISDIR (file_stat.st_mode)
-		  && ((file_hdr.c_mode & CP_IFMT) == CP_IFDIR))
-		{
-		  /* If there is already a directory there that
-		     we are trying to create, don't complain about
-		     it.  */
-		  existing_dir = TRUE;
-		}
-	      else if (!unconditional_flag
-		       && file_hdr.c_mtime <= file_stat.st_mtime)
-		{
-		  error (0, 0, "%s not created: newer or same age version exists",
-			 file_hdr.c_name);
-		  tape_toss_input (in_file_des, file_hdr.c_filesize);
-		  tape_skip_padding (in_file_des, file_hdr.c_filesize);
-		  continue;	/* Go to the next file.  */
-		}
-	      else if (S_ISDIR (file_stat.st_mode) 
-			? rmdir (file_hdr.c_name)
-			: unlink (file_hdr.c_name))
-		{
-		  error (0, errno, "cannot remove current %s",
-			 file_hdr.c_name);
-		  tape_toss_input (in_file_des, file_hdr.c_filesize);
-		  tape_skip_padding (in_file_des, file_hdr.c_filesize);
-		  continue;	/* Go to the next file.  */
-		}
-	    }
-
-	  /* Do the real copy or link.  */
-	  switch (file_hdr.c_mode & CP_IFMT)
-	    {
-	    case CP_IFREG:
-#ifndef __MSDOS__
-	      /* Can the current file be linked to a previously copied file? */
-	      if (file_hdr.c_nlink > 1 && (archive_format == arf_newascii
-		  || archive_format == arf_crcascii) )
-		{
-		  int link_res;
-		  if (file_hdr.c_filesize == 0)
-		    {
-		      /* The newc and crc formats store multiply linked copies
-			 of the same file in the archive only once.  The
-			 actual data is attached to the last link in the
-			 archive, and the other links all have a filesize
-			 of 0.  Since this file has multiple links and a
-			 filesize of 0, its data is probably attatched to
-			 another file in the archive.  Save the link, and
-			 process it later when we get the actual data.  We
-			 can't just create it with length 0 and add the
-			 data later, in case the file is readonly.  We still
-			 lose if its parent directory is readonly (and we aren't
-			 running as root), but there's nothing we can do about
-			 that.  */
-		      defer_copyin (&file_hdr);
-		      tape_toss_input (in_file_des, file_hdr.c_filesize);
-		      tape_skip_padding (in_file_des, file_hdr.c_filesize);
-		      break;
-		    }
-		  /* If the file has data (filesize != 0), then presumably
-		     any other links have already been defer_copyin'ed(),
-		     but GNU cpio version 2.0-2.2 didn't do that, so we
-		     still have to check for links here (and also in case
-		     the archive was created and later appeneded to). */
-		  link_res = link_to_maj_min_ino (file_hdr.c_name, 
-				file_hdr.c_dev_maj, file_hdr.c_dev_maj,
-				file_hdr.c_ino);
-		  if (link_res == 0)
-		    {
-		      tape_toss_input (in_file_des, file_hdr.c_filesize);
-		      tape_skip_padding (in_file_des, file_hdr.c_filesize);
-		      break;
-		    }
-		}
-	      else if (file_hdr.c_nlink > 1 && archive_format != arf_tar
-		  && archive_format != arf_ustar)
-		{
-		  int link_res;
-		  link_res = link_to_maj_min_ino (file_hdr.c_name, 
-				file_hdr.c_dev_maj, file_hdr.c_dev_maj,
-				file_hdr.c_ino);
-		  if (link_res == 0)
-		    {
-		      tape_toss_input (in_file_des, file_hdr.c_filesize);
-		      tape_skip_padding (in_file_des, file_hdr.c_filesize);
-		      break;
-		    }
-		}
-	      else if ((archive_format == arf_tar || archive_format == arf_ustar)
-		       && file_hdr.c_tar_linkname && 
-		       file_hdr.c_tar_linkname[0] != '\0')
-		{
-		  int	link_res;
-		  link_res = link_to_name (file_hdr.c_name,
-		  			   file_hdr.c_tar_linkname);
-		  if (link_res < 0)
-		    {
-		      error (0, errno, "cannot link %s to %s",
-			     file_hdr.c_tar_linkname, file_hdr.c_name);
-		    }
-		  break;
-		}
-#endif
-
-	      /* If not linked, copy the contents of the file.  */
-	      if (link_name == NULL)
-		{
-		  out_file_des = open (file_hdr.c_name,
-				       O_CREAT | O_WRONLY | O_BINARY, 0600);
-		  if (out_file_des < 0 && create_dir_flag)
-		    {
-		      create_all_directories (file_hdr.c_name);
-		      out_file_des = open (file_hdr.c_name,
-					   O_CREAT | O_WRONLY | O_BINARY,
-					   0600);
-		    }
-		  if (out_file_des < 0)
-		    {
-		      error (0, errno, "%s", file_hdr.c_name);
-		      tape_toss_input (in_file_des, file_hdr.c_filesize);
-		      tape_skip_padding (in_file_des, file_hdr.c_filesize);
-		      continue;
-		    }
-
-		  crc = 0;
-		  if (swap_halfwords_flag)
-		    {
-		      if ((file_hdr.c_filesize % 4) == 0)
-			swapping_halfwords = TRUE;
-		      else
-			error (0, 0, "cannot swap halfwords of %s: odd number of halfwords",
-			       file_hdr.c_name);
-		    }
-		  if (swap_bytes_flag)
-		    {
-		      if ((file_hdr.c_filesize % 2) == 0)
-			swapping_bytes = TRUE;
-		      else
-			error (0, 0, "cannot swap bytes of %s: odd number of bytes",
-			       file_hdr.c_name);
-		    }
-		  copy_files_tape_to_disk (in_file_des, out_file_des, file_hdr.c_filesize);
-		  disk_empty_output_buffer (out_file_des);
-		  if (close (out_file_des) < 0)
-		    error (0, errno, "%s", file_hdr.c_name);
-
-		  if (archive_format == arf_crcascii)
-		    {
-		      if (crc != file_hdr.c_chksum)
-			error (0, 0, "%s: checksum error (0x%x, should be 0x%x)",
-			       file_hdr.c_name, crc, file_hdr.c_chksum);
-		    }
-		  /* File is now copied; set attributes.  */
-		  if (!no_chown_flag)
-		    if ((chown (file_hdr.c_name,
-				set_owner_flag ? set_owner : file_hdr.c_uid,
-			   set_group_flag ? set_group : file_hdr.c_gid) < 0)
-			&& errno != EPERM)
-		      error (0, errno, "%s", file_hdr.c_name);
-		  /* chown may have turned off some permissions we wanted. */
-		  if (chmod (file_hdr.c_name, (int) file_hdr.c_mode) < 0)
-		    error (0, errno, "%s", file_hdr.c_name);
-		  if (retain_time_flag)
-		    {
-		      times.actime = times.modtime = file_hdr.c_mtime;
-		      if (utime (file_hdr.c_name, &times) < 0)
-			error (0, errno, "%s", file_hdr.c_name);
-		    }
-		  tape_skip_padding (in_file_des, file_hdr.c_filesize);
-		  if (file_hdr.c_nlink > 1 && (archive_format == arf_newascii
-		      || archive_format == arf_crcascii) )
-		    {
-		      /* (see comment above for how the newc and crc formats 
-			 store multiple links).  Now that we have the data 
-			 for this file, create any other links to it which
-			 we defered.  */
-		      create_defered_links (&file_hdr);
-		    }
-		}
-	      break;
-
-	    case CP_IFDIR:
-	      /* Strip any trailing `/'s off the filename; tar puts
-		 them on.  We might as well do it here in case anybody
-		 else does too, since they cause strange things to happen.  */
-	      strip_trailing_slashes (file_hdr.c_name);
-
-	      /* Ignore the current directory.  It must already exist,
-		 and we don't want to change its permission, ownership
-		 or time.  */
-	      if (file_hdr.c_name[0] == '.' && file_hdr.c_name[1] == '\0')
-		break;
-
-#ifdef HPUX_CDF
-	      cdf_flag = 0;
-#endif
-	      if (!existing_dir)
-
-		{
-#ifdef HPUX_CDF
-		  /* If the directory name ends in a + and is SUID,
-		     then it is a CDF.  Strip the trailing + from
-		     the name before creating it.  */
-		  cdf_char = strlen (file_hdr.c_name) - 1;
-		  if ( (cdf_char > 0) &&
-		       (file_hdr.c_mode & 04000) && 
-		       (file_hdr.c_name [cdf_char] == '+') )
-		    {
-		      file_hdr.c_name [cdf_char] = '\0';
-		      cdf_flag = 1;
-		    }
-#endif
-		  res = mkdir (file_hdr.c_name, file_hdr.c_mode);
-		}
-	      else
-		res = 0;
-	      if (res < 0 && create_dir_flag)
-		{
-		  create_all_directories (file_hdr.c_name);
-		  res = mkdir (file_hdr.c_name, file_hdr.c_mode);
-		}
-	      if (res < 0)
-		{
-		  /* In some odd cases where the file_hdr.c_name includes `.',
-		     the directory may have actually been created by
-		     create_all_directories(), so the mkdir will fail
-		     because the directory exists.  If that's the case,
-		     don't complain about it.  */
-		  if ( (errno != EEXIST) ||
-		       (lstat (file_hdr.c_name, &file_stat) != 0) ||
-		       !(S_ISDIR (file_stat.st_mode) ) )
-		    {
-		      error (0, errno, "%s", file_hdr.c_name);
-		      continue;
-		    }
-		}
-	      if (!no_chown_flag)
-		if ((chown (file_hdr.c_name,
-			    set_owner_flag ? set_owner : file_hdr.c_uid,
-			    set_group_flag ? set_group : file_hdr.c_gid) < 0)
-		    && errno != EPERM)
-		  error (0, errno, "%s", file_hdr.c_name);
-	      /* chown may have turned off some permissions we wanted. */
-	      if (chmod (file_hdr.c_name, (int) file_hdr.c_mode) < 0)
-		error (0, errno, "%s", file_hdr.c_name);
-#ifdef HPUX_CDF
-	      if (cdf_flag)
-		/* Once we "hide" the directory with the chmod(),
-		   we have to refer to it using name+ instead of name.  */
-		file_hdr.c_name [cdf_char] = '+';
-#endif
-	      if (retain_time_flag)
-		{
-		  times.actime = times.modtime = file_hdr.c_mtime;
-		  if (utime (file_hdr.c_name, &times) < 0)
-		    error (0, errno, "%s", file_hdr.c_name);
-		}
-	      break;
-
-#ifndef __MSDOS__
-	    case CP_IFCHR:
-	    case CP_IFBLK:
-#ifdef CP_IFSOCK
-	    case CP_IFSOCK:
-#endif
-#ifdef CP_IFIFO
-	    case CP_IFIFO:
-#endif
-	      if (file_hdr.c_nlink > 1 && archive_format != arf_tar
-		  && archive_format != arf_ustar)
-		{
-		  int link_res;
-		  link_res = link_to_maj_min_ino (file_hdr.c_name, 
-				file_hdr.c_dev_maj, file_hdr.c_dev_maj,
-				file_hdr.c_ino);
-		  if (link_res == 0)
-		    break;
-		}
-	      else if (archive_format == arf_ustar &&
-		       file_hdr.c_tar_linkname && 
-		       file_hdr.c_tar_linkname [0] != '\0')
-		{
-		  int	link_res;
-		  link_res = link_to_name (file_hdr.c_name,
-					   file_hdr.c_tar_linkname);
-		  if (link_res < 0)
-		    {
-		      error (0, errno, "cannot link %s to %s",
-			     file_hdr.c_tar_linkname, file_hdr.c_name);
-		      /* Something must be wrong, because we couldn't
-			 find the file to link to.  But can we assume
-			 that the device maj/min numbers are correct
-			 and fall through to the mknod?  It's probably
-			 safer to just break, rather than possibly
-			 creating a bogus device file.  */
-		    }
-		  break;
-		}
-	      
-	      res = mknod (file_hdr.c_name, file_hdr.c_mode,
-			makedev (file_hdr.c_rdev_maj, file_hdr.c_rdev_min));
-	      if (res < 0 && create_dir_flag)
-		{
-		  create_all_directories (file_hdr.c_name);
-		  res = mknod (file_hdr.c_name, file_hdr.c_mode,
-			makedev (file_hdr.c_rdev_maj, file_hdr.c_rdev_min));
-		}
-	      if (res < 0)
-		{
-		  error (0, errno, "%s", file_hdr.c_name);
-		  continue;
-		}
-	      if (!no_chown_flag)
-		if ((chown (file_hdr.c_name,
-			    set_owner_flag ? set_owner : file_hdr.c_uid,
-			    set_group_flag ? set_group : file_hdr.c_gid) < 0)
-		    && errno != EPERM)
-		  error (0, errno, "%s", file_hdr.c_name);
-	      /* chown may have turned off some permissions we wanted. */
-	      if (chmod (file_hdr.c_name, file_hdr.c_mode) < 0)
-		error (0, errno, "%s", file_hdr.c_name);
-	      if (retain_time_flag)
-		{
-		  times.actime = times.modtime = file_hdr.c_mtime;
-		  if (utime (file_hdr.c_name, &times) < 0)
-		    error (0, errno, "%s", file_hdr.c_name);
-		}
-	      break;
-#endif
-
-#ifdef CP_IFLNK
-	    case CP_IFLNK:
-	      {
-		if (archive_format != arf_tar && archive_format != arf_ustar)
-		  {
-		    link_name = (char *) xmalloc ((unsigned int) file_hdr.c_filesize + 1);
-		    link_name[file_hdr.c_filesize] = '\0';
-		    tape_buffered_read (link_name, in_file_des, file_hdr.c_filesize);
-		    tape_skip_padding (in_file_des, file_hdr.c_filesize);
-		  }
-		else
-		  {
-		    link_name = xstrdup (file_hdr.c_tar_linkname);
-		  }
-
-		res = UMASKED_SYMLINK (link_name, file_hdr.c_name,
-				       file_hdr.c_mode);
-		if (res < 0 && create_dir_flag)
-		  {
-		    create_all_directories (file_hdr.c_name);
-		    res = UMASKED_SYMLINK (link_name, file_hdr.c_name,
-					   file_hdr.c_mode);
-		  }
-		if (res < 0)
-		  {
-		    error (0, errno, "%s", file_hdr.c_name);
-		    free (link_name);
-		    link_name = NULL;
-		    continue;
-		  }
-		if (!no_chown_flag)
-		  if ((lchown (file_hdr.c_name,
-			       set_owner_flag ? set_owner : file_hdr.c_uid,
-			   set_group_flag ? set_group : file_hdr.c_gid) < 0)
-		      && errno != EPERM)
-		    error (0, errno, "%s", file_hdr.c_name);
-		free (link_name);
-		link_name = NULL;
-	      }
-	      break;
-#endif
-
-	    default:
-	      error (0, 0, "%s: unknown file type", file_hdr.c_name);
-	      tape_toss_input (in_file_des, file_hdr.c_filesize);
-	      tape_skip_padding (in_file_des, file_hdr.c_filesize);
-	    }
+	  copyin_file(&file_hdr, in_file_des);
 
 	  if (verbose_flag)
 	    fprintf (stderr, "%s\n", file_hdr.c_name);
@@ -1014,15 +619,611 @@ process_copy_in ()
     return;
 
   if (archive_format == arf_newascii || archive_format == arf_crcascii)
-    create_final_defers ();
+    {
+      create_final_defers ();
+    }
   if (!quiet_flag)
     {
-      res = (input_bytes + io_block_size - 1) / io_block_size;
-      if (res == 1)
+      int blocks;
+      blocks = (input_bytes + io_block_size - 1) / io_block_size;
+      if (blocks == 1)
 	fprintf (stderr, "1 block\n");
       else
-	fprintf (stderr, "%d blocks\n", res);
+	fprintf (stderr, "%d blocks\n", blocks);
     }
+}
+
+static int
+query_rename(file_hdr, tty_in, tty_out, rename_in)
+  struct new_cpio_header* file_hdr;
+  FILE *tty_in;
+  FILE *tty_out;
+  FILE *rename_in;
+{
+  char *str_res;		/* Result for string function.  */
+  static dynamic_string new_name;	/* New file name for rename option.  */
+  static int initialized_new_name = FALSE;
+  if (!initialized_new_name)
+  {
+    ds_init (&new_name, 128);
+    initialized_new_name = TRUE;
+  }
+
+  if (rename_flag)
+    {
+      fprintf (tty_out, "rename %s -> ", file_hdr->c_name);
+      fflush (tty_out);
+      str_res = ds_fgets (tty_in, &new_name);
+    }
+  else
+    {
+      str_res = ds_fgetstr (rename_in, &new_name, '\n');
+    }
+  if (str_res == NULL || str_res[0] == 0)
+    {
+      return -1;
+    }
+  else
+  /* Debian hack: file_hrd.c_name is sometimes set to
+     point to static memory by code in tar.c.  This
+     causes a segfault.  This has been fixed and an
+     additional check to ensure that the file name
+     is not too long has been added.  (Reported by
+     Horst Knobloch.)  This bug has been reported to
+     "bug-gnu-utils@prep.ai.mit.edu". (99/1/6) -BEM */
+    {
+      if (archive_format != arf_tar && archive_format != arf_ustar)
+	{
+	  free (file_hdr->c_name);
+	  file_hdr->c_name = xstrdup (new_name.ds_string);
+	}
+      else
+	{
+	  if (is_tar_filename_too_long (new_name.ds_string))
+	    error (0, 0, "%s: file name too long",
+		   new_name.ds_string);
+	  else
+	    strcpy (file_hdr->c_name, new_name.ds_string);
+	}
+    }
+  return 0;
+}
+
+static void
+list_file(file_hdr, in_file_des)
+  struct new_cpio_header* file_hdr;
+  int in_file_des;
+{
+  if (verbose_flag)
+    {
+#ifdef CP_IFLNK
+      if ((file_hdr->c_mode & CP_IFMT) == CP_IFLNK)
+	{
+	  if (archive_format != arf_tar && archive_format != arf_ustar)
+	    {
+	      char *link_name = NULL;	/* Name of hard and symbolic links.  */
+
+	      link_name = (char *) xmalloc ((unsigned int) file_hdr->c_filesize + 1);
+	      link_name[file_hdr->c_filesize] = '\0';
+	      tape_buffered_read (link_name, in_file_des, file_hdr->c_filesize);
+	      long_format (file_hdr, link_name);
+	      free (link_name);
+	      tape_skip_padding (in_file_des, file_hdr->c_filesize);
+	      return;
+	    }
+	  else
+	    {
+	      long_format (file_hdr, file_hdr->c_tar_linkname);
+	      return;
+	    }
+	}
+      else
+#endif
+	long_format (file_hdr, (char *) 0);
+    }
+  else
+    {
+      /* Debian hack: Modified to print a list of filenames
+	 terminiated by a null character when the -t and -0
+	 flags are used.  This has been submitted as a
+	 suggestion to "bug-gnu-utils@prep.ai.mit.edu".  -BEM */
+      printf ("%s%c", file_hdr->c_name, name_end);
+    }
+
+  crc = 0;
+  tape_toss_input (in_file_des, file_hdr->c_filesize);
+  tape_skip_padding (in_file_des, file_hdr->c_filesize);
+  if (only_verify_crc_flag)
+    {
+#ifdef CP_IFLNK
+      if ((file_hdr->c_mode & CP_IFMT) == CP_IFLNK)
+	{
+	  return;   /* links don't have a checksum */
+	}
+#endif
+      if (crc != file_hdr->c_chksum)
+	{
+	  error (0, 0, "%s: checksum error (0x%x, should be 0x%x)",
+		 file_hdr->c_name, crc, file_hdr->c_chksum);
+	}
+    }
+}
+
+static void
+copyin_file(file_hdr, in_file_des)
+  struct new_cpio_header* file_hdr;
+  int in_file_des;
+{
+  int existing_dir;
+
+  if (try_existing_file(file_hdr, in_file_des, &existing_dir) < 0)
+    {
+      return;
+    }
+
+  /* Do the real copy or link.  */
+  switch (file_hdr->c_mode & CP_IFMT)
+    {
+    case CP_IFREG:
+      copyin_regular_file(file_hdr, in_file_des);
+      break;
+
+    case CP_IFDIR:
+      copyin_directory(file_hdr, existing_dir);
+      break;
+
+#ifndef __MSDOS__
+    case CP_IFCHR:
+    case CP_IFBLK:
+#ifdef CP_IFSOCK
+    case CP_IFSOCK:
+#endif
+#ifdef CP_IFIFO
+    case CP_IFIFO:
+#endif
+      copyin_device(file_hdr);
+      break;
+#endif
+
+#ifdef CP_IFLNK
+    case CP_IFLNK:
+      copyin_link(file_hdr, in_file_des);
+      break;
+#endif
+
+    default:
+      error (0, 0, "%s: unknown file type", file_hdr->c_name);
+      tape_toss_input (in_file_des, file_hdr->c_filesize);
+      tape_skip_padding (in_file_des, file_hdr->c_filesize);
+    }
+}
+
+static int
+try_existing_file(file_hdr, in_file_des, existing_dir)
+  struct new_cpio_header* file_hdr;
+  int in_file_des;
+  int* existing_dir;
+{
+  struct stat file_stat;
+
+  *existing_dir = FALSE;
+  if (lstat (file_hdr->c_name, &file_stat) == 0)
+    {
+      if (S_ISDIR (file_stat.st_mode)
+	  && ((file_hdr->c_mode & CP_IFMT) == CP_IFDIR))
+	{
+	  /* If there is already a directory there that
+	     we are trying to create, don't complain about
+	     it.  */
+	  *existing_dir = TRUE;
+	  return 0;
+	}
+      else if (!unconditional_flag
+	       && file_hdr->c_mtime <= file_stat.st_mtime)
+	{
+	  error (0, 0, "%s not created: newer or same age version exists",
+		 file_hdr->c_name);
+	  tape_toss_input (in_file_des, file_hdr->c_filesize);
+	  tape_skip_padding (in_file_des, file_hdr->c_filesize);
+	  return -1;	/* Go to the next file.  */
+	}
+      else if (S_ISDIR (file_stat.st_mode) 
+		? rmdir (file_hdr->c_name)
+		: unlink (file_hdr->c_name))
+	{
+	  error (0, errno, "cannot remove current %s",
+		 file_hdr->c_name);
+	  tape_toss_input (in_file_des, file_hdr->c_filesize);
+	  tape_skip_padding (in_file_des, file_hdr->c_filesize);
+	  return -1;	/* Go to the next file.  */
+	}
+    }
+  return 0;
+}
+
+static void
+copyin_regular_file(file_hdr, in_file_des)
+  struct new_cpio_header* file_hdr;
+  int in_file_des;
+{
+  int out_file_des;		/* Output file descriptor.  */
+
+#ifndef __MSDOS__
+  /* Can the current file be linked to a previously copied file? */
+  if (file_hdr->c_nlink > 1 && (archive_format == arf_newascii
+      || archive_format == arf_crcascii) )
+    {
+      int link_res;
+      if (file_hdr->c_filesize == 0)
+	{
+	  /* The newc and crc formats store multiply linked copies
+	     of the same file in the archive only once.  The
+	     actual data is attached to the last link in the
+	     archive, and the other links all have a filesize
+	     of 0.  Since this file has multiple links and a
+	     filesize of 0, its data is probably attatched to
+	     another file in the archive.  Save the link, and
+	     process it later when we get the actual data.  We
+	     can't just create it with length 0 and add the
+	     data later, in case the file is readonly.  We still
+	     lose if its parent directory is readonly (and we aren't
+	     running as root), but there's nothing we can do about
+	     that.  */
+	  defer_copyin (file_hdr);
+	  tape_toss_input (in_file_des, file_hdr->c_filesize);
+	  tape_skip_padding (in_file_des, file_hdr->c_filesize);
+	  return;
+	}
+      /* If the file has data (filesize != 0), then presumably
+	 any other links have already been defer_copyin'ed(),
+	 but GNU cpio version 2.0-2.2 didn't do that, so we
+	 still have to check for links here (and also in case
+	 the archive was created and later appeneded to). */
+      /* Debian hack: (97/1/2) This was reported by Ronald
+	 F. Guilmette to the upstream maintainers. -BEM */
+      link_res = link_to_maj_min_ino (file_hdr->c_name, 
+		    file_hdr->c_dev_maj, file_hdr->c_dev_min,
+		    file_hdr->c_ino);
+      if (link_res == 0)
+	{
+	  tape_toss_input (in_file_des, file_hdr->c_filesize);
+	  tape_skip_padding (in_file_des, file_hdr->c_filesize);
+	  return;
+	}
+    }
+  else if (file_hdr->c_nlink > 1 && archive_format != arf_tar
+      && archive_format != arf_ustar)
+    {
+      int link_res;
+      /* Debian hack: (97/1/2) This was reported by Ronald
+	 F. Guilmette to the upstream maintainers. -BEM */
+      link_res = link_to_maj_min_ino (file_hdr->c_name, 
+		    file_hdr->c_dev_maj, file_hdr->c_dev_min,
+		    file_hdr->c_ino);
+      if (link_res == 0)
+	{
+	  tape_toss_input (in_file_des, file_hdr->c_filesize);
+	  tape_skip_padding (in_file_des, file_hdr->c_filesize);
+	  return;
+	}
+    }
+  else if ((archive_format == arf_tar || archive_format == arf_ustar)
+	   && file_hdr->c_tar_linkname && 
+	   file_hdr->c_tar_linkname[0] != '\0')
+    {
+      int	link_res;
+      link_res = link_to_name (file_hdr->c_name,
+			       file_hdr->c_tar_linkname);
+      if (link_res < 0)
+	{
+	  error (0, errno, "cannot link %s to %s",
+		 file_hdr->c_tar_linkname, file_hdr->c_name);
+	}
+      return;
+    }
+#endif
+
+  /* If not linked, copy the contents of the file.  */
+  out_file_des = open (file_hdr->c_name,
+		       O_CREAT | O_WRONLY | O_BINARY, 0600);
+  if (out_file_des < 0 && create_dir_flag)
+    {
+      create_all_directories (file_hdr->c_name);
+      out_file_des = open (file_hdr->c_name,
+			   O_CREAT | O_WRONLY | O_BINARY,
+			   0600);
+    }
+  if (out_file_des < 0)
+    {
+      error (0, errno, "%s", file_hdr->c_name);
+      tape_toss_input (in_file_des, file_hdr->c_filesize);
+      tape_skip_padding (in_file_des, file_hdr->c_filesize);
+      return;
+    }
+
+  crc = 0;
+  if (swap_halfwords_flag)
+    {
+      if ((file_hdr->c_filesize % 4) == 0)
+	swapping_halfwords = TRUE;
+      else
+	error (0, 0, "cannot swap halfwords of %s: odd number of halfwords",
+	       file_hdr->c_name);
+    }
+  if (swap_bytes_flag)
+    {
+      if ((file_hdr->c_filesize % 2) == 0)
+	swapping_bytes = TRUE;
+      else
+	error (0, 0, "cannot swap bytes of %s: odd number of bytes",
+	       file_hdr->c_name);
+    }
+  copy_files_tape_to_disk (in_file_des, out_file_des, file_hdr->c_filesize);
+  disk_empty_output_buffer (out_file_des);
+  /* Debian hack to fix a bug in the --sparse option.
+     This bug has been reported to
+     "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
+  if (delayed_seek_count > 0)
+    {
+      lseek (out_file_des, delayed_seek_count-1, SEEK_CUR);
+      write (out_file_des, "", 1);
+      delayed_seek_count = 0;
+    }
+  if (close (out_file_des) < 0)
+    error (0, errno, "%s", file_hdr->c_name);
+
+  if (archive_format == arf_crcascii)
+    {
+      if (crc != file_hdr->c_chksum)
+	error (0, 0, "%s: checksum error (0x%x, should be 0x%x)",
+	       file_hdr->c_name, crc, file_hdr->c_chksum);
+    }
+  /* File is now copied; set attributes.  */
+  if (!no_chown_flag)
+    if ((chown (file_hdr->c_name,
+		set_owner_flag ? set_owner : file_hdr->c_uid,
+	   set_group_flag ? set_group : file_hdr->c_gid) < 0)
+	&& errno != EPERM)
+      error (0, errno, "%s", file_hdr->c_name);
+  /* chown may have turned off some permissions we wanted. */
+  if (chmod (file_hdr->c_name, (int) file_hdr->c_mode) < 0)
+    error (0, errno, "%s", file_hdr->c_name);
+  if (retain_time_flag)
+    {
+      struct utimbuf times;		/* For setting file times.  */
+      /* Initialize this in case it has members we don't know to set.  */
+      bzero (&times, sizeof (struct utimbuf));
+
+      times.actime = times.modtime = file_hdr->c_mtime;
+      if (utime (file_hdr->c_name, &times) < 0)
+	error (0, errno, "%s", file_hdr->c_name);
+    }
+  tape_skip_padding (in_file_des, file_hdr->c_filesize);
+  if (file_hdr->c_nlink > 1 && (archive_format == arf_newascii
+      || archive_format == arf_crcascii) )
+    {
+      /* (see comment above for how the newc and crc formats 
+	 store multiple links).  Now that we have the data 
+	 for this file, create any other links to it which
+	 we defered.  */
+      create_defered_links (file_hdr);
+    }
+}
+
+static void
+copyin_directory(file_hdr, existing_dir)
+  struct new_cpio_header* file_hdr;
+  int existing_dir;
+{
+  int res;			/* Result of various function calls.  */
+#ifdef HPUX_CDF
+  int cdf_flag;                 /* True if file is a CDF.  */
+  int cdf_char;                 /* Index of `+' char indicating a CDF.  */
+#endif
+
+  /* Strip any trailing `/'s off the filename; tar puts
+     them on.  We might as well do it here in case anybody
+     else does too, since they cause strange things to happen.  */
+  strip_trailing_slashes (file_hdr->c_name);
+
+  /* Ignore the current directory.  It must already exist,
+     and we don't want to change its permission, ownership
+     or time.  */
+  if (file_hdr->c_name[0] == '.' && file_hdr->c_name[1] == '\0')
+    {
+      return;
+    }
+
+#ifdef HPUX_CDF
+  cdf_flag = 0;
+#endif
+  if (!existing_dir)
+
+    {
+#ifdef HPUX_CDF
+      /* If the directory name ends in a + and is SUID,
+	 then it is a CDF.  Strip the trailing + from
+	 the name before creating it.  */
+      cdf_char = strlen (file_hdr->c_name) - 1;
+      if ( (cdf_char > 0) &&
+	   (file_hdr->c_mode & 04000) && 
+	   (file_hdr->c_name [cdf_char] == '+') )
+	{
+	  file_hdr->c_name [cdf_char] = '\0';
+	  cdf_flag = 1;
+	}
+#endif
+      res = mkdir (file_hdr->c_name, file_hdr->c_mode);
+    }
+  else
+    res = 0;
+  if (res < 0 && create_dir_flag)
+    {
+      create_all_directories (file_hdr->c_name);
+      res = mkdir (file_hdr->c_name, file_hdr->c_mode);
+    }
+  if (res < 0)
+    {
+      /* In some odd cases where the file_hdr->c_name includes `.',
+	 the directory may have actually been created by
+	 create_all_directories(), so the mkdir will fail
+	 because the directory exists.  If that's the case,
+	 don't complain about it.  */
+      struct stat file_stat;
+      if ( (errno != EEXIST) ||
+	   (lstat (file_hdr->c_name, &file_stat) != 0) ||
+	   !(S_ISDIR (file_stat.st_mode) ) )
+	{
+	  error (0, errno, "%s", file_hdr->c_name);
+	  return;
+	}
+    }
+  if (!no_chown_flag)
+    if ((chown (file_hdr->c_name,
+		set_owner_flag ? set_owner : file_hdr->c_uid,
+		set_group_flag ? set_group : file_hdr->c_gid) < 0)
+	&& errno != EPERM)
+      error (0, errno, "%s", file_hdr->c_name);
+  /* chown may have turned off some permissions we wanted. */
+  if (chmod (file_hdr->c_name, (int) file_hdr->c_mode) < 0)
+    error (0, errno, "%s", file_hdr->c_name);
+#ifdef HPUX_CDF
+  if (cdf_flag)
+    /* Once we "hide" the directory with the chmod(),
+       we have to refer to it using name+ instead of name.  */
+    file_hdr->c_name [cdf_char] = '+';
+#endif
+  if (retain_time_flag)
+    {
+      struct utimbuf times;		/* For setting file times.  */
+      /* Initialize this in case it has members we don't know to set.  */
+      bzero (&times, sizeof (struct utimbuf));
+
+      times.actime = times.modtime = file_hdr->c_mtime;
+      if (utime (file_hdr->c_name, &times) < 0)
+	error (0, errno, "%s", file_hdr->c_name);
+    }
+}
+
+static void
+copyin_device(file_hdr)
+  struct new_cpio_header* file_hdr;
+{
+  int res;			/* Result of various function calls.  */
+
+  if (file_hdr->c_nlink > 1 && archive_format != arf_tar
+      && archive_format != arf_ustar)
+    {
+      int link_res;
+      /* Debian hack:  This was reported by Horst
+	 Knobloch. This bug has been reported to
+	 "bug-gnu-utils@prep.ai.mit.edu". (99/1/6) -BEM */
+      link_res = link_to_maj_min_ino (file_hdr->c_name, 
+		    file_hdr->c_dev_maj, file_hdr->c_dev_min,
+		    file_hdr->c_ino);
+      if (link_res == 0)
+	{
+	  return;
+	}
+    }
+  else if (archive_format == arf_ustar &&
+	   file_hdr->c_tar_linkname && 
+	   file_hdr->c_tar_linkname [0] != '\0')
+    {
+      int	link_res;
+      link_res = link_to_name (file_hdr->c_name,
+			       file_hdr->c_tar_linkname);
+      if (link_res < 0)
+	{
+	  error (0, errno, "cannot link %s to %s",
+		 file_hdr->c_tar_linkname, file_hdr->c_name);
+	  /* Something must be wrong, because we couldn't
+	     find the file to link to.  But can we assume
+	     that the device maj/min numbers are correct
+	     and fall through to the mknod?  It's probably
+	     safer to just return, rather than possibly
+	     creating a bogus device file.  */
+	}
+      return;
+    }
+  
+  res = mknod (file_hdr->c_name, file_hdr->c_mode,
+	    makedev (file_hdr->c_rdev_maj, file_hdr->c_rdev_min));
+  if (res < 0 && create_dir_flag)
+    {
+      create_all_directories (file_hdr->c_name);
+      res = mknod (file_hdr->c_name, file_hdr->c_mode,
+	    makedev (file_hdr->c_rdev_maj, file_hdr->c_rdev_min));
+    }
+  if (res < 0)
+    {
+      error (0, errno, "%s", file_hdr->c_name);
+      return;
+    }
+  if (!no_chown_flag)
+    if ((chown (file_hdr->c_name,
+		set_owner_flag ? set_owner : file_hdr->c_uid,
+		set_group_flag ? set_group : file_hdr->c_gid) < 0)
+	&& errno != EPERM)
+      error (0, errno, "%s", file_hdr->c_name);
+  /* chown may have turned off some permissions we wanted. */
+  if (chmod (file_hdr->c_name, file_hdr->c_mode) < 0)
+    error (0, errno, "%s", file_hdr->c_name);
+  if (retain_time_flag)
+    {
+      struct utimbuf times;		/* For setting file times.  */
+      /* Initialize this in case it has members we don't know to set.  */
+      bzero (&times, sizeof (struct utimbuf));
+
+      times.actime = times.modtime = file_hdr->c_mtime;
+      if (utime (file_hdr->c_name, &times) < 0)
+	error (0, errno, "%s", file_hdr->c_name);
+    }
+}
+
+static void
+copyin_link(file_hdr, in_file_des)
+  struct new_cpio_header* file_hdr;
+  int in_file_des;
+{
+  char *link_name = NULL;	/* Name of hard and symbolic links.  */
+  int res;			/* Result of various function calls.  */
+
+  if (archive_format != arf_tar && archive_format != arf_ustar)
+    {
+      link_name = (char *) xmalloc ((unsigned int) file_hdr->c_filesize + 1);
+      link_name[file_hdr->c_filesize] = '\0';
+      tape_buffered_read (link_name, in_file_des, file_hdr->c_filesize);
+      tape_skip_padding (in_file_des, file_hdr->c_filesize);
+    }
+  else
+    {
+      link_name = xstrdup (file_hdr->c_tar_linkname);
+    }
+
+  res = UMASKED_SYMLINK (link_name, file_hdr->c_name,
+			 file_hdr->c_mode);
+  if (res < 0 && create_dir_flag)
+    {
+      create_all_directories (file_hdr->c_name);
+      res = UMASKED_SYMLINK (link_name, file_hdr->c_name,
+			     file_hdr->c_mode);
+    }
+  if (res < 0)
+    {
+      error (0, errno, "%s", file_hdr->c_name);
+      free (link_name);
+      return;
+    }
+  if (!no_chown_flag)
+    if ((lchown (file_hdr->c_name,
+		 set_owner_flag ? set_owner : file_hdr->c_uid,
+	     set_group_flag ? set_group : file_hdr->c_gid) < 0)
+	&& errno != EPERM)
+      {
+	error (0, errno, "%s", file_hdr->c_name);
+      }
+  free (link_name);
 }
 
 /* Print the file described by FILE_HDR in long format.
@@ -1288,6 +1489,57 @@ create_defered_links (file_hdr)
     }
 }
 
+/* We are skipping a file but there might be other links to it that we
+   did not skip, so we have to copy its data for the other links.  Find
+   the first link that we didn't skip and try to create that.  That will
+   then create the other deferred links.  */
+
+static int
+create_defered_links_to_skipped (file_hdr, in_file_des)
+  struct new_cpio_header *file_hdr;
+  int in_file_des;
+{
+  struct deferment *d;
+  struct deferment *d_prev;
+  int	ino;
+  int 	maj;
+  int   min;
+  int 	link_res;
+  if (file_hdr->c_filesize == 0)
+    {
+      /* The file doesn't have any data attached to it so we don't have
+         to bother.  */
+      return -1;
+    }
+  ino = file_hdr->c_ino;
+  maj = file_hdr->c_dev_maj;
+  min = file_hdr->c_dev_min;
+  d = deferments;
+  d_prev = NULL;
+  while (d != NULL)
+    {
+      if ( (d->header.c_ino == ino) && (d->header.c_dev_maj == maj)
+	  && (d->header.c_dev_min == min) )
+	{
+	  if (d_prev != NULL)
+	    d_prev->next = d->next;
+	  else
+	    deferments = d->next;
+	  free (file_hdr->c_name);
+	  file_hdr->c_name = xstrdup(d->header.c_name);
+	  free_deferment (d);
+	  copyin_regular_file(file_hdr, in_file_des);
+	  return 0;
+	}
+      else
+	{
+	  d_prev = d;
+	  d = d->next;
+	}
+    }
+  return -1;
+}
+
 /* If we had a multiply linked file that really was empty then we would
    have defered all of its links, since we never found any with data
    "attached", and they will still be on the deferment list even when
@@ -1306,9 +1558,14 @@ create_final_defers ()
   
   for (d = deferments; d != NULL; d = d->next)
     {
-      d = deferments;
+      /* Debian hack: A line, which could cause an endless loop, was
+         removed (97/1/2).  It was reported by Ronald F. Guilmette to
+         the upstream maintainers. -BEM */
+      /* Debian hack:  This was reported by Horst Knobloch. This bug has
+         been reported to "bug-gnu-utils@prep.ai.mit.edu". (99/1/6) -BEM
+         */
       link_res = link_to_maj_min_ino (d->header.c_name, 
-		    d->header.c_dev_maj, d->header.c_dev_maj,
+		    d->header.c_dev_maj, d->header.c_dev_min,
 		    d->header.c_ino);
       if (link_res == 0)
 	{

@@ -1,5 +1,5 @@
 /* mt -- control magnetic tape drive operation
-   Copyright (C) 1991, 1992, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1995, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -159,6 +159,7 @@ int f_force_local = 0;
 struct option longopts[] =
 {
   {"file", 1, NULL, 'f'},
+  {"rsh-command", 1, NULL, 1},
   {"version", 0, NULL, 'V'},
   {"help", 0, NULL, 'H'},
   {NULL, 0, NULL, 0}
@@ -167,7 +168,7 @@ struct option longopts[] =
 /* The name this program was run with.  */
 char *program_name;
 
-void
+int
 main (argc, argv)
      int argc;
      char **argv;
@@ -178,18 +179,25 @@ main (argc, argv)
   char *tapedev;
   int tapedesc;
   int i;
+  char *rsh_command_option = NULL;
 
   program_name = argv[0];
   tapedev = NULL;
   count = 1;
 
-  while ((i = getopt_long (argc, argv, "f:t:V:H", longopts, (int *) 0)) != -1)
+  /* Debian hack: Fixed a bug in the -V flag.  This bug has been
+     reported to "bug-gnu-utils@prep.ai.mit.edu".  -BEM */
+  while ((i = getopt_long (argc, argv, "f:t:VH", longopts, (int *) 0)) != -1)
     {
       switch (i)
 	{
 	case 'f':
 	case 't':
 	  tapedev = optarg;
+	  break;
+
+	case 1:
+	  rsh_command_option = optarg;
 	  break;
 
 	case 'V':
@@ -215,7 +223,15 @@ main (argc, argv)
   operation = operations[i];
 
   if (++optind < argc)
+    /* Debian hack: Replaced the atoi function call with strtol so
+       that hexidecimal values can be used for the count parameter.
+       This bug has been reported to "bug-gnu-utils@prep.ai.mit.edu".
+       (97/12/5) -BEM */
+#if defined(STDC_HEADERS)
+    count = (int) strtol (argv[optind], NULL, 0);
+#else
     count = atoi (argv[optind]);
+#endif
   if (++optind < argc)
     usage (stderr, 1);
 
@@ -235,9 +251,9 @@ main (argc, argv)
        || (operation == MTERASE)
 #endif
 	)
-    tapedesc = rmtopen (tapedev, O_WRONLY, 0);
+    tapedesc = rmtopen (tapedev, O_WRONLY, 0, rsh_command_option);
   else
-    tapedesc = rmtopen (tapedev, O_RDONLY, 0);
+    tapedesc = rmtopen (tapedev, O_RDONLY, 0, rsh_command_option);
   if (tapedesc == -1)
     error (1, errno, "%s", tapedev);
   check_type (tapedev, tapedesc);
@@ -283,7 +299,10 @@ perform_operation (dev, desc, op, count)
 
   control.mt_op = op;
   control.mt_count = count;
-  if (rmtioctl (desc, MTIOCTOP, &control))
+  /* Debian hack: The rmtioctl function returns -1 in case of an
+     error, not 0.  This bug has been reported to
+     "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
+  if (rmtioctl (desc, MTIOCTOP, &control) == -1)
     error (2, errno, "%s", dev);
 }
 
@@ -294,7 +313,7 @@ print_status (dev, desc)
 {
   struct mtget status;
 
-  if (rmtioctl (desc, MTIOCGET, &status))
+  if (rmtioctl (desc, MTIOCGET, &status) == -1)
     error (2, errno, "%s", dev);
 
   printf ("drive type = %d\n", (int) status.mt_type);
@@ -318,7 +337,8 @@ usage (fp, status)
   int status;
 {
   fprintf (fp, "\
-Usage: %s [-V] [-f device] [--file=device] [--help] [--version] operation [count]\n",
+Usage: %s [-V] [-f device] [--file=device] [--rsh-command=command]\n\
+\t[--help] [--version] operation [count]\n",
 	   program_name);
   exit (status);
 }

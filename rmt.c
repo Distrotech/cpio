@@ -45,9 +45,9 @@ char copyright[] =
 #endif
 #include <errno.h>
 
-#if defined (_I386) && defined (_AIX)
+/* Debian hack: gcc has exhibited problems loading fcntl.h.  Therefore,
+   I removed the preprocessor conditionals here - BEM */
 #include <fcntl.h>
-#endif
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -75,13 +75,61 @@ char device[SSIZE];
 char count[SSIZE], mode[SSIZE], pos[SSIZE], op[SSIZE];
 
 extern errno;
-extern char *sys_errlist[];
+extern const char *const _sys_errlist[];
+/* Debian hack: rmt has problems on systems (such as the Hurd) where
+   sys_errlist is not available therefore I borrowed some code from
+   error.c to fix this problem.  This has been reported to the upstream
+   maintainers.  (7/22/99) - BEM */
+#if HAVE_STRERROR || _LIBC
+# ifndef strerror		/* On some systems, strerror is a macro */
+char *strerror ();
+# endif
+#else
+static char *
+private_strerror (errnum)
+     int errnum;
+{
+  extern char *sys_errlist[];
+  extern int sys_nerr;
+
+  if (errnum > 0 && errnum <= sys_nerr)
+    return sys_errlist[errnum];
+  return "Unknown system error";
+}
+#define strerror private_strerror
+#endif
 char resp[BUFSIZ];
 
 FILE *debug;
 #define	DEBUG(f)	if (debug) fprintf(debug, f)
 #define	DEBUG1(f,a)	if (debug) fprintf(debug, f, a)
 #define	DEBUG2(f,a1,a2)	if (debug) fprintf(debug, f, a1, a2)
+
+#ifdef EXTENDED_RMT_PROTOCOL
+/*
+ * Support for Sun's extended RMT protocol
+ */
+#define RMTI_VERSION	-1
+#define RMT_VERSION	1
+
+/* Extended 'i' commands */
+#define RMTI_CACHE	0
+#define RMTI_NOCACHE	1
+#define RMTI_RETEN	2
+#define RMTI_ERASE	3
+#define RMTI_EOM	4
+#define RMTI_NBSF	5
+
+/* Extended 's' comands */
+#define MTS_TYPE	'T'
+#define MTS_DSREG	'D'
+#define MTS_ERREG	'E'
+#define MTS_RESID	'R'
+#define MTS_FILENO	'F'
+#define MTS_BLKNO	'B'
+#define MTS_FLAGS	'f'
+#define MTS_BF		'b'
+#endif /* EXTENDED_RMT_PROTOCOL */
 
 int
 main (argc, argv)
@@ -196,7 +244,16 @@ top:
       getstring (op);
       getstring (count);
       DEBUG2 ("rmtd: I %s %s\n", op, count);
+#ifdef EXTENDED_RMT_PROTOCOL
+      if (atoi(op) == RMTI_VERSION)
+      {
+	  rval = RMT_VERSION;
+      }
+#endif /* EXTENDED_RMT_PROTOCOL */
 #ifdef MTIOCTOP
+#ifdef EXTENDED_RMT_PROTOCOL
+      else
+#endif /* EXTENDED_RMT_PROTOCOL */
       {
 	struct mtop mtop;
 	mtop.mt_op = atoi (op);
@@ -207,6 +264,60 @@ top:
       }
 #endif
       goto respond;
+
+#ifdef EXTENDED_RMT_PROTOCOL
+    case 'i':
+      {
+	struct mtop mtop;
+	
+	getstring (op);
+	getstring (count);
+	DEBUG2 ("rmtd: i %s %s\n", op, count);
+	switch (atoi(op))
+	{
+#ifdef MTCACHE
+	  case RMTI_CACHE:
+	    mtop.mt_op = MTCACHE;
+	    break;
+#endif
+#ifdef MTNOCACHE
+	  case RMTI_NOCACHE:
+	    mtop.mt_op = MTNOCACHE;
+	    break;
+#endif
+#ifdef MTRETEN
+	  case RMTI_RETEN:
+	    mtop.mt_op = MTRETEN;
+	    break;
+#endif
+#ifdef MTERASE
+	  case RMTI_ERASE:
+	    mtop.mt_op = MTERASE;
+	    break;
+#endif
+#ifdef MTEOM
+	  case RMTI_EOM:
+	    mtop.mt_op = MTEOM;
+	    break;
+#endif
+#ifdef MTNBSF
+	  case RMTI_NBSF:
+	    mtop.mt_op = MTNBSF;
+	    break;
+#endif
+	  default:
+	    errno = EINVAL;
+	    goto ioerror;
+	}
+#ifdef MTIOCTOP
+	mtop.mt_count = atoi (count);
+	if (ioctl (tape, MTIOCTOP, (char *) &mtop) < 0)
+	  goto ioerror;
+	rval = mtop.mt_count;
+      }
+#endif
+      goto respond;
+#endif /* EXTENDED_RMT_PROTOCOL */
 
     case 'S':			/* status */
       DEBUG ("rmtd: S\n");
@@ -222,6 +333,61 @@ top:
 #endif
 	goto top;
       }
+
+#ifdef EXTENDED_RMT_PROTOCOL
+    case 's':
+      {
+	char s;
+	struct mtget mtget;
+
+	if (read (0, &s, 1) != 1)
+	  goto top;
+	
+#ifdef MTIOCGET
+	if (ioctl (tape, MTIOCGET, (char *) &mtget) < 0)
+	  goto ioerror;
+#endif
+	switch (s)
+	{
+	  case MTS_TYPE:
+	    rval = mtget.mt_type;
+	    break;
+
+	  case MTS_DSREG:
+	    rval = mtget.mt_dsreg;
+	    break;
+
+	  case MTS_ERREG:
+	    rval = mtget.mt_erreg;
+	    break;
+
+	  case MTS_RESID:
+	    rval = mtget.mt_resid;
+	    break;
+
+	  case MTS_FILENO:
+	    rval = mtget.mt_fileno;
+	    break;
+
+	  case MTS_BLKNO:
+	    rval = mtget.mt_blkno;
+	    break;
+
+	  case MTS_FLAGS:
+	    rval = mtget.mt_gstat;
+	    break;
+
+	  case MTS_BF:
+	    rval = 0;
+	    break;
+
+	  default:
+	    errno = EINVAL;
+	    goto ioerror;
+	}
+	goto respond;
+      }
+#endif /* EXTENDED_RMT_PROTOCOL */
 
     default:
       DEBUG1 ("rmtd: garbage command %c\n", c);
@@ -285,7 +451,11 @@ error (num)
      int num;
 {
 
-  DEBUG2 ("rmtd: E %d (%s)\n", num, sys_errlist[num]);
-  (void) sprintf (resp, "E%d\n%s\n", num, sys_errlist[num]);
+/* Debian hack: rmt has problems on systems (such as the Hurd) where
+   sys_errlist is not available therefore I borrowed some code from
+   error.c to fix this problem.  This has been reported to the upstream
+   maintainers.  (7/22/99) - BEM */
+  DEBUG2 ("rmtd: E %d (%s)\n", num, strerror (num));
+  (void) sprintf (resp, "E%d\n%s\n", num, strerror (num));
   (void) write (1, resp, strlen (resp));
 }

@@ -1,5 +1,5 @@
 /* util.c - Several utility routines for cpio.
-   Copyright (C) 1990, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -11,15 +11,13 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   You should have received a copy of the GNU General Public License along
+   with this program; if not, write to the Free Software Foundation, Inc.,
+   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include <stdio.h>
 #include <sys/types.h>
-#ifdef HPUX_CDF
 #include <sys/stat.h>
-#endif
 #include "system.h"
 #include "cpiohdr.h"
 #include "dstring.h"
@@ -489,7 +487,9 @@ copy_files_disk_to_tape (in_des, out_des, num_bytes, filename)
   while (num_bytes > 0)
     {
       if (input_size == 0)
-	if (rc = disk_fill_input_buffer (in_des, DISK_IO_BLOCK_SIZE))
+	if (rc = disk_fill_input_buffer (in_des,
+	  num_bytes < DISK_IO_BLOCK_SIZE ?
+	  num_bytes : DISK_IO_BLOCK_SIZE))
 	  {
 	    if (rc > 0)
 	      error (0, 0, "File %s shrunk by %ld bytes, padding with zeros",
@@ -558,6 +558,31 @@ copy_files_disk_to_disk (in_des, out_des, num_bytes, filename)
       input_size -= size;
       in_buff += size;
     }
+}
+
+/* Warn if file changed while it was being copied.  */
+
+void
+warn_if_file_changed(file_name, old_file_size, old_file_mtime)
+     char *file_name;
+     unsigned long old_file_size;
+     unsigned long old_file_mtime;
+{
+  struct stat new_file_stat;
+  if ((*xstat) (file_name, &new_file_stat) < 0)
+    {
+      error (0, errno, "%s", file_name);
+      return;
+    }
+
+  /* Only check growth, shrinkage detected in copy_files_disk_to_{disk,tape}()
+   */
+  if (new_file_stat.st_size > old_file_size)
+    error (0, 0, "File %s grew, %ld new bytes not copied",
+	   file_name, (long)(new_file_stat.st_size - old_file_size));
+
+  else if (new_file_stat.st_mtime != old_file_mtime)
+    error (0, 0, "File %s was modified while being copied", file_name);
 }
 
 /* Create all directories up to but not including the last part of NAME.
@@ -808,13 +833,14 @@ open_archive (file)
   copy_in = process_copy_in;
 
   if (copy_function == copy_in)
-    fd = rmtopen (file, O_RDONLY | O_BINARY, 0666);
+    fd = rmtopen (file, O_RDONLY | O_BINARY, 0666, rsh_command_option);
   else
     {
       if (!append_flag)
-	fd = rmtopen (file, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
+	fd = rmtopen (file, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666,
+			rsh_command_option);
       else
-	fd = rmtopen (file, O_RDWR | O_BINARY, 0666);
+	fd = rmtopen (file, O_RDWR | O_BINARY, 0666, rsh_command_option);
     }
 
   return fd;

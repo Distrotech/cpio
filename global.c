@@ -1,5 +1,5 @@
 /* global.c - global variables and initial values for cpio.
-   Copyright (C) 1990, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   You should have received a copy of the GNU General Public License along
+   with this program; if not, write to the Free Software Foundation, Inc.,
+   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include <sys/types.h>
 #include "cpiohdr.h"
@@ -133,6 +133,9 @@ int archive_des;
 
 /* Name of file containing the archive, if known; NULL if stdin/out.  */
 char *archive_name = NULL;
+
+/* Name of the remote shell command, if known; NULL otherwise.  */
+char *rsh_command_option = NULL;
 
 /* CRC checksum.  */
 unsigned long crc;

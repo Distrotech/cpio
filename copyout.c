@@ -1,5 +1,5 @@
 /* copyout.c - create a cpio archive
-   Copyright (C) 1990, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -11,9 +11,9 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   You should have received a copy of the GNU General Public License along
+   with this program; if not, write to the Free Software Foundation, Inc.,
+   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -111,12 +111,15 @@ write_out_header (file_hdr, out_des)
       if ((file_hdr->c_ino >> 16) != 0)
 	error (0, 0, "%s: truncating inode number", file_hdr->c_name);
 
+      /* Debian hack: The type of dev_t has changed in glibc.  Fixed output
+         to ensure that a long int is passed to sprintf.  This has been
+         reported to "bug-gnu-utils@prep.ai.mit.edu". (1998/5/26) -BEM */
       sprintf (ascii_header,
-	       "%06o%06o%06lo%06lo%06lo%06lo%06lo%06o%011lo%06lo%011lo",
-	       file_hdr->c_magic & 0xFFFF, dev & 0xFFFF,
+	       "%06ho%06lo%06lo%06lo%06lo%06lo%06lo%06lo%011lo%06lo%011lo",
+	       file_hdr->c_magic & 0xFFFF, (long) dev & 0xFFFF,
 	       file_hdr->c_ino & 0xFFFF, file_hdr->c_mode & 0xFFFF,
 	       file_hdr->c_uid & 0xFFFF, file_hdr->c_gid & 0xFFFF,
-	       file_hdr->c_nlink & 0xFFFF, rdev & 0xFFFF,
+	       file_hdr->c_nlink & 0xFFFF, (long) rdev & 0xFFFF,
 	       file_hdr->c_mtime, file_hdr->c_namesize & 0xFFFF,
 	       file_hdr->c_filesize);
       tape_buffered_write (ascii_header, out_des, 76L);
@@ -384,6 +387,8 @@ process_copy_out ()
 
 	      write_out_header (&file_hdr, out_file_des);
 	      copy_files_disk_to_tape (in_file_des, out_file_des, file_hdr.c_filesize, input_name.ds_string);
+	      warn_if_file_changed(input_name.ds_string, file_hdr.c_filesize,
+                                   file_hdr.c_mtime);
 
 #ifndef __MSDOS__
 	      if (archive_format == arf_tar || archive_format == arf_ustar)
@@ -399,7 +404,13 @@ process_copy_out ()
 		{
 		  times.actime = file_stat.st_atime;
 		  times.modtime = file_stat.st_mtime;
-		  if (utime (file_hdr.c_name, &times) < 0)
+		  /* Debian hack: Silently ignore EROFS because
+                     reading the file won't have upset its timestamp
+                     if it's on a read-only filesystem.  This has been
+                     submitted as a suggestion to
+                     "bug-gnu-utils@prep.ai.mit.edu".  -BEM */
+		  if (utime (file_hdr.c_name, &times) < 0
+		      && errno != EROFS)
 		    error (0, errno, "%s", file_hdr.c_name);
 		}
 	      break;
@@ -562,6 +573,8 @@ read_for_checksum (in_file_des, file_size, file_name)
 	error (1, errno, "cannot read checksum for %s", file_name);
       if (bytes_read == 0)
 	break;
+      if (bytes_left < bytes_read)
+        bytes_read = bytes_left;
       for (i = 0; i < bytes_read; ++i)
 	crc += buf[i] & 0xff;
     }
@@ -785,6 +798,7 @@ writeout_defered_file (header, out_file_des)
 
   write_out_header (&file_hdr, out_file_des);
   copy_files_disk_to_tape (in_file_des, out_file_des, file_hdr.c_filesize, header->c_name);
+  warn_if_file_changed(header->c_name, file_hdr.c_filesize, file_hdr.c_mtime);
 
 #ifndef __MSDOS__
   if (archive_format == arf_tar || archive_format == arf_ustar)
@@ -800,8 +814,14 @@ writeout_defered_file (header, out_file_des)
     {
       times.actime = file_hdr.c_mtime;
       times.modtime = file_hdr.c_mtime;
-      if (utime (file_hdr.c_name, &times) < 0)
+      /* Debian hack: Silently ignore EROFS because reading the file
+         won't have upset its timestamp if it's on a read-only
+         filesystem.  This has been submitted as a suggestion to
+         "bug-gnu-utils@prep.ai.mit.edu".  -BEM */
+      if (utime (file_hdr.c_name, &times) < 0
+	  && errno != EROFS)
 	error (0, errno, "%s", file_hdr.c_name);
     }
   return;
 }
+
