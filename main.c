@@ -43,7 +43,6 @@ struct option long_opts[] =
   {"force-local", 0, &f_force_local, 1},
   {"format", 1, 0, 'H'},
   {"help", 0, 0, 132},
-  {"ignore-disk-input-errors", 0, 0, 138},
   {"io-size", 1, 0, 'C'},
   {"link", 0, &link_flag, TRUE},
   {"list", 0, &table_flag, TRUE},
@@ -53,12 +52,14 @@ struct option long_opts[] =
   {"no-preserve-owner", 0, 0, 134},
   {"nonmatching", 0, &copy_matching_files, FALSE},
   {"numeric-uid-gid", 0, &numeric_uid, TRUE},
+  {"only-verify-crc", 0, 0, 139},
   {"owner", 1, 0, 'R'},
   {"pass-through", 0, 0, 'p'},
   {"pattern-file", 1, 0, 'E'},
   {"preserve-modification-time", 0, &retain_time_flag, TRUE},
   {"rename", 0, &rename_flag, TRUE},
   {"rename-batch-file", 1, 0, 137},
+  {"quiet", 0, 0, 138},
   {"sparse", 0, 0, 135},
   {"swap", 0, 0, 'b'},
   {"swap-bytes", 0, 0, 's'},
@@ -228,10 +229,6 @@ crc newc odc bin ustar tar (all-caps also recognized)", optarg);
 	  copy_function = process_copy_in;
 	  break;
 
-	case 138:
-	  ignore_disk_input_errors_flag = TRUE;
-	  break;
-
 	case 'I':		/* Input archive file name.  */
 	  input_archive_name = optarg;
 	  break;
@@ -281,6 +278,10 @@ crc newc odc bin ustar tar (all-caps also recognized)", optarg);
 	  output_archive_name = optarg;
 	  break;
 
+	case 139:
+	  only_verify_crc_flag = TRUE;
+	  break;
+
 	case 'p':		/* Copy-pass mode.  */
 	  if (copy_function != 0)
 	    usage (stderr, 2);
@@ -293,6 +294,10 @@ crc newc odc bin ustar tar (all-caps also recognized)", optarg);
 
 	case 137:
 	  rename_batch_file = optarg;
+	  break;
+
+	case 138:
+	  quiet_flag = TRUE;
 	  break;
 
 	case 'R':		/* Set the owner.  */
