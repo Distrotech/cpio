@@ -540,7 +540,7 @@ copy_files_disk_to_disk (in_des, out_des, num_bytes, filename)
   while (num_bytes > 0)
     {
       if (input_size == 0)
-	if (rc = disk_fill_input_buffer (in_des, DISK_IO_BLOCK_SIZE))
+	if (rc = disk_fill_input_buffer (in_des, num_bytes))
 	  {
 	    if (rc > 0)
 	      error (0, 0, _("File %s shrunk by %ld bytes, padding with zeros"),
