@@ -183,6 +183,7 @@ gettext
 safe-read
 savedir
 stdbool
+unlocked-io
 xalloc
 xalloc-die
 '
