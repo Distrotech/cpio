@@ -1,6 +1,8 @@
 Tue Jun 27 19:14:27 1995  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
-        * configure.in: fixed for new autoconf.
-        * Makefile.in: changed realclean to maintainer-clean.
+        * configure.in: fixed for new autoconf.  Added check to make
+	sure fnmatch() works.
+        * Makefile.in: changed realclean to maintainer-clean.  Added
+	support to handle fnmatch separate from other LIBOBJS.
         * cpio.texi:  More changes for 2.4.
 
 Wed Dec 14 16:14:27 1994  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
