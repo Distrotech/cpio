@@ -37,6 +37,14 @@
 static void copyin_regular_file(struct new_cpio_header* file_hdr,
 				int in_file_des);
 
+void
+warn_junk_bytes (long bytes_skipped)
+{
+  error (0, 0, ngettext ("warning: skipped %ld byte of junk",
+			 "warning: skipped %ld bytes of junk", bytes_skipped),
+	 bytes_skipped);
+}
+
 
 static int
 query_rename(struct new_cpio_header* file_hdr, FILE *tty_in, FILE *tty_out,
@@ -404,101 +412,110 @@ create_final_defers ()
 }
 
 static void
-copyin_regular_file(struct new_cpio_header* file_hdr, int in_file_des)
+copyin_regular_file (struct new_cpio_header* file_hdr, int in_file_des)
 {
   int out_file_des;		/* Output file descriptor.  */
 
-  /* Can the current file be linked to a previously copied file? */
-  if (file_hdr->c_nlink > 1 && (archive_format == arf_newascii
-      || archive_format == arf_crcascii) )
+  if (to_stdout_option)
+    out_file_des = STDOUT_FILENO;
+  else
     {
-      int link_res;
-      if (file_hdr->c_filesize == 0)
+      /* Can the current file be linked to a previously copied file? */
+      if (file_hdr->c_nlink > 1
+	  && (archive_format == arf_newascii
+	      || archive_format == arf_crcascii) )
 	{
-	  /* The newc and crc formats store multiply linked copies
-	     of the same file in the archive only once.  The
-	     actual data is attached to the last link in the
-	     archive, and the other links all have a filesize
-	     of 0.  Since this file has multiple links and a
-	     filesize of 0, its data is probably attatched to
-	     another file in the archive.  Save the link, and
-	     process it later when we get the actual data.  We
-	     can't just create it with length 0 and add the
-	     data later, in case the file is readonly.  We still
-	     lose if its parent directory is readonly (and we aren't
-	     running as root), but there's nothing we can do about
-	     that.  */
-	  defer_copyin (file_hdr);
-	  tape_toss_input (in_file_des, file_hdr->c_filesize);
-	  tape_skip_padding (in_file_des, file_hdr->c_filesize);
-	  return;
-	}
-      /* If the file has data (filesize != 0), then presumably
-	 any other links have already been defer_copyin'ed(),
-	 but GNU cpio version 2.0-2.2 didn't do that, so we
-	 still have to check for links here (and also in case
-	 the archive was created and later appeneded to). */
-      /* Debian hack: (97/1/2) This was reported by Ronald
-	 F. Guilmette to the upstream maintainers. -BEM */
-      link_res = link_to_maj_min_ino (file_hdr->c_name, 
+	  int link_res;
+	  if (file_hdr->c_filesize == 0)
+	    {
+	      /* The newc and crc formats store multiply linked copies
+		 of the same file in the archive only once.  The
+		 actual data is attached to the last link in the
+		 archive, and the other links all have a filesize
+		 of 0.  Since this file has multiple links and a
+		 filesize of 0, its data is probably attatched to
+		 another file in the archive.  Save the link, and
+		 process it later when we get the actual data.  We
+		 can't just create it with length 0 and add the
+		 data later, in case the file is readonly.  We still
+		 lose if its parent directory is readonly (and we aren't
+		 running as root), but there's nothing we can do about
+		 that.  */
+	      defer_copyin (file_hdr);
+	      tape_toss_input (in_file_des, file_hdr->c_filesize);
+	      tape_skip_padding (in_file_des, file_hdr->c_filesize);
+	      return;
+	    }
+	  /* If the file has data (filesize != 0), then presumably
+	     any other links have already been defer_copyin'ed(),
+	     but GNU cpio version 2.0-2.2 didn't do that, so we
+	     still have to check for links here (and also in case
+	     the archive was created and later appeneded to). */
+	  /* Debian hack: (97/1/2) This was reported by Ronald
+	     F. Guilmette to the upstream maintainers. -BEM */
+	  link_res = link_to_maj_min_ino (file_hdr->c_name, 
 		    file_hdr->c_dev_maj, file_hdr->c_dev_min,
-		    file_hdr->c_ino);
-      if (link_res == 0)
+					  file_hdr->c_ino);
+	  if (link_res == 0)
+	    {
+	      tape_toss_input (in_file_des, file_hdr->c_filesize);
+	      tape_skip_padding (in_file_des, file_hdr->c_filesize);
+	  return;
+	    }
+	}
+      else if (file_hdr->c_nlink > 1
+	       && archive_format != arf_tar
+	       && archive_format != arf_ustar)
 	{
-	  tape_toss_input (in_file_des, file_hdr->c_filesize);
-	  tape_skip_padding (in_file_des, file_hdr->c_filesize);
+	  int link_res;
+	  /* Debian hack: (97/1/2) This was reported by Ronald
+	     F. Guilmette to the upstream maintainers. -BEM */
+	  link_res = link_to_maj_min_ino (file_hdr->c_name, 
+					  file_hdr->c_dev_maj,
+					  file_hdr->c_dev_min,
+					  file_hdr->c_ino);
+	  if (link_res == 0)
+	    {
+	      tape_toss_input (in_file_des, file_hdr->c_filesize);
+	      tape_skip_padding (in_file_des, file_hdr->c_filesize);
+	      return;
+	    }
+	}
+      else if ((archive_format == arf_tar || archive_format == arf_ustar)
+	       && file_hdr->c_tar_linkname
+	       && file_hdr->c_tar_linkname[0] != '\0')
+	{
+	  int	link_res;
+	  link_res = link_to_name (file_hdr->c_name, file_hdr->c_tar_linkname);
+	  if (link_res < 0)
+	    {
+	      error (0, errno, _("cannot link %s to %s"),
+		     file_hdr->c_tar_linkname, file_hdr->c_name);
+	    }
 	  return;
 	}
-    }
-  else if (file_hdr->c_nlink > 1 && archive_format != arf_tar
-      && archive_format != arf_ustar)
-    {
-      int link_res;
-      /* Debian hack: (97/1/2) This was reported by Ronald
-	 F. Guilmette to the upstream maintainers. -BEM */
-      link_res = link_to_maj_min_ino (file_hdr->c_name, 
-		    file_hdr->c_dev_maj, file_hdr->c_dev_min,
-		    file_hdr->c_ino);
-      if (link_res == 0)
-	{
-	  tape_toss_input (in_file_des, file_hdr->c_filesize);
-	  tape_skip_padding (in_file_des, file_hdr->c_filesize);
-	  return;
-	}
-    }
-  else if ((archive_format == arf_tar || archive_format == arf_ustar)
-	   && file_hdr->c_tar_linkname && 
-	   file_hdr->c_tar_linkname[0] != '\0')
-    {
-      int	link_res;
-      link_res = link_to_name (file_hdr->c_name,
-			       file_hdr->c_tar_linkname);
-      if (link_res < 0)
-	{
-	  error (0, errno, _("cannot link %s to %s"),
-		 file_hdr->c_tar_linkname, file_hdr->c_name);
-	}
-      return;
-    }
-
-  /* If not linked, copy the contents of the file.  */
-  out_file_des = open (file_hdr->c_name,
-		       O_CREAT | O_WRONLY | O_BINARY, 0600);
-  if (out_file_des < 0 && create_dir_flag)
-    {
-      create_all_directories (file_hdr->c_name);
+    
+      /* If not linked, copy the contents of the file.  */
       out_file_des = open (file_hdr->c_name,
-			   O_CREAT | O_WRONLY | O_BINARY,
-			   0600);
+			   O_CREAT | O_WRONLY | O_BINARY, 0600);
+  
+      if (out_file_des < 0 && create_dir_flag)
+	{
+	  create_all_directories (file_hdr->c_name);
+	  out_file_des = open (file_hdr->c_name,
+			       O_CREAT | O_WRONLY | O_BINARY,
+			       0600);
+	}
+      
+      if (out_file_des < 0)
+	{
+	  error (0, errno, "%s", file_hdr->c_name);
+	  tape_toss_input (in_file_des, file_hdr->c_filesize);
+	  tape_skip_padding (in_file_des, file_hdr->c_filesize);
+	  return;
+	}
     }
-  if (out_file_des < 0)
-    {
-      error (0, errno, "%s", file_hdr->c_name);
-      tape_toss_input (in_file_des, file_hdr->c_filesize);
-      tape_skip_padding (in_file_des, file_hdr->c_filesize);
-      return;
-    }
-
+  
   crc = 0;
   if (swap_halfwords_flag)
     {
@@ -518,6 +535,19 @@ copyin_regular_file(struct new_cpio_header* file_hdr, int in_file_des)
     }
   copy_files_tape_to_disk (in_file_des, out_file_des, file_hdr->c_filesize);
   disk_empty_output_buffer (out_file_des);
+  
+  if (to_stdout_option)
+    {
+      if (archive_format == arf_crcascii)
+	{
+	  if (crc != file_hdr->c_chksum)
+	    error (0, 0, _("%s: checksum error (0x%x, should be 0x%x)"),
+		   file_hdr->c_name, crc, file_hdr->c_chksum);
+	}
+      tape_skip_padding (in_file_des, file_hdr->c_filesize);
+      return;
+    }
+      
   /* Debian hack to fix a bug in the --sparse option.
      This bug has been reported to
      "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
@@ -536,6 +566,7 @@ copyin_regular_file(struct new_cpio_header* file_hdr, int in_file_des)
 	error (0, 0, _("%s: checksum error (0x%x, should be 0x%x)"),
 	       file_hdr->c_name, crc, file_hdr->c_chksum);
     }
+
   /* File is now copied; set attributes.  */
   if (!no_chown_flag)
     if ((chown (file_hdr->c_name,
@@ -543,9 +574,11 @@ copyin_regular_file(struct new_cpio_header* file_hdr, int in_file_des)
 	   set_group_flag ? set_group : file_hdr->c_gid) < 0)
 	&& errno != EPERM)
       error (0, errno, "%s", file_hdr->c_name);
+  
   /* chown may have turned off some permissions we wanted. */
   if (chmod (file_hdr->c_name, (int) file_hdr->c_mode) < 0)
     error (0, errno, "%s", file_hdr->c_name);
+  
   if (retain_time_flag)
     {
       struct utimbuf times;		/* For setting file times.  */
@@ -556,9 +589,10 @@ copyin_regular_file(struct new_cpio_header* file_hdr, int in_file_des)
       if (utime (file_hdr->c_name, &times) < 0)
 	error (0, errno, "%s", file_hdr->c_name);
     }
+  
   tape_skip_padding (in_file_des, file_hdr->c_filesize);
-  if (file_hdr->c_nlink > 1 && (archive_format == arf_newascii
-      || archive_format == arf_crcascii) )
+  if (file_hdr->c_nlink > 1
+      && (archive_format == arf_newascii || archive_format == arf_crcascii) )
     {
       /* (see comment above for how the newc and crc formats 
 	 store multiple links).  Now that we have the data 
@@ -577,6 +611,9 @@ copyin_directory(struct new_cpio_header* file_hdr, int existing_dir)
   int cdf_char;                 /* Index of `+' char indicating a CDF.  */
 #endif
 
+  if (to_stdout_option)
+    return;
+  
   /* Strip any trailing `/'s off the filename; tar puts
      them on.  We might as well do it here in case anybody
      else does too, since they cause strange things to happen.  */
@@ -666,6 +703,9 @@ copyin_device(struct new_cpio_header* file_hdr)
 {
   int res;			/* Result of various function calls.  */
 
+  if (to_stdout_option)
+    return;
+
   if (file_hdr->c_nlink > 1 && archive_format != arf_tar
       && archive_format != arf_ustar)
     {
@@ -742,6 +782,9 @@ copyin_link(struct new_cpio_header *file_hdr, int in_file_des)
   char *link_name = NULL;	/* Name of hard and symbolic links.  */
   int res;			/* Result of various function calls.  */
 
+  if (to_stdout_option)
+    return;
+
   if (archive_format != arf_tar && archive_format != arf_ustar)
     {
       link_name = (char *) xmalloc ((unsigned int) file_hdr->c_filesize + 1);
@@ -780,14 +823,13 @@ copyin_link(struct new_cpio_header *file_hdr, int in_file_des)
 }
 
 static void
-copyin_file(struct new_cpio_header* file_hdr, int in_file_des)
+copyin_file (struct new_cpio_header* file_hdr, int in_file_des)
 {
   int existing_dir;
 
-  if (try_existing_file(file_hdr, in_file_des, &existing_dir) < 0)
-    {
-      return;
-    }
+  if (!to_stdout_option
+      && try_existing_file (file_hdr, in_file_des, &existing_dir) < 0)
+    return;
 
   /* Do the real copy or link.  */
   switch (file_hdr->c_mode & CP_IFMT)
@@ -1040,7 +1082,8 @@ read_in_header (struct new_cpio_header *file_hdr, int in_des)
 	last_header_start = input_bytes - io_block_size +
 	  (in_buff - input_buffer);
       if (bytes_skipped > 0)
-	error (0, 0, _("warning: skipped %ld bytes of junk"), bytes_skipped);
+	warn_junk_bytes (bytes_skipped);
+
       read_in_tar_header (file_hdr, in_des);
       return;
     }
@@ -1057,7 +1100,7 @@ read_in_header (struct new_cpio_header *file_hdr, int in_des)
 	  && !strncmp ((char *) file_hdr, "070701", 6))
 	{
 	  if (bytes_skipped > 0)
-	    error (0, 0, _("warning: skipped %ld bytes of junk"), bytes_skipped);
+	    warn_junk_bytes (bytes_skipped);
 	  read_in_new_ascii (file_hdr, in_des);
 	  break;
 	}
@@ -1065,7 +1108,8 @@ read_in_header (struct new_cpio_header *file_hdr, int in_des)
 	  && !strncmp ((char *) file_hdr, "070702", 6))
 	{
 	  if (bytes_skipped > 0)
-	    error (0, 0, _("warning: skipped %ld bytes of junk"), bytes_skipped);
+	    warn_junk_bytes (bytes_skipped);
+
 	  read_in_new_ascii (file_hdr, in_des);
 	  break;
 	}
@@ -1073,7 +1117,8 @@ read_in_header (struct new_cpio_header *file_hdr, int in_des)
 	  && !strncmp ((char *) file_hdr, "070707", 6))
 	{
 	  if (bytes_skipped > 0)
-	    error (0, 0, _("warning: skipped %ld bytes of junk"), bytes_skipped);
+	    warn_junk_bytes (bytes_skipped);
+	  
 	  read_in_old_ascii (file_hdr, in_des);
 	  break;
 	}
@@ -1083,7 +1128,8 @@ read_in_header (struct new_cpio_header *file_hdr, int in_des)
 	{
 	  /* Having to skip 1 byte because of word alignment is normal.  */
 	  if (bytes_skipped > 0)
-	    error (0, 0, _("warning: skipped %ld bytes of junk"), bytes_skipped);
+	    warn_junk_bytes (bytes_skipped);
+	  
 	  read_in_binary (file_hdr, in_des);
 	  break;
 	}
