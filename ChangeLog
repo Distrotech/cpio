@@ -1,3 +1,12 @@
+Mon Oct  3 00:46:30 1994  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
+	* makefile.pc, system.h:  Changes to compile with Borland C++ 4.0.
+
+Thu Sep 29 22:15:50 1994  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
+	* makepath.c: Don't #define index if it is already #defined.
+
+	* mt.c:  Check for __hpux defined instead of __hpux__.  Reported
+	by ericb@lsid.hp.com (Eric Backus).
+
 Thu Sep 29 11:21:31 1994  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	* extern.h, util.c, copyout.c, copypass.c, main.c, global.c:
 	Never mind --ignore-disk-input-errors flag, we'll just always
