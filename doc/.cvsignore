@@ -1,2 +1,16 @@
 Makefile.in
 Makefile
+cpio.aux
+cpio.cp
+cpio.cps
+cpio.fn
+cpio.info
+cpio.ky
+cpio.log
+cpio.pg
+cpio.toc
+cpio.tp
+cpio.vr
+manual
+stamp-vti
+version.texi

@@ -1,3 +1,28 @@
+2005-01-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* doc/gendocs_template: Template file for gendocs.sh.
+	* doc/Makefile.am: Use gendocs.sh to generate webdocs.
+	* doc/cpio.texi: Updated.
+
+	* src/copyin.c: Use memset instead of bzero, memmove
+	(or memcpy, if appropriate), instead of bcopy, and
+	strchr/strrchr instead of index/rindex.
+	* src/copypass.c: Likewise.
+	* src/main.c: Likewise.
+	* src/makepath.c: Likewise.
+	* src/tar.c: Likewise.
+	* src/util.c: Likewise.
+	(write_nuls_to_file): Made extern. All callers updated
+	
+	* src/copyout.c: Likewise. Use write_nuls_to_file instead
+	of explicitely accessing zeros_512
+	* src/userspec.c: Likewise.
+	Rename isnumber to isnumber_p. Proposed by
+	Albert Chin
+	* src/extern.h (zeros_512): Removed
+	(write_nuls_to_file): New function
+	* src/global.c (zeros_512): Removed
+	
 2005-01-06  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* bootstrap: Add 'fileblocks' gnulib module
