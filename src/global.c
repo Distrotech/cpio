@@ -165,9 +165,6 @@ long long input_bytes, output_bytes;
 long input_bytes, output_bytes;
 #endif
 
-/* 512 bytes of 0; used for various padding operations.  */
-char zeros_512[512];
-
 /* Saving of argument values for later reference.  */
 char *directory_name = NULL;
 char **save_patterns;
