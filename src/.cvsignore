@@ -1,0 +1,11 @@
+Makefile.in
+Makefile
+.deps
+.libs
+cpio
+mt
+rmt
+.gdbinit
+*.tar.gz
+*.tar.bz2
+localedir.h
