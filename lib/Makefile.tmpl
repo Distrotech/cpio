@@ -35,6 +35,8 @@ localedir.h : Makefile
 libcpio_a_LIBADD = $(LIBOBJS) $(ALLOCA)
 libcpio_a_DEPENDENCIES = $(libcpio_a_LIBADD)
 
+rtapelib.o: localedir.h
+
 BUILT_SOURCES =
 MAINTAINERCLEANFILES =
 MOSTLYCLEANFILES =
