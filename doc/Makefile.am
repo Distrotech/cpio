@@ -17,4 +17,9 @@
 
 info_TEXINFOS = cpio.texi
 man_MANS = cpio.1 mt.1
-EXTRA_DIST = $(man_MANS)
+EXTRA_DIST = $(man_MANS) gendocs_template
+
+# Make sure you set TEXINPUT 
+manual:
+	TEXINPUTS=$(srcdir):$(top_srcdir)/scripts:$$TEXINPUTS \
+	  gendocs.sh cpio 'GNU cpio manual'
