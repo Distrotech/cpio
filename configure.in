@@ -46,10 +46,10 @@ else return 1; }],
 have_fnmatch=yes, have_fnmatch=no, have_fnmatch=no)
 if test $have_fnmatch = yes ; then
   AC_MSG_RESULT(yes)
-  FNMATCH=
+  FNMATCH=""
 else
   AC_MSG_RESULT(no)
-  FNMATCH=fnmatch.o
+  FNMATCH="fnmatch.o"
 fi
 AC_SUBST(FNMATCH)
 AC_CHECK_FUNCS(strerror lchown)
