@@ -39,20 +39,23 @@
 #include <rmt.h>
 #include <localedir.h>
 
-#define ARG_NO_ABSOLUTE_FILENAMES  256
-#define ARG_NO_PRESERVE_OWNER      257
-#define ARG_ONLY_VERIFY_CRC        258
-#define ARG_RENAME_BATCH_FILE      259
-#define ARG_RSH_COMMAND            260
-#define ARG_QUIET                  261
-#define ARG_SPARSE                 262
-#define ARG_FORCE_LOCAL            263
-#define ARG_DEBUG                  264
-#define ARG_BLOCK_SIZE             265
+enum cpio_options {
+  NO_ABSOLUTE_FILENAMES_OPTION,  
+  NO_PRESERVE_OWNER_OPTION,      
+  ONLY_VERIFY_CRC_OPTION,        
+  RENAME_BATCH_FILE_OPTION,      
+  RSH_COMMAND_OPTION,            
+  QUIET_OPTION,                  
+  SPARSE_OPTION,                 
+  FORCE_LOCAL_OPTION,            
+  DEBUG_OPTION,                  
+  BLOCK_SIZE_OPTION,             
+  TO_STDOUT_OPTION,              
 
-#define USAGE_OPTION               266
-#define LICENSE_OPTION             267
-#define VERSION_OPTION             268
+  USAGE_OPTION,               
+  LICENSE_OPTION,             
+  VERSION_OPTION
+};
 
 const char *argp_program_version = "cpio (" PACKAGE_NAME ") " VERSION;
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
@@ -89,13 +92,13 @@ static struct argp_option options[] = {
 
   {"file", 'F', N_("[[USER@]HOST:]FILE-NAME"), 0,
    N_("Use this FILE-NAME instead of standard input or output. Optional USER and HOST specify the user and host names in case of a remote archive"), 110},
-  {"force-local", ARG_FORCE_LOCAL, 0, 0,
+  {"force-local", FORCE_LOCAL_OPTION, 0, 0,
    N_("Archive file is local, even if its name contains colons"), 110},
   {"format", 'H', N_("FORMAT"), 0,
    N_("Use given archive FORMAT"), 110},
   {NULL, 'B', NULL, 0,
    N_("Set the I/O block size to 5120 bytes"), 110},
-  {"block-size", ARG_BLOCK_SIZE, N_("BLOCK-SIZE"), 0,
+  {"block-size", BLOCK_SIZE_OPTION, N_("BLOCK-SIZE"), 0,
    N_("Set the I/O block size to BLOCK-SIZE * 512 bytes"), 110},
   {NULL, 'c', NULL, 0,
    N_("Use the old portable (ASCII) archive format"), 0},
@@ -111,29 +114,31 @@ static struct argp_option options[] = {
   {"numeric-uid-gid", 'n', 0, 0,
    N_("In the verbose table of contents listing, show numeric UID and GID"),
    110},
-  {"rsh-command", ARG_RSH_COMMAND, N_("COMMAND"), 0,
+  {"rsh-command", RSH_COMMAND_OPTION, N_("COMMAND"), 0,
    N_("Use remote COMMAND instead of rsh"), 110},
-  {"quiet", ARG_QUIET, NULL, 0,
+  {"quiet", QUIET_OPTION, NULL, 0,
    N_("Do not print the number of blocks copied"), 110},
   {"verbose", 'v', NULL, 0,
    N_("Verbosely list the files processed"), 110},
 #ifdef DEBUG_CPIO
-  {"debug", ARG_DEBUG, NULL, 0,
+  {"debug", DEBUG_OPTION, NULL, 0,
    N_("Enable debugging info"), 110},
 #endif
+  {"warning", 'W', N_("FLAG"), 0,
+   N_("Control warning display. Currently FLAG is one of 'none', 'truncate', 'all'. Multiple options accumulate."), 110 },
 
   /* ********** */
   {NULL, 0, NULL, 0,
    N_("Operation modifiers valid only in copy-in mode:"), 200},
   {"pattern-file", 'E', N_("FILE"), 0,
    N_("In copy-in mode, read additional patterns specifying filenames to extract or list from FILE"), 210},
-  {"no-absolute-filenames", ARG_NO_ABSOLUTE_FILENAMES, 0, 0,
+  {"no-absolute-filenames", NO_ABSOLUTE_FILENAMES_OPTION, 0, 0,
    N_("Create all files relative to the current directory"), 210},
-  {"only-verify-crc", ARG_ONLY_VERIFY_CRC, 0, 0,
+  {"only-verify-crc", ONLY_VERIFY_CRC_OPTION, 0, 0,
    N_("When reading a CRC format archive in copy-in mode, only verify the CRC's of each file in the archive, don't actually extract the files"), 210},
   {"rename", 'r', 0, 0,
    N_("Interactively rename files"), 210},
-  {"rename-batch-file", ARG_RENAME_BATCH_FILE, N_("FILE"), OPTION_HIDDEN,
+  {"rename-batch-file", RENAME_BATCH_FILE_OPTION, N_("FILE"), OPTION_HIDDEN,
    "", 210},
   {"swap", 'b', NULL, 0,
    N_("Swap both halfwords of words and bytes of halfwords in the data. Equivalent to -sS"), 210},
@@ -142,6 +147,8 @@ static struct argp_option options[] = {
   {"swap-halfwords", 'S', NULL, 0,
    N_("Swap the halfwords of each word (4 bytes) in the files"),
    210},
+  {"to-stdout", TO_STDOUT_OPTION, NULL, 0,
+   N_("Extract files to standard output"), 210},
 
   /* ********** */
   {NULL, 0, NULL, 0,
@@ -168,7 +175,7 @@ static struct argp_option options[] = {
    N_("Dereference  symbolic  links  (copy  the files that they point to instead of copying the links)."), 510},
   {"owner", 'R', N_("[USER][:.][GROUP]"), 0,
    N_("Set the ownership of all files created to the specified USER and/or GROUP"), 510},
-  {"sparse", ARG_SPARSE, NULL, 0,
+  {"sparse", SPARSE_OPTION, NULL, 0,
    N_("Write files with large blocks of zeros as sparse files"), 510},
   {"reset-access-time", 'a', NULL, 0,
    N_("Reset the access times of files after reading them"), 510},
@@ -180,7 +187,7 @@ static struct argp_option options[] = {
    N_("Retain previous file modification times when creating files"), 610},
   {"make-directories", 'd', 0, 0,
    N_("Create leading directories where needed"), 610},
-  {"no-preserve-owner", ARG_NO_PRESERVE_OWNER, 0, 0,
+  {"no-preserve-owner", NO_PRESERVE_OWNER_OPTION, 0, 0,
    N_("Do not change the ownership of the files"), 610},
   {"unconditional", 'u', NULL, 0,
    N_("Replace all files unconditionally"), 610},
@@ -222,8 +229,45 @@ license ()
   exit (0);
 }
 
+static int
+warn_control (char *arg)
+{
+  static struct warn_tab {
+    char *name;
+    int flag;
+  } warn_tab[] = {
+    { "none",       CPIO_WARN_ALL       },
+    { "truncate",   CPIO_WARN_TRUNCATE  },
+    { "all",        CPIO_WARN_ALL       },
+    { NULL }
+  };
+  struct warn_tab *wt;
+  int offset = 0;
+
+  if (strcmp (arg, "none") == 0)
+    {
+      warn_option = 0;
+      return 0;
+    }
+  
+  if (strlen (arg) > 2 && memcmp (arg, "no-", 3) == 0)
+    offset = 3;
+      
+  for (wt = warn_tab; wt->name; wt++)
+    if (strcmp (arg + offset, wt->name) == 0)
+      {
+	if (offset)
+	  warn_option &= ~wt->flag;
+	else
+	  warn_option |= wt->flag;
+	return 0;
+      }
+
+  return 1;
+}
+
 static error_t
-parse_opt (int key, char *optarg, struct argp_state *state)
+parse_opt (int key, char *arg, struct argp_state *state)
 {
   switch (key)
     {
@@ -248,8 +292,8 @@ parse_opt (int key, char *optarg, struct argp_state *state)
       io_block_size = 5120;
       break;
 
-    case ARG_BLOCK_SIZE:		/* --block-size */
-      io_block_size = atoi (optarg);
+    case BLOCK_SIZE_OPTION:		/* --block-size */
+      io_block_size = atoi (arg);
       if (io_block_size < 1)
 	error (2, 0, _("invalid block size"));
       io_block_size *= 512;
@@ -266,7 +310,7 @@ parse_opt (int key, char *optarg, struct argp_state *state)
       break;
 
     case 'C':		/* Block size.  */
-      io_block_size = atoi (optarg);
+      io_block_size = atoi (arg);
       if (io_block_size < 1)
 	error (2, 0, _("invalid block size"));
       break;
@@ -280,36 +324,36 @@ parse_opt (int key, char *optarg, struct argp_state *state)
       break;
 
     case 'E':		/* Pattern file name.  */
-      pattern_file_name = optarg;
+      pattern_file_name = arg;
       break;
 
     case 'F':		/* Archive file name.  */
-      archive_name = optarg;
+      archive_name = arg;
       break;
 
     case 'H':		/* Header format name.  */
       if (archive_format != arf_unknown)
 	USAGE_ERROR ((0, 0, _("Archive format multiply defined")));
-      if (!strcasecmp (optarg, "crc"))
+      if (!strcasecmp (arg, "crc"))
 	archive_format = arf_crcascii;
-      else if (!strcasecmp (optarg, "newc"))
+      else if (!strcasecmp (arg, "newc"))
 	archive_format = arf_newascii;
-      else if (!strcasecmp (optarg, "odc"))
+      else if (!strcasecmp (arg, "odc"))
 	archive_format = arf_oldascii;
-      else if (!strcasecmp (optarg, "bin"))
+      else if (!strcasecmp (arg, "bin"))
 	archive_format = arf_binary;
-      else if (!strcasecmp (optarg, "ustar"))
+      else if (!strcasecmp (arg, "ustar"))
 	archive_format = arf_ustar;
-      else if (!strcasecmp (optarg, "tar"))
+      else if (!strcasecmp (arg, "tar"))
 	archive_format = arf_tar;
-      else if (!strcasecmp (optarg, "hpodc"))
+      else if (!strcasecmp (arg, "hpodc"))
 	archive_format = arf_hpoldascii;
-      else if (!strcasecmp (optarg, "hpbin"))
+      else if (!strcasecmp (arg, "hpbin"))
 	archive_format = arf_hpbinary;
       else
 	error (2, 0, _("\
 invalid archive format `%s'; valid formats are:\n\
-crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
+crc newc odc bin ustar tar (all-caps also recognized)"), arg);
       break;
 	  
     case 'i':		/* Copy-in mode.  */
@@ -319,7 +363,7 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
       break;
 
     case 'I':		/* Input archive file name.  */
-      input_archive_name = optarg;
+      input_archive_name = arg;
       break;
 
     case 'k':		/* Handle corrupted archives.  We always handle
@@ -340,18 +384,18 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
       break;
 
     case 'M':		/* New media message.  */
-      set_new_media_message (optarg);
+      set_new_media_message (arg);
       break;
 
     case 'n':		/* Long list owner and group as numbers.  */
       numeric_uid = true;
       break;
 
-    case ARG_NO_ABSOLUTE_FILENAMES:		/* --no-absolute-filenames */
+    case NO_ABSOLUTE_FILENAMES_OPTION:		/* --no-absolute-filenames */
       no_abs_paths_flag = true;
       break;
 	
-    case ARG_NO_PRESERVE_OWNER:		/* --no-preserve-owner */
+    case NO_PRESERVE_OWNER_OPTION:		/* --no-preserve-owner */
       if (set_owner_flag || set_group_flag)
 	USAGE_ERROR ((0, 0,
 	             _("--no-preserve-owner cannot be used with --owner")));
@@ -365,10 +409,10 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
       break;
 
     case 'O':		/* Output archive file name.  */
-      output_archive_name = optarg;
+      output_archive_name = arg;
       break;
 
-    case ARG_ONLY_VERIFY_CRC:
+    case ONLY_VERIFY_CRC_OPTION:
       only_verify_crc_flag = true;
       break;
 
@@ -378,19 +422,19 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
       copy_function = process_copy_pass;
       break;
 	  
-    case ARG_RSH_COMMAND:
-      rsh_command_option = optarg;
+    case RSH_COMMAND_OPTION:
+      rsh_command_option = arg;
       break;
 
     case 'r':		/* Interactively rename.  */
       rename_flag = true;
       break;
 
-    case ARG_RENAME_BATCH_FILE:
-      rename_batch_file = optarg;
+    case RENAME_BATCH_FILE_OPTION:
+      rename_batch_file = arg;
       break;
 
-    case ARG_QUIET:
+    case QUIET_OPTION:
       quiet_flag = true;
       break;
 
@@ -401,9 +445,9 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
       {
 	char *e, *u, *g;
 
-	e = parse_user_spec (optarg, &set_owner, &set_group, &u, &g);
+	e = parse_user_spec (arg, &set_owner, &set_group, &u, &g);
 	if (e)
-	  error (2, 0, "%s: %s", optarg, e);
+	  error (2, 0, "%s: %s", arg, e);
 	if (u)
 	  {
 	    free (u);
@@ -441,24 +485,33 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
       dot_flag = true;
       break;
 
-    case ARG_SPARSE:
+    case 'W':
+      if (warn_control (arg))
+	argp_error (state, _("Invalid value for --warning option: %s"), arg);
+      break;
+      
+    case SPARSE_OPTION:
       sparse_flag = true;
       break;
 
-    case ARG_FORCE_LOCAL:
+    case FORCE_LOCAL_OPTION:
       force_local_option = 1;
       break;
 
 #ifdef DEBUG_CPIO
-    case ARG_DEBUG:
+    case DEBUG_OPTION:
       debug_flag = true;
       break;
 #endif
 
+    case TO_STDOUT_OPTION:
+      to_stdout_option = true;
+      break;
+      
     case '?':
       argp_state_help (state, state->out_stream, ARGP_HELP_STD_HELP);
       break;
-      
+
     case USAGE_OPTION:
       argp_state_help (state, state->out_stream,
 		       ARGP_HELP_USAGE | ARGP_HELP_EXIT_OK);
@@ -533,6 +586,16 @@ process_args (int argc, char *argv[])
       CHECK_USAGE(append_flag, "--append", "--extract");
       CHECK_USAGE(sparse_flag, "--sparse", "--extract");
       CHECK_USAGE(output_archive_name, "-O", "--extract");
+      if (to_stdout_option)
+	{
+	  CHECK_USAGE(create_dir_flag, "--make-directories", "--to-stdout");
+	  CHECK_USAGE(rename_flag, "--rename", "--to-stdout");
+	  CHECK_USAGE(no_chown_flag, "--no-preserve-owner", "--to-stdout");
+	  CHECK_USAGE(set_owner_flag||set_group_flag, "--owner", "--to-stdout");
+	  CHECK_USAGE(retain_time_flag, "--preserve-modification-time",
+		      "--to-stdout");
+	}
+      
       if (archive_name && input_archive_name)
 	USAGE_ERROR((0, 0, _("Both -I and -F are used in copy-in mode")));
 
@@ -561,7 +624,8 @@ process_args (int argc, char *argv[])
       CHECK_USAGE(swap_bytes_flag, "--swap-bytes (--swap)", "--create");
       CHECK_USAGE(swap_halfwords_flag, "--swap-halfwords (--swap)",
 		  "--create");
-
+      CHECK_USAGE(to_stdout_option, "--to-stdout", "--create");
+      
       if (append_flag && !(archive_name || output_archive_name))
 	USAGE_ERROR ((0, 0,
 		      _("--append is used but no archive file name is given (use -F or -O options")));
@@ -596,7 +660,8 @@ process_args (int argc, char *argv[])
       CHECK_USAGE(rename_batch_file, "--rename-batch-file", "--pass-through");
       CHECK_USAGE(no_abs_paths_flag, "--no-absolute-pathnames",
 		  "--pass-through");
-
+      CHECK_USAGE(to_stdout_option, "--to-stdout", "--pass-through");
+      
       directory_name = argv[index];
     }
 
