@@ -5,6 +5,7 @@ Wed Dec 20 10:52:56 1995  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
 	* Makefile.in:  Change prefix, exec_prefix and bindir to get their
 	values from configure.  Added cpio.info to DISTFILES.
 	* cpio.texi:  Added INFO-DIR-ENTRY.
+	* Version 2.4.1 released.
 
 Wed Nov 22 19:37:05 1995  John Oleynick  (juo@wombat.gnu.ai.mit.edu)
         * cpio.texi:  Updated release date and FSF's address.
