@@ -91,8 +91,12 @@ int no_chown_flag = FALSE;
 /* If TRUE, try to write sparse ("holey") files.  */
 int sparse_flag = FALSE;
 
-/* If TRUE, ignore disk input errors.  */
-int ignore_disk_input_errors_flag = FALSE;
+/* If TRUE, don't report number of blocks copied.  */
+int quiet_flag = FALSE;
+
+/* If TRUE, only read the archive and verify the files' CRC's, don't
+   actually extract the files. */
+int only_verify_crc_flag = FALSE;
 
 /* If TRUE, don't use any absolute paths, prefix them by `./'.  */
 int no_abs_paths_flag = FALSE;
@@ -145,8 +149,17 @@ char *in_buff, *out_buff;
 /* Current number of bytes stored at `input_buff' and `output_buff'.  */
 long input_size, output_size;
 
-/* Total number of bytes read and written for all files.  */
+/* Total number of bytes read and written for all files.  
+   Now that many tape drives hold more than 4Gb we need more than 32
+   bits to hold input_bytes and output_bytes.  But it's not worth
+   the trouble of adding special multi-precision arithmetic if the 
+   compiler doesn't support 64 bit ints since input_bytes and
+   output_bytes are only used to print the number of blocks copied.  */
+#ifdef __GNUC__
+long long input_bytes, output_bytes;
+#else
 long input_bytes, output_bytes;
+#endif
 
 /* 512 bytes of 0; used for various padding operations.  */
 char zeros_512[512];
