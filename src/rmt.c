@@ -48,6 +48,7 @@ char copyright[] =
 #endif
 #endif
 #include <errno.h>
+#include <getopt.h>
 
 /* Debian hack: gcc has exhibited problems loading fcntl.h.  Therefore,
    I removed the preprocessor conditionals here - BEM */
