@@ -24,6 +24,10 @@ char copyright[] =
 /*
  * rmt
  */
+#if defined(HAVE_CONFIG_H)
+# include <config.h>
+#endif
+
 #include <stdio.h>
 #ifndef __linux
 /* Kludge alert:  We should really fix this by having configure figure
