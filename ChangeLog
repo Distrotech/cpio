@@ -1,5 +1,15 @@
 2003-11-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* configure.ac: Added various checks
+	* Makefile.am (rmt_LDADD): Added.
+	* error.c: Updated
+	* rmt.c: Removed useless private_errstring
+	* system.h: Updated
+	* userspec.c: Changed the way of handling declared vs. undeclared
+	system calls.
+	
+2003-11-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
 	* TODO: New file
 
 	* README-alpha: New file
