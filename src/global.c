@@ -15,18 +15,15 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#if defined(HAVE_CONFIG_H)
-# include <config.h>
-#endif
+#include <system.h>
 
 #include <sys/types.h>
 #include "cpiohdr.h"
 #include "dstring.h"
-#include "system.h"
 #include "extern.h"
 
-/* If TRUE, reset access times after reading files (-a).  */
-int reset_time_flag = FALSE;
+/* If true, reset access times after reading files (-a).  */
+int reset_time_flag = false;
 
 /* Block size value, initially 512.  -B sets to 5120.  */
 int io_block_size = 512;
@@ -34,93 +31,93 @@ int io_block_size = 512;
 /* The header format to recognize and produce.  */
 enum archive_format archive_format = arf_unknown;
 
-/* If TRUE, create directories as needed. (-d with -i or -p) */
-int create_dir_flag = FALSE;
+/* If true, create directories as needed. (-d with -i or -p) */
+int create_dir_flag = false;
 
-/* If TRUE, interactively rename files. (-r) */
-int rename_flag = FALSE;
+/* If true, interactively rename files. (-r) */
+int rename_flag = false;
 
 /* If non-NULL, the name of a file that will be read to
    rename all of the files in the archive.  --rename-batch-file.  */
 char *rename_batch_file = NULL;
 
-/* If TRUE, print a table of contents of input. (-t) */
-int table_flag = FALSE;
+/* If true, print a table of contents of input. (-t) */
+int table_flag = false;
 
-/* If TRUE, copy unconditionally (older replaces newer). (-u) */
-int unconditional_flag = FALSE;
+/* If true, copy unconditionally (older replaces newer). (-u) */
+int unconditional_flag = false;
 
-/* If TRUE, list the files processed, or ls -l style output with -t. (-v) */
-int verbose_flag = FALSE;
+/* If true, list the files processed, or ls -l style output with -t. (-v) */
+int verbose_flag = false;
 
-/* If TRUE, print a . for each file processed. (-V) */
-int dot_flag = FALSE;
+/* If true, print a . for each file processed. (-V) */
+int dot_flag = false;
 
-/* If TRUE, link files whenever possible.  Used with -p option. (-l) */
-int link_flag = FALSE;
+/* If true, link files whenever possible.  Used with -p option. (-l) */
+int link_flag = false;
 
-/* If TRUE, retain previous file modification time. (-m) */
-int retain_time_flag = FALSE;
+/* If true, retain previous file modification time. (-m) */
+int retain_time_flag = false;
 
-/* Set TRUE if crc_flag is TRUE and we are doing a cpio -i.  Used
+/* Set true if crc_flag is true and we are doing a cpio -i.  Used
    by copy_files so it knows whether to compute the crc.  */
-int crc_i_flag = FALSE;
+int crc_i_flag = false;
 
-/* If TRUE, append to end of archive. (-A) */
-int append_flag = FALSE;
+/* If true, append to end of archive. (-A) */
+int append_flag = false;
 
-/* If TRUE, swap bytes of each file during cpio -i.  */
-int swap_bytes_flag = FALSE;
+/* If true, swap bytes of each file during cpio -i.  */
+int swap_bytes_flag = false;
 
-/* If TRUE, swap halfwords of each file during cpio -i.  */
-int swap_halfwords_flag = FALSE;
+/* If true, swap halfwords of each file during cpio -i.  */
+int swap_halfwords_flag = false;
 
-/* If TRUE, we are swapping halfwords on the current file.  */
-int swapping_halfwords = FALSE;
+/* If true, we are swapping halfwords on the current file.  */
+int swapping_halfwords = false;
 
-/* If TRUE, we are swapping bytes on the current file.  */
-int swapping_bytes = FALSE;
+/* If true, we are swapping bytes on the current file.  */
+int swapping_bytes = false;
 
-/* If TRUE, set ownership of all files to UID `set_owner'.  */
-int set_owner_flag = FALSE;
+/* If true, set ownership of all files to UID `set_owner'.  */
+int set_owner_flag = false;
 uid_t set_owner;
 
-/* If TRUE, set group ownership of all files to GID `set_group'.  */
-int set_group_flag = FALSE;
+/* If true, set group ownership of all files to GID `set_group'.  */
+int set_group_flag = false;
 gid_t set_group;
 
-/* If TRUE, do not chown the files.  */
-int no_chown_flag = FALSE;
+/* If true, do not chown the files.  */
+int no_chown_flag = false;
 
-/* If TRUE, try to write sparse ("holey") files.  */
-int sparse_flag = FALSE;
+/* If true, try to write sparse ("holey") files.  */
+int sparse_flag = false;
 
-/* If TRUE, don't report number of blocks copied.  */
-int quiet_flag = FALSE;
+/* If true, don't report number of blocks copied.  */
+int quiet_flag = false;
 
-/* If TRUE, only read the archive and verify the files' CRC's, don't
+/* If true, only read the archive and verify the files' CRC's, don't
    actually extract the files. */
-int only_verify_crc_flag = FALSE;
+int only_verify_crc_flag = false;
 
-/* If TRUE, don't use any absolute paths, prefix them by `./'.  */
-int no_abs_paths_flag = FALSE;
+/* If true, don't use any absolute paths, prefix them by `./'.  */
+int no_abs_paths_flag = false;
 
 #ifdef DEBUG_CPIO
-/* If TRUE, print debugging information.  */
-int debug_flag = FALSE;
+/* If true, print debugging information.  */
+int debug_flag = false;
 #endif
 
 /* File position of last header read.  Only used during -A to determine
    where the old TRAILER!!! record started.  */
 int last_header_start = 0;
 
-/* With -i; if TRUE, copy only files that match any of the given patterns;
-   if FALSE, copy only files that do not match any of the patterns. (-f) */
-int copy_matching_files = TRUE;
+/* With -i; if true, copy only files that match any of the given patterns;
+   if false, copy only files that do not match any of the patterns. (-f) */
+int copy_matching_files = true;
 
-/* With -itv; if TRUE, list numeric uid and gid instead of translating them
+/* With -itv; if true, list numeric uid and gid instead of translating them
    into names.  */
-int numeric_uid = FALSE;
+int numeric_uid = false;
 
 /* Name of file containing additional patterns (-E).  */
 char *pattern_file_name = NULL;
@@ -179,19 +176,15 @@ int num_patterns;
 /* Character that terminates file names read from stdin.  */
 char name_end = '\n';
 
-/* TRUE if input (cpio -i) or output (cpio -o) is a device node.  */
-char input_is_special = FALSE;
-char output_is_special = FALSE;
+/* true if input (cpio -i) or output (cpio -o) is a device node.  */
+char input_is_special = false;
+char output_is_special = false;
 
-/* TRUE if lseek works on the input.  */
-char input_is_seekable = FALSE;
+/* true if lseek works on the input.  */
+char input_is_seekable = false;
 
-/* TRUE if lseek works on the output.  */
-char output_is_seekable = FALSE;
-
-/* If nonzero, don't consider file names that contain a `:' to be
-   on remote hosts; all files are local.  */
-int f_force_local = 0;
+/* true if lseek works on the output.  */
+char output_is_seekable = false;
 
 /* The name this program was run with.  */
 char *program_name;

@@ -1,5 +1,5 @@
 /* copypass.c - cpio copy pass sub-function.
-   Copyright (C) 1990, 1991, 1992, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001, 2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,14 +15,12 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#if defined(HAVE_CONFIG_H)
-# include <config.h>
-#endif
+#include <system.h>
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "filetypes.h"
-#include "system.h"
 #include "cpiohdr.h"
 #include "dstring.h"
 #include "extern.h"
@@ -59,7 +57,7 @@ process_copy_pass ()
   ds_init (&output_name, dirname_len + 2);
   strcpy (output_name.ds_string, directory_name);
   output_name.ds_string[dirname_len] = '/';
-  output_is_seekable = TRUE;
+  output_is_seekable = true;
   /* Initialize this in case it has members we don't know to set.  */
   bzero (&times, sizeof (struct utimbuf));
 
@@ -101,7 +99,7 @@ process_copy_pass ()
       ds_resize (&output_name, dirname_len + strlen (slash) + 2);
       strcpy (output_name.ds_string + dirname_len + 1, slash);
 
-      existing_dir = FALSE;
+      existing_dir = false;
       if (lstat (output_name.ds_string, &out_file_stat) == 0)
 	{
 	  if (S_ISDIR (out_file_stat.st_mode)
@@ -109,7 +107,7 @@ process_copy_pass ()
 	    {
 	      /* If there is already a directory there that
 		 we are trying to create, don't complain about it.  */
-	      existing_dir = TRUE;
+	      existing_dir = true;
 	    }
 	  else if (!unconditional_flag
 		   && in_file_stat.st_mtime <= out_file_stat.st_mtime)
@@ -415,11 +413,8 @@ process_copy_pass ()
    link_to_name, and return 0 for success and -1 for failure.  */
 
 int
-link_to_maj_min_ino (file_name, st_dev_maj, st_dev_min, st_ino)
-  char *file_name;
-  int st_dev_maj;
-  int st_dev_min;
-  int st_ino;
+link_to_maj_min_ino (char *file_name, int st_dev_maj, int st_dev_min,
+		     int st_ino)
 {
   int	link_res;
   char *link_name;
@@ -446,9 +441,7 @@ link_to_maj_min_ino (file_name, st_dev_maj, st_dev_min, st_ino)
    is created, -1 otherwise.  */
 
 int
-link_to_name (link_name, link_target)
-  char *link_name;
-  char *link_target;
+link_to_name (char *link_name, char *link_target)
 {
   int res = link (link_target, link_name);
   if (res < 0 && create_dir_flag)

@@ -1,5 +1,5 @@
 /* main.c - main program and argument processing for cpio.
-   Copyright (C) 1990, 1991, 1992, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001, 2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,9 +20,7 @@
    John Oleynick <juo@klinzhai.rutgers.edu>,
    and Sergey Poznyakoff <gray@mirddin.farlep.net> */
 
-#if defined(HAVE_CONFIG_H)
-# include <config.h>
-#endif
+#include <system.h>
 
 #include <stdio.h>
 #include <getopt.h>
@@ -35,12 +33,11 @@
 #endif
 
 #include "filetypes.h"
-#include "system.h"
 #include "cpiohdr.h"
 #include "dstring.h"
 #include "extern.h"
-#include "rmt.h"
-#include "localedir.h"
+#include <rmt.h>
+#include <localedir.h>
 
 #define ARG_NO_ABSOLUTE_FILENAMES  256
 #define ARG_NO_PRESERVE_OWNER      257
@@ -235,16 +232,16 @@ parse_opt (int key, char *optarg, struct argp_state *state)
       break;
 
     case 'a':		/* Reset access times.  */
-      reset_time_flag = TRUE;
+      reset_time_flag = true;
       break;
 
     case 'A':		/* Append to the archive.  */
-      append_flag = TRUE;
+      append_flag = true;
       break;
 
     case 'b':		/* Swap bytes and halfwords.  */
-      swap_bytes_flag = TRUE;
-      swap_halfwords_flag = TRUE;
+      swap_bytes_flag = true;
+      swap_halfwords_flag = true;
       break;
 
     case 'B':		/* Set block size to 5120.  */
@@ -275,11 +272,11 @@ parse_opt (int key, char *optarg, struct argp_state *state)
       break;
 
     case 'd':		/* Create directories where needed.  */
-      create_dir_flag = TRUE;
+      create_dir_flag = true;
       break;
 
     case 'f':		/* Only copy files not matching patterns.  */
-      copy_matching_files = FALSE;
+      copy_matching_files = false;
       break;
 
     case 'E':		/* Pattern file name.  */
@@ -331,7 +328,7 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
       break;
 
     case 'l':		/* Link files when possible.  */
-      link_flag = TRUE;
+      link_flag = true;
       break;
 
     case 'L':		/* Dereference symbolic links.  */
@@ -339,7 +336,7 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
       break;
 
     case 'm':		/* Retain previous file modify times.  */
-      retain_time_flag = TRUE;
+      retain_time_flag = true;
       break;
 
     case 'M':		/* New media message.  */
@@ -347,18 +344,18 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
       break;
 
     case 'n':		/* Long list owner and group as numbers.  */
-      numeric_uid = TRUE;
+      numeric_uid = true;
       break;
 
     case ARG_NO_ABSOLUTE_FILENAMES:		/* --no-absolute-filenames */
-      no_abs_paths_flag = TRUE;
+      no_abs_paths_flag = true;
       break;
 	
     case ARG_NO_PRESERVE_OWNER:		/* --no-preserve-owner */
       if (set_owner_flag || set_group_flag)
 	USAGE_ERROR ((0, 0,
 	             _("--no-preserve-owner cannot be used with --owner")));
-      no_chown_flag = TRUE;
+      no_chown_flag = true;
       break;
 
     case 'o':		/* Copy-out mode.  */
@@ -372,7 +369,7 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
       break;
 
     case ARG_ONLY_VERIFY_CRC:
-      only_verify_crc_flag = TRUE;
+      only_verify_crc_flag = true;
       break;
 
     case 'p':		/* Copy-pass mode.  */
@@ -386,7 +383,7 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
       break;
 
     case 'r':		/* Interactively rename.  */
-      rename_flag = TRUE;
+      rename_flag = true;
       break;
 
     case ARG_RENAME_BATCH_FILE:
@@ -394,7 +391,7 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
       break;
 
     case ARG_QUIET:
-      quiet_flag = TRUE;
+      quiet_flag = true;
       break;
 
     case 'R':		/* Set the owner.  */
@@ -410,51 +407,51 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
 	if (u)
 	  {
 	    free (u);
-	    set_owner_flag = TRUE;
+	    set_owner_flag = true;
 	  }
 	if (g)
 	  {
 	    free (g);
-	    set_group_flag = TRUE;
+	    set_group_flag = true;
 	  }
       }
       break;
 
     case 's':		/* Swap bytes.  */
-      swap_bytes_flag = TRUE;
+      swap_bytes_flag = true;
       break;
 
     case 'S':		/* Swap halfwords.  */
-      swap_halfwords_flag = TRUE;
+      swap_halfwords_flag = true;
       break;
 
     case 't':		/* Only print a list.  */
-      table_flag = TRUE;
+      table_flag = true;
       break;
 
     case 'u':		/* Replace all!  Unconditionally!  */
-      unconditional_flag = TRUE;
+      unconditional_flag = true;
       break;
 
     case 'v':		/* Verbose!  */
-      verbose_flag = TRUE;
+      verbose_flag = true;
       break;
 
     case 'V':		/* Print `.' for each file.  */
-      dot_flag = TRUE;
+      dot_flag = true;
       break;
 
     case ARG_SPARSE:
-      sparse_flag = TRUE;
+      sparse_flag = true;
       break;
 
     case ARG_FORCE_LOCAL:
-      f_force_local = 1;
+      force_local_option = 1;
       break;
 
 #ifdef DEBUG_CPIO
     case ARG_DEBUG:
-      debug_flag = TRUE;
+      debug_flag = true;
       break;
 #endif
 
@@ -543,7 +540,7 @@ process_args (int argc, char *argv[])
 	USAGE_ERROR((0, 0, _("Both -I and -F are used in copy-in mode")));
 
       if (archive_format == arf_crcascii)
-	crc_i_flag = TRUE;
+	crc_i_flag = true;
       num_patterns = argc - optind;
       save_patterns = &argv[optind];
       if (input_archive_name)
@@ -619,8 +616,8 @@ process_args (int argc, char *argv[])
   /* Prevent SysV non-root users from giving away files inadvertantly.
      This happens automatically on BSD, where only root can give
      away files.  */
-  if (set_owner_flag == FALSE && set_group_flag == FALSE && geteuid ())
-    no_chown_flag = TRUE;
+  if (set_owner_flag == false && set_group_flag == false && geteuid ())
+    no_chown_flag = true;
 }
 
 /* Initialize the input and output buffers to their proper size and

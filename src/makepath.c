@@ -22,9 +22,7 @@
    changes for HPUX CDF's.  Maybe the 2 versions of makepath can
    come together again in the future.  */
 
-#if defined(HAVE_CONFIG_H)
-# include <config.h>
-#endif
+#include <system.h>
 
 #ifdef __GNUC__
 #define alloca __builtin_alloca
@@ -85,13 +83,12 @@ void error ();
    ownership and permissions when done, otherwise 1.  */
 
 int
-make_path (argpath, mode, parent_mode, owner, group, verbose_fmt_string)
-     char *argpath;
-     int mode;
-     int parent_mode;
-     uid_t owner;
-     gid_t group;
-     char *verbose_fmt_string;
+make_path (char *argpath,
+	   int mode,
+	   int parent_mode,
+	   uid_t owner,
+	   gid_t group,
+	   char *verbose_fmt_string)
 {
   char *dirpath;		/* A copy we can scribble NULs on.  */
   struct stat stats;

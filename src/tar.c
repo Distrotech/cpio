@@ -1,5 +1,5 @@
 /* tar.c - read in write tar headers for cpio
-   Copyright (C) 1992, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1992, 2001, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,31 +15,89 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#if defined(HAVE_CONFIG_H)
-# include <config.h>
-#endif
+#include <system.h>
 
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "filetypes.h"
-#include "system.h"
 #include "cpiohdr.h"
 #include "dstring.h"
 #include "extern.h"
-#include "rmt.h"
+#include <rmt.h>
 #include "tarhdr.h"
 
-static void to_oct ();
-static char *stash_tar_linkname ();
-static char *stash_tar_filename ();
+/* Stash the tar linkname in static storage.  */
+
+static char *
+stash_tar_linkname (char *linkname)
+{
+  static char hold_tar_linkname[TARLINKNAMESIZE + 1];
+
+  strncpy (hold_tar_linkname, linkname, TARLINKNAMESIZE);
+  hold_tar_linkname[TARLINKNAMESIZE] = '\0';
+  return hold_tar_linkname;
+}
+
+/* Stash the tar filename and optional prefix in static storage.  */
+
+static char *
+stash_tar_filename (char *prefix, char *filename)
+{
+  static char hold_tar_filename[TARNAMESIZE + TARPREFIXSIZE + 2];
+  if (prefix == NULL || *prefix == '\0')
+    {
+      strncpy (hold_tar_filename, filename, TARNAMESIZE);
+      hold_tar_filename[TARNAMESIZE] = '\0';
+    }
+  else
+    {
+      strncpy (hold_tar_filename, prefix, TARPREFIXSIZE);
+      hold_tar_filename[TARPREFIXSIZE] = '\0';
+      strcat (hold_tar_filename, "/");
+      strncat (hold_tar_filename, filename, TARNAMESIZE);
+      hold_tar_filename[TARPREFIXSIZE + TARNAMESIZE] = '\0';
+    }
+  return hold_tar_filename;
+}
+
+/* Convert a number into a string of octal digits.
+   Convert long VALUE into a DIGITS-digit field at WHERE,
+   including a trailing space and room for a NUL.  DIGITS==3 means
+   1 digit, a space, and room for a NUL.
+
+   We assume the trailing NUL is already there and don't fill it in.
+   This fact is used by start_header and finish_header, so don't change it!
+
+   This is be equivalent to:
+   sprintf (where, "%*lo ", digits - 2, value);
+   except that sprintf fills in the trailing NUL and we don't.  */
+
+static void
+to_oct (register long value, register int digits, register char *where)
+{
+  --digits;			/* Leave the trailing NUL slot alone.  */
+
+  /* Produce the digits -- at least one.  */
+  do
+    {
+      where[--digits] = '0' + (char) (value & 7); /* One octal digit.  */
+      value >>= 3;
+    }
+  while (digits > 0 && value != 0);
+
+  /* Add leading spaces, if necessary.  */
+  while (digits > 0)
+    where[--digits] = ' ';
+}
+
+
 
 /* Compute and return a checksum for TAR_HDR,
    counting the checksum bytes as if they were spaces.  */
 
 unsigned long
-tar_checksum (tar_hdr)
-     struct tar_header *tar_hdr;
+tar_checksum (struct tar_header *tar_hdr)
 {
   unsigned long sum = 0;
   char *p = (char *) tar_hdr;
@@ -62,9 +120,7 @@ tar_checksum (tar_hdr)
    descriptor OUT_DES.  */
 
 void
-write_out_tar_header (file_hdr, out_des)
-     struct new_cpio_header *file_hdr;
-     int out_des;
+write_out_tar_header (struct new_cpio_header *file_hdr, int out_des)
 {
   int name_len;
   union tar_record tar_rec;
@@ -173,9 +229,7 @@ write_out_tar_header (file_hdr, out_des)
    multiple of sizeof (long).  */
 
 int
-null_block (block, size)
-     long *block;
-     int size;
+null_block (long *block, int size)
 {
   register long *p = block;
   register int i = size / sizeof (long);
@@ -190,12 +244,10 @@ null_block (block, size)
    into FILE_HDR.  */
 
 void
-read_in_tar_header (file_hdr, in_des)
-     struct new_cpio_header *file_hdr;
-     int in_des;
+read_in_tar_header (struct new_cpio_header *file_hdr, int in_des)
 {
   long bytes_skipped = 0;
-  int warned = FALSE;
+  int warned = false;
   union tar_record tar_rec;
   struct tar_header *tar_hdr = (struct tar_header *) &tar_rec;
   uid_t *uidp;
@@ -243,7 +295,7 @@ read_in_tar_header (file_hdr, in_des)
 	  if (!warned)
 	    {
 	      error (0, 0, _("invalid header: checksum error"));
-	      warned = TRUE;
+	      warned = true;
 	    }
 	  bcopy (((char *) &tar_rec) + 1, (char *) &tar_rec,
 		 TARRECORDSIZE - 1);
@@ -347,52 +399,13 @@ read_in_tar_header (file_hdr, in_des)
     error (0, 0, _("warning: skipped %ld bytes of junk"), bytes_skipped);
 }
 
-/* Stash the tar linkname in static storage.  */
-
-static char *
-stash_tar_linkname (linkname)
-     char *linkname;
-{
-  static char hold_tar_linkname[TARLINKNAMESIZE + 1];
-
-  strncpy (hold_tar_linkname, linkname, TARLINKNAMESIZE);
-  hold_tar_linkname[TARLINKNAMESIZE] = '\0';
-  return hold_tar_linkname;
-}
-
-/* Stash the tar filename and optional prefix in static storage.  */
-
-static char *
-stash_tar_filename (prefix, filename)
-     char *prefix;
-     char *filename;
-{
-  static char hold_tar_filename[TARNAMESIZE + TARPREFIXSIZE + 2];
-  if (prefix == NULL || *prefix == '\0')
-    {
-      strncpy (hold_tar_filename, filename, TARNAMESIZE);
-      hold_tar_filename[TARNAMESIZE] = '\0';
-    }
-  else
-    {
-      strncpy (hold_tar_filename, prefix, TARPREFIXSIZE);
-      hold_tar_filename[TARPREFIXSIZE] = '\0';
-      strcat (hold_tar_filename, "/");
-      strncat (hold_tar_filename, filename, TARNAMESIZE);
-      hold_tar_filename[TARPREFIXSIZE + TARNAMESIZE] = '\0';
-    }
-  return hold_tar_filename;
-}
-
 /* Convert the string of octal digits S into a number and store
    it in *N.  Return nonzero if the whole string was converted,
    zero if there was something after the number.
    Skip leading and trailing spaces.  */
 
 int
-otoa (s, n)
-     char *s;
-     unsigned long *n;
+otoa (char *s, unsigned long *n)
 {
   unsigned long val = 0;
 
@@ -406,39 +419,6 @@ otoa (s, n)
   return *s == '\0';
 }
 
-/* Convert a number into a string of octal digits.
-   Convert long VALUE into a DIGITS-digit field at WHERE,
-   including a trailing space and room for a NUL.  DIGITS==3 means
-   1 digit, a space, and room for a NUL.
-
-   We assume the trailing NUL is already there and don't fill it in.
-   This fact is used by start_header and finish_header, so don't change it!
-
-   This is be equivalent to:
-   sprintf (where, "%*lo ", digits - 2, value);
-   except that sprintf fills in the trailing NUL and we don't.  */
-
-static void
-to_oct (value, digits, where)
-     register long value;
-     register int digits;
-     register char *where;
-{
-  --digits;			/* Leave the trailing NUL slot alone.  */
-
-  /* Produce the digits -- at least one.  */
-  do
-    {
-      where[--digits] = '0' + (char) (value & 7); /* One octal digit.  */
-      value >>= 3;
-    }
-  while (digits > 0 && value != 0);
-
-  /* Add leading spaces, if necessary.  */
-  while (digits > 0)
-    where[--digits] = ' ';
-}
-
 /* Return
    2 if BUF is a valid POSIX tar header (the checksum is correct
    and it has the "ustar" magic string),
@@ -446,8 +426,7 @@ to_oct (value, digits, where)
    0 otherwise.  */
 
 int
-is_tar_header (buf)
-     char *buf;
+is_tar_header (char *buf)
 {
   struct tar_header *tar_hdr = (struct tar_header *) buf;
   unsigned long chksum;
@@ -465,7 +444,7 @@ is_tar_header (buf)
   return 1;
 }
 
-/* Return TRUE if the filename is too long to fit in a tar header.
+/* Return true if the filename is too long to fit in a tar header.
    For old tar headers, if the filename's length is less than or equal
    to 100 then it will fit, otherwise it will not.  For POSIX tar headers,
    if the filename's length is less than or equal to 100 then it
@@ -480,8 +459,7 @@ is_tar_header (buf)
    the filename like this then it will not fit.  */
 
 int
-is_tar_filename_too_long (name)
-     char *name;
+is_tar_filename_too_long (char *name)
 {
   int whole_name_len;
   int prefix_name_len;
@@ -489,13 +467,13 @@ is_tar_filename_too_long (name)
 
   whole_name_len = strlen (name);
   if (whole_name_len <= TARNAMESIZE)
-    return FALSE;
+    return false;
 
   if (archive_format != arf_ustar)
-    return TRUE;
+    return true;
 
   if (whole_name_len > TARNAMESIZE + TARPREFIXSIZE + 1)
-    return TRUE;
+    return true;
 
   /* See whether we can split up the name into acceptably-sized
      `prefix' and `name' (`p') pieces.  Start out by making `name'
@@ -505,14 +483,14 @@ is_tar_filename_too_long (name)
     ++p;
   if (*p == '\0')
     /* The last component of the path is longer than TARNAMESIZE.  */
-    return TRUE;
+    return true;
 
   prefix_name_len = p - name - 1;
   /* Interestingly, a name consisting of a slash followed by
      TARNAMESIZE characters can't be stored, because the prefix
      would be empty, and thus ignored.  */
   if (prefix_name_len > TARPREFIXSIZE || prefix_name_len == 0)
-    return TRUE;
+    return true;
 
-  return FALSE;
+  return false;
 }

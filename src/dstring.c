@@ -1,5 +1,5 @@
 /* dstring.c - The dynamic string handling routines used by cpio.
-   Copyright (C) 1990, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -38,9 +38,7 @@ char *xrealloc P_((char *p, unsigned n));
 /* Initialiaze dynamic string STRING with space for SIZE characters.  */
 
 void
-ds_init (string, size)
-     dynamic_string *string;
-     int size;
+ds_init (dynamic_string *string, int size)
 {
   string->ds_length = size;
   string->ds_string = (char *) xmalloc (size);
@@ -49,9 +47,7 @@ ds_init (string, size)
 /* Expand dynamic string STRING, if necessary, to hold SIZE characters.  */
 
 void
-ds_resize (string, size)
-     dynamic_string *string;
-     int size;
+ds_resize (dynamic_string *string, int size)
 {
   if (size > string->ds_length)
     {
@@ -68,10 +64,7 @@ ds_resize (string, size)
    Return a pointer to the null-terminated string in S.  */
 
 char *
-ds_fgetstr (f, s, eos)
-     FILE *f;
-     dynamic_string *s;
-     char eos;
+ds_fgetstr (FILE *f, dynamic_string *s, char eos)
 {
   int insize;			/* Amount needed for line.  */
   int strsize;			/* Amount allocated for S.  */
@@ -102,17 +95,13 @@ ds_fgetstr (f, s, eos)
 }
 
 char *
-ds_fgets (f, s)
-     FILE *f;
-     dynamic_string *s;
+ds_fgets (FILE *f, dynamic_string *s)
 {
   return ds_fgetstr (f, s, '\n');
 }
 
 char *
-ds_fgetname (f, s)
-     FILE *f;
-     dynamic_string *s;
+ds_fgetname (FILE *f, dynamic_string *s)
 {
   return ds_fgetstr (f, s, '\0');
 }

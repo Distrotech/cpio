@@ -1,5 +1,5 @@
 /* idcache.c -- map user and group IDs, cached for speed
-   Copyright (C) 1985, 1988, 1989, 1990 Free Software Foundation, Inc.
+   Copyright (C) 1985, 1988, 1989, 1990, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -63,8 +63,7 @@ static struct userid *nouser_alist;
    with cache.  */
 
 char *
-getuser (uid)
-     uid_t uid;
+getuser (uid_t uid)
 {
   register struct userid *tail;
   struct passwd *pwent;
@@ -97,8 +96,7 @@ getuser (uid)
    so we don't keep looking them up.)  */
 
 uid_t *
-getuidbyname (user)
-     char *user;
+getuidbyname (char *user)
 {
   register struct userid *tail;
   struct passwd *pwent;
@@ -140,8 +138,7 @@ static struct userid *nogroup_alist;
    with cache.  */
 
 char *
-getgroup (gid)
-     gid_t gid;
+getgroup (gid_t gid)
 {
   register struct userid *tail;
   struct group *grent;
@@ -174,8 +171,7 @@ getgroup (gid)
    so we don't keep looking them up.)  */
 
 gid_t *
-getgidbyname (group)
-     char *group;
+getgidbyname (char *group)
 {
   register struct userid *tail;
   struct group *grent;

@@ -1,5 +1,5 @@
 /* copyout.c - create a cpio archive
-   Copyright (C) 1990, 1991, 1992, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001, 2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,37 +15,285 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#if defined(HAVE_CONFIG_H)
-# include <config.h>
-#endif
+#include <system.h>
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "filetypes.h"
-#include "system.h"
 #include "cpiohdr.h"
 #include "dstring.h"
 #include "extern.h"
 #include "defer.h"
-#include "rmt.h"
+#include <rmt.h>
 
-static unsigned long read_for_checksum ();
-static void tape_clear_rest_of_block ();
-static void tape_pad_output ();
-static int last_link ();
-static int count_defered_links_to_dev_ino ();
-static void add_link_defer ();
-static void writeout_other_defers ();
-static void writeout_final_defers();
-static void writeout_defered_file ();
+/* Read FILE_SIZE bytes of FILE_NAME from IN_FILE_DES and
+   compute and return a checksum for them.  */
 
+static unsigned long
+read_for_checksum (int in_file_des, int file_size, char *file_name)
+{
+  unsigned long crc;
+  char buf[BUFSIZ];
+  int bytes_left;
+  int bytes_read;
+  int i;
+
+  crc = 0;
+
+  for (bytes_left = file_size; bytes_left > 0; bytes_left -= bytes_read)
+    {
+      bytes_read = read (in_file_des, buf, BUFSIZ);
+      if (bytes_read < 0)
+	error (1, errno, _("cannot read checksum for %s"), file_name);
+      if (bytes_read == 0)
+	break;
+      if (bytes_left < bytes_read)
+        bytes_read = bytes_left;
+      for (i = 0; i < bytes_read; ++i)
+	crc += buf[i] & 0xff;
+    }
+  if (lseek (in_file_des, 0L, SEEK_SET))
+    error (1, errno, _("cannot read checksum for %s"), file_name);
+
+  return crc;
+}
+
+/* Write out NULs to fill out the rest of the current block on
+   OUT_FILE_DES.  */
+
+static void
+tape_clear_rest_of_block (int out_file_des)
+{
+  while (output_size < io_block_size)
+    {
+      if ((io_block_size - output_size) > 512)
+	tape_buffered_write (zeros_512, out_file_des, 512);
+      else
+	tape_buffered_write (zeros_512, out_file_des, io_block_size - output_size);
+    }
+}
+
+/* Write NULs on OUT_FILE_DES to move from OFFSET (the current location)
+   to the end of the header.  */
+
+static void
+tape_pad_output (int out_file_des, int offset)
+{
+  int pad;
+
+  if (archive_format == arf_newascii || archive_format == arf_crcascii)
+    pad = (4 - (offset % 4)) % 4;
+  else if (archive_format == arf_tar || archive_format == arf_ustar)
+    pad = (512 - (offset % 512)) % 512;
+  else if (archive_format != arf_oldascii && archive_format != arf_hpoldascii)
+    pad = (2 - (offset % 2)) % 2;
+  else
+    pad = 0;
+
+  if (pad != 0)
+    tape_buffered_write (zeros_512, out_file_des, pad);
+}
+
+
+/* When creating newc and crc archives if a file has multiple (hard)
+   links, we don't put any of them into the archive until we have seen
+   all of them (or until we get to the end of the list of files that
+   are going into the archive and know that we have seen all of the links
+   to the file that we will see).  We keep these "defered" files on
+   this list.   */
+
+struct deferment *deferouts = NULL;
+
+/* Count the number of other (hard) links to this file that have
+   already been defered.  */
+
+static int
+count_defered_links_to_dev_ino (struct new_cpio_header *file_hdr)
+{
+  struct deferment *d;
+  int	ino;
+  int 	maj;
+  int   min;
+  int 	count;
+  ino = file_hdr->c_ino;
+  maj = file_hdr->c_dev_maj;
+  min = file_hdr->c_dev_min;
+  count = 0;
+  for (d = deferouts; d != NULL; d = d->next)
+    {
+      if ( (d->header.c_ino == ino) && (d->header.c_dev_maj == maj)
+	  && (d->header.c_dev_min == min) )
+	++count;
+    }
+  return count;
+}
+
+/* Is this file_hdr the last (hard) link to a file?  I.e., have
+   we already seen and defered all of the other links?  */
+
+static int
+last_link (struct new_cpio_header *file_hdr)
+{
+  int	other_files_sofar;
+
+  other_files_sofar = count_defered_links_to_dev_ino (file_hdr);
+  if (file_hdr->c_nlink == (other_files_sofar + 1) )
+    {
+      return 1;
+    }
+  return 0;
+}
+
+
+/* Add the file header for a link that is being defered to the deferouts
+   list.  */
+
+static void
+add_link_defer (struct new_cpio_header *file_hdr)
+{
+  struct deferment *d;
+  d = create_deferment (file_hdr);
+  d->next = deferouts;
+  deferouts = d;
+}
+
+/* We are about to put a file into a newc or crc archive that is
+   multiply linked.  We have already seen and defered all of the
+   other links to the file but haven't written them into the archive.
+   Write the other links into the archive, and remove them from the
+   deferouts list.  */
+
+static void
+writeout_other_defers (struct new_cpio_header *file_hdr, int out_des)
+{
+  struct deferment *d;
+  struct deferment *d_prev;
+  int	ino;
+  int 	maj;
+  int   min;
+  ino = file_hdr->c_ino;
+  maj = file_hdr->c_dev_maj;
+  min = file_hdr->c_dev_min;
+  d_prev = NULL;
+  d = deferouts;
+  while (d != NULL)
+    {
+      if ( (d->header.c_ino == ino) && (d->header.c_dev_maj == maj)
+	  && (d->header.c_dev_min == min) )
+	{
+	  struct deferment *d_free;
+	  d->header.c_filesize = 0;
+	  write_out_header (&d->header, out_des);
+	  if (d_prev != NULL)
+	    d_prev->next = d->next;
+	  else
+	    deferouts = d->next;
+	  d_free = d;
+	  d = d->next;
+	  free_deferment (d_free);
+	}
+      else
+	{
+	  d_prev = d;
+	  d = d->next;
+	}
+    }
+  return;
+}
+
+/* Write a file into the archive.  This code is the same as
+   the code in process_copy_out(), but we need it here too
+   for writeout_final_defers() to call.  */
+
+static void
+writeout_defered_file (struct new_cpio_header *header, int out_file_des)
+{
+  int in_file_des;
+  struct new_cpio_header file_hdr;
+  struct utimbuf times;		/* For setting file times.  */
+  /* Initialize this in case it has members we don't know to set.  */
+  bzero (&times, sizeof (struct utimbuf));
+
+  file_hdr = *header;
+
+
+  in_file_des = open (header->c_name,
+		      O_RDONLY | O_BINARY, 0);
+  if (in_file_des < 0)
+    {
+      error (0, errno, "%s", header->c_name);
+      return;
+    }
+
+  if (archive_format == arf_crcascii)
+    file_hdr.c_chksum = read_for_checksum (in_file_des,
+					   file_hdr.c_filesize,
+					   header->c_name);
+
+  write_out_header (&file_hdr, out_file_des);
+  copy_files_disk_to_tape (in_file_des, out_file_des, file_hdr.c_filesize, header->c_name);
+  warn_if_file_changed(header->c_name, file_hdr.c_filesize, file_hdr.c_mtime);
+
+  if (archive_format == arf_tar || archive_format == arf_ustar)
+    add_inode (file_hdr.c_ino, file_hdr.c_name, file_hdr.c_dev_maj,
+	       file_hdr.c_dev_min);
+
+  tape_pad_output (out_file_des, file_hdr.c_filesize);
+
+  if (close (in_file_des) < 0)
+    error (0, errno, "%s", header->c_name);
+  if (reset_time_flag)
+    {
+      times.actime = file_hdr.c_mtime;
+      times.modtime = file_hdr.c_mtime;
+      /* Debian hack: Silently ignore EROFS because reading the file
+         won't have upset its timestamp if it's on a read-only
+         filesystem.  This has been submitted as a suggestion to
+         "bug-gnu-utils@prep.ai.mit.edu".  -BEM */
+      if (utime (file_hdr.c_name, &times) < 0
+	  && errno != EROFS)
+	error (0, errno, "%s", file_hdr.c_name);
+    }
+  return;
+}
+
+/* When writing newc and crc format archives we defer multiply linked
+   files until we have seen all of the links to the file.  If a file
+   has links to it that aren't going into the archive, then we will
+   never see the "last" link to the file, so at the end we just write 
+   all of the leftover defered files into the archive.  */
+
+static void
+writeout_final_defers (int out_des)
+{
+  struct deferment *d;
+  int other_count;
+  while (deferouts != NULL)
+    {
+      d = deferouts;
+      other_count = count_defered_links_to_dev_ino (&d->header);
+      if (other_count == 1)
+	{
+	  writeout_defered_file (&d->header, out_des);
+	}
+      else
+	{
+	  struct new_cpio_header file_hdr;
+	  file_hdr = d->header;
+	  file_hdr.c_filesize = 0;
+	  write_out_header (&file_hdr, out_des);
+	}
+      deferouts = deferouts->next;
+    }
+}
+
+
 /* Write out header FILE_HDR, including the file name, to file
    descriptor OUT_DES.  */
 
 void
-write_out_header (file_hdr, out_des)
-     struct new_cpio_header *file_hdr;
-     int out_des;
+write_out_header (struct new_cpio_header *file_hdr, int out_des)
 {
   if (archive_format == arf_newascii || archive_format == arf_crcascii)
     {
@@ -536,277 +784,4 @@ process_copy_out ()
     }
 }
 
-/* Read FILE_SIZE bytes of FILE_NAME from IN_FILE_DES and
-   compute and return a checksum for them.  */
-
-static unsigned long
-read_for_checksum (in_file_des, file_size, file_name)
-     int in_file_des;
-     int file_size;
-     char *file_name;
-{
-  unsigned long crc;
-  char buf[BUFSIZ];
-  int bytes_left;
-  int bytes_read;
-  int i;
-
-  crc = 0;
-
-  for (bytes_left = file_size; bytes_left > 0; bytes_left -= bytes_read)
-    {
-      bytes_read = read (in_file_des, buf, BUFSIZ);
-      if (bytes_read < 0)
-	error (1, errno, _("cannot read checksum for %s"), file_name);
-      if (bytes_read == 0)
-	break;
-      if (bytes_left < bytes_read)
-        bytes_read = bytes_left;
-      for (i = 0; i < bytes_read; ++i)
-	crc += buf[i] & 0xff;
-    }
-  if (lseek (in_file_des, 0L, SEEK_SET))
-    error (1, errno, _("cannot read checksum for %s"), file_name);
-
-  return crc;
-}
-
-/* Write out NULs to fill out the rest of the current block on
-   OUT_FILE_DES.  */
-
-static void
-tape_clear_rest_of_block (out_file_des)
-     int out_file_des;
-{
-  while (output_size < io_block_size)
-    {
-      if ((io_block_size - output_size) > 512)
-	tape_buffered_write (zeros_512, out_file_des, 512);
-      else
-	tape_buffered_write (zeros_512, out_file_des, io_block_size - output_size);
-    }
-}
-
-/* Write NULs on OUT_FILE_DES to move from OFFSET (the current location)
-   to the end of the header.  */
-
-static void
-tape_pad_output (out_file_des, offset)
-     int out_file_des;
-     int offset;
-{
-  int pad;
-
-  if (archive_format == arf_newascii || archive_format == arf_crcascii)
-    pad = (4 - (offset % 4)) % 4;
-  else if (archive_format == arf_tar || archive_format == arf_ustar)
-    pad = (512 - (offset % 512)) % 512;
-  else if (archive_format != arf_oldascii && archive_format != arf_hpoldascii)
-    pad = (2 - (offset % 2)) % 2;
-  else
-    pad = 0;
-
-  if (pad != 0)
-    tape_buffered_write (zeros_512, out_file_des, pad);
-}
-
-
-/* When creating newc and crc archives if a file has multiple (hard)
-   links, we don't put any of them into the archive until we have seen
-   all of them (or until we get to the end of the list of files that
-   are going into the archive and know that we have seen all of the links
-   to the file that we will see).  We keep these "defered" files on
-   this list.   */
-
-struct deferment *deferouts = NULL;
-
-
-/* Is this file_hdr the last (hard) link to a file?  I.e., have
-   we already seen and defered all of the other links?  */
-
-static int
-last_link (file_hdr)
-  struct new_cpio_header *file_hdr;
-{
-  int	other_files_sofar;
-
-  other_files_sofar = count_defered_links_to_dev_ino (file_hdr);
-  if (file_hdr->c_nlink == (other_files_sofar + 1) )
-    {
-      return 1;
-    }
-  return 0;
-}
-
-/* Count the number of other (hard) links to this file that have
-   already been defered.  */
-
-static int
-count_defered_links_to_dev_ino (file_hdr)
-  struct new_cpio_header *file_hdr;
-{
-  struct deferment *d;
-  int	ino;
-  int 	maj;
-  int   min;
-  int 	count;
-  ino = file_hdr->c_ino;
-  maj = file_hdr->c_dev_maj;
-  min = file_hdr->c_dev_min;
-  count = 0;
-  for (d = deferouts; d != NULL; d = d->next)
-    {
-      if ( (d->header.c_ino == ino) && (d->header.c_dev_maj == maj)
-	  && (d->header.c_dev_min == min) )
-	++count;
-    }
-  return count;
-}
-
-/* Add the file header for a link that is being defered to the deferouts
-   list.  */
-
-static void
-add_link_defer (file_hdr)
-  struct new_cpio_header *file_hdr;
-{
-  struct deferment *d;
-  d = create_deferment (file_hdr);
-  d->next = deferouts;
-  deferouts = d;
-}
-
-/* We are about to put a file into a newc or crc archive that is
-   multiply linked.  We have already seen and defered all of the
-   other links to the file but haven't written them into the archive.
-   Write the other links into the archive, and remove them from the
-   deferouts list.  */
-
-static void
-writeout_other_defers (file_hdr, out_des)
-  struct new_cpio_header *file_hdr;
-  int out_des;
-{
-  struct deferment *d;
-  struct deferment *d_prev;
-  int	ino;
-  int 	maj;
-  int   min;
-  ino = file_hdr->c_ino;
-  maj = file_hdr->c_dev_maj;
-  min = file_hdr->c_dev_min;
-  d_prev = NULL;
-  d = deferouts;
-  while (d != NULL)
-    {
-      if ( (d->header.c_ino == ino) && (d->header.c_dev_maj == maj)
-	  && (d->header.c_dev_min == min) )
-	{
-	  struct deferment *d_free;
-	  d->header.c_filesize = 0;
-	  write_out_header (&d->header, out_des);
-	  if (d_prev != NULL)
-	    d_prev->next = d->next;
-	  else
-	    deferouts = d->next;
-	  d_free = d;
-	  d = d->next;
-	  free_deferment (d_free);
-	}
-      else
-	{
-	  d_prev = d;
-	  d = d->next;
-	}
-    }
-  return;
-}
-/* When writing newc and crc format archives we defer multiply linked
-   files until we have seen all of the links to the file.  If a file
-   has links to it that aren't going into the archive, then we will
-   never see the "last" link to the file, so at the end we just write 
-   all of the leftover defered files into the archive.  */
-
-static void
-writeout_final_defers(out_des)
-  int	out_des;
-{
-  struct deferment *d;
-  int other_count;
-  while (deferouts != NULL)
-    {
-      d = deferouts;
-      other_count = count_defered_links_to_dev_ino (&d->header);
-      if (other_count == 1)
-	{
-	  writeout_defered_file (&d->header, out_des);
-	}
-      else
-	{
-	  struct new_cpio_header file_hdr;
-	  file_hdr = d->header;
-	  file_hdr.c_filesize = 0;
-	  write_out_header (&file_hdr, out_des);
-	}
-      deferouts = deferouts->next;
-    }
-}
-
-/* Write a file into the archive.  This code is the same as
-   the code in process_copy_out(), but we need it here too
-   for writeout_final_defers() to call.  */
-
-static void
-writeout_defered_file (header, out_file_des)
-  struct new_cpio_header *header;
-  int out_file_des;
-{
-  int in_file_des;
-  struct new_cpio_header file_hdr;
-  struct utimbuf times;		/* For setting file times.  */
-  /* Initialize this in case it has members we don't know to set.  */
-  bzero (&times, sizeof (struct utimbuf));
-
-  file_hdr = *header;
-
-
-  in_file_des = open (header->c_name,
-		      O_RDONLY | O_BINARY, 0);
-  if (in_file_des < 0)
-    {
-      error (0, errno, "%s", header->c_name);
-      return;
-    }
-
-  if (archive_format == arf_crcascii)
-    file_hdr.c_chksum = read_for_checksum (in_file_des,
-					   file_hdr.c_filesize,
-					   header->c_name);
-
-  write_out_header (&file_hdr, out_file_des);
-  copy_files_disk_to_tape (in_file_des, out_file_des, file_hdr.c_filesize, header->c_name);
-  warn_if_file_changed(header->c_name, file_hdr.c_filesize, file_hdr.c_mtime);
-
-  if (archive_format == arf_tar || archive_format == arf_ustar)
-    add_inode (file_hdr.c_ino, file_hdr.c_name, file_hdr.c_dev_maj,
-	       file_hdr.c_dev_min);
-
-  tape_pad_output (out_file_des, file_hdr.c_filesize);
-
-  if (close (in_file_des) < 0)
-    error (0, errno, "%s", header->c_name);
-  if (reset_time_flag)
-    {
-      times.actime = file_hdr.c_mtime;
-      times.modtime = file_hdr.c_mtime;
-      /* Debian hack: Silently ignore EROFS because reading the file
-         won't have upset its timestamp if it's on a read-only
-         filesystem.  This has been submitted as a suggestion to
-         "bug-gnu-utils@prep.ai.mit.edu".  -BEM */
-      if (utime (file_hdr.c_name, &times) < 0
-	  && errno != EROFS)
-	error (0, errno, "%s", file_hdr.c_name);
-    }
-  return;
-}
 

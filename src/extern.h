@@ -82,12 +82,11 @@ extern char input_is_special;
 extern char output_is_special;
 extern char input_is_seekable;
 extern char output_is_seekable;
-extern int f_force_local;
 extern char *program_name;
 extern int (*xstat) ();
 extern void (*copy_function) ();
 
-#if __STDC__ || defined(__MSDOS__)
+#if defined PROTOTYPES || (defined __STDC__ && __STDC__)
 # define P_(s) s
 #else
 # define P_(s) ()
@@ -116,9 +115,6 @@ int link_to_name P_((char *link_name, char *link_target));
 /* dirname.c */
 char *dirname P_((char *path));
 
-/* error.c */
-void error P_((int status, int errnum, char *message, ...));
-
 /* filemode.c */
 void mode_string P_((unsigned int mode, char *str));
 
@@ -137,9 +133,6 @@ void initialize_buffers P_((void));
 /* makepath.c */
 int make_path P_((char *argpath, int mode, int parent_mode,
 		  uid_t owner, gid_t group, char *verbose_fmt_string));
-
-/* stripslash.c */
-void strip_trailing_slashes P_((char *path));
 
 /* tar.c */
 void write_out_tar_header P_((struct new_cpio_header *file_hdr, int out_des));
@@ -188,11 +181,11 @@ int utime P_((char *filename, struct utimbuf *utb));
 char *add_cdf_double_slashes P_((char *filename));
 #endif
 
-/* xmalloc.c */
-char *xmalloc P_((unsigned n));
-char *xrealloc P_((char *p, unsigned n));
-
-/* xstrdup.c */
-char *xstrdup P_((char *string));
-
 #define DISK_IO_BLOCK_SIZE	(512)
+
+/* FIXME: Move to system.h? */
+#ifndef SYMLINK_USES_UMASK
+# define UMASKED_SYMLINK(name1,name2,mode)    symlink(name1,name2)
+#else
+# define UMASKED_SYMLINK(name1,name2,mode)    umasked_symlink(name1,name2,mode)
+#endif /* SYMLINK_USES_UMASK */

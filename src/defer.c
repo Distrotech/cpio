@@ -1,5 +1,5 @@
 /* defer.c - handle "defered" links in newc and crc archives
-   Copyright (C) 1993,2003 Free Software Foundation, Inc.
+   Copyright (C) 1993,2003,2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,19 +15,16 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#if defined(HAVE_CONFIG_H)
-# include <config.h>
-#endif
+#include <system.h>
+
 #include <stdio.h>
 #include <sys/types.h>
-#include "system.h"
 #include "cpiohdr.h"
 #include "extern.h"
 #include "defer.h"
 
 struct deferment *
-create_deferment (file_hdr)
-  struct new_cpio_header *file_hdr;
+create_deferment (struct new_cpio_header *file_hdr)
 {
   struct deferment *d;
   d = (struct deferment *) xmalloc (sizeof (struct deferment) );
@@ -38,8 +35,7 @@ create_deferment (file_hdr)
 }
 
 void
-free_deferment (d)
-  struct deferment *d;
+free_deferment (struct deferment *d)
 {
   free (d->header.c_name);
   free (d);

@@ -1,5 +1,5 @@
 /* dstring.h - Dynamic string handling include file.  Requires strings.h.
-   Copyright (C) 1990, 1991, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -42,8 +42,8 @@ typedef struct
 #define ds_index(s, c)		index ((s)->ds_string, c)
 #define ds_rindex(s, c)		rindex ((s)->ds_string, c)
 
-void ds_init ();
-void ds_resize ();
-char *ds_fgetname ();
-char *ds_fgets ();
-char *ds_fgetstr ();
+void ds_init (dynamic_string *string, int size);
+void ds_resize (dynamic_string *string, int size);
+char *ds_fgetname (FILE *f, dynamic_string *s);
+char *ds_fgets (FILE *f, dynamic_string *s);
+char *ds_fgetstr (FILE *f, dynamic_string *s, char eos);

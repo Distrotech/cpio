@@ -53,9 +53,7 @@
 
    David MacKenzie <djm@gnu.ai.mit.edu> */
 
-#if defined(HAVE_CONFIG_H)
-# include <config.h>
-#endif
+#include <system.h>
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -71,16 +69,17 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <getopt.h>
+#include <stdbool.h>
 
 #ifdef HAVE_LOCALE_H
 #  include <locale.h>
 #endif
-#include "localedir.h"
+#include <localedir.h>
 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
-#include "rmt.h"
+#include <rmt.h>
 
 #if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
 #include <string.h>
@@ -104,16 +103,6 @@ int atoi ();
 #if !HAVE_DECL_EXIT
 void exit ();
 #endif
-
-int fstat ();
-
-int argmatch ();
-void check_type ();
-void error ();
-void invalid_arg ();
-void perform_operation ();
-void print_status ();
-void usage ();
 
 char *opnames[] =
 {
@@ -168,11 +157,6 @@ short operations[] =
   0
 };
 
-/* If nonzero, don't consider file names that contain a `:' to be
-   on remote hosts; all files are local.  Always zero for mt;
-   since when do local device names contain colons?  */
-int f_force_local = 0;
-
 struct option longopts[] =
 {
   {"file", 1, NULL, 'f'},
@@ -185,10 +169,67 @@ struct option longopts[] =
 /* The name this program was run with.  */
 char *program_name;
 
+void
+check_type (char *dev, int desc)
+{
+  struct stat stats;
+
+  if (_isrmt (desc))
+    return;
+  if (fstat (desc, &stats) == -1)
+    error (1, errno, "%s", dev);
+  if ((stats.st_mode & S_IFMT) != S_IFCHR)
+    error (1, 0, "%s is not a character special file", dev);
+}
+void
+perform_operation (char *dev, int desc, short op, int count)
+{
+  struct mtop control;
+
+  control.mt_op = op;
+  control.mt_count = count;
+  /* Debian hack: The rmtioctl function returns -1 in case of an
+     error, not 0.  This bug has been reported to
+     "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
+  if (rmtioctl (desc, MTIOCTOP, (char*)&control) == -1)
+    error (2, errno, "%s", dev);
+}
+
+void
+print_status (char *dev, int desc)
+{
+  struct mtget status;
+
+  if (rmtioctl (desc, MTIOCGET, (char*)&status) == -1)
+    error (2, errno, "%s", dev);
+
+  printf ("drive type = %d\n", (int) status.mt_type);
+#if defined(hpux) || defined(__hpux)
+  printf ("drive status (high) = %d\n", (int) status.mt_dsreg1);
+  printf ("drive status (low) = %d\n", (int) status.mt_dsreg2);
+#else
+  printf ("drive status = %d\n", (int) status.mt_dsreg);
+#endif
+  printf ("sense key error = %d\n", (int) status.mt_erreg);
+  printf ("residue count = %d\n", (int) status.mt_resid);
+#if !defined(ultrix) && !defined(__ultrix__) && !defined(hpux) && !defined(__hpux) && !defined(__osf__)
+  printf ("file number = %d\n", (int) status.mt_fileno);
+  printf ("block number = %d\n", (int) status.mt_blkno);
+#endif
+}
+
+void
+usage (FILE *fp,int status)
+{
+  fprintf (fp, _("\
+Usage: %s [-V] [-f device] [--file=device] [--rsh-command=command]\n\
+\t[--help] [--version] operation [count]\n"),
+	   program_name);
+  exit (status);
+}
+
 int
-main (argc, argv)
-     int argc;
-     char **argv;
+main (int argc, char **argv)
 {
   short operation;
   int count;
@@ -295,72 +336,3 @@ main (argc, argv)
   exit (0);
 }
 
-void
-check_type (dev, desc)
-     char *dev;
-     int desc;
-{
-  struct stat stats;
-
-  if (_isrmt (desc))
-    return;
-  if (fstat (desc, &stats) == -1)
-    error (1, errno, "%s", dev);
-  if ((stats.st_mode & S_IFMT) != S_IFCHR)
-    error (1, 0, "%s is not a character special file", dev);
-}
-
-void
-perform_operation (dev, desc, op, count)
-     char *dev;
-     int desc;
-     short op;
-     int count;
-{
-  struct mtop control;
-
-  control.mt_op = op;
-  control.mt_count = count;
-  /* Debian hack: The rmtioctl function returns -1 in case of an
-     error, not 0.  This bug has been reported to
-     "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
-  if (rmtioctl (desc, MTIOCTOP, &control) == -1)
-    error (2, errno, "%s", dev);
-}
-
-void
-print_status (dev, desc)
-     char *dev;
-     int desc;
-{
-  struct mtget status;
-
-  if (rmtioctl (desc, MTIOCGET, &status) == -1)
-    error (2, errno, "%s", dev);
-
-  printf ("drive type = %d\n", (int) status.mt_type);
-#if defined(hpux) || defined(__hpux)
-  printf ("drive status (high) = %d\n", (int) status.mt_dsreg1);
-  printf ("drive status (low) = %d\n", (int) status.mt_dsreg2);
-#else
-  printf ("drive status = %d\n", (int) status.mt_dsreg);
-#endif
-  printf ("sense key error = %d\n", (int) status.mt_erreg);
-  printf ("residue count = %d\n", (int) status.mt_resid);
-#if !defined(ultrix) && !defined(__ultrix__) && !defined(hpux) && !defined(__hpux) && !defined(__osf__)
-  printf ("file number = %d\n", (int) status.mt_fileno);
-  printf ("block number = %d\n", (int) status.mt_blkno);
-#endif
-}
-
-void
-usage (fp, status)
-  FILE *fp;
-  int status;
-{
-  fprintf (fp, _("\
-Usage: %s [-V] [-f device] [--file=device] [--rsh-command=command]\n\
-\t[--help] [--version] operation [count]\n"),
-	   program_name);
-  exit (status);
-}

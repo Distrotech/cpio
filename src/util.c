@@ -1,5 +1,5 @@
 /* util.c - Several utility routines for cpio.
-   Copyright (C) 1990, 1991, 1992, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,18 +15,15 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#if defined(HAVE_CONFIG_H)
-# include <config.h>
-#endif
+#include <system.h>
 
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include "system.h"
 #include "cpiohdr.h"
 #include "dstring.h"
 #include "extern.h"
-#include "rmt.h"
+#include <rmt.h>
 
 #include <sys/ioctl.h>
 
@@ -41,17 +38,11 @@
 extern int errno;
 #endif
 
-static void tape_fill_input_buffer P_((int in_des, int num_bytes));
-static int disk_fill_input_buffer P_((int in_des, int num_bytes));
-static void hash_insert ();
-static void write_nuls_to_file P_((long num_bytes, int out_des));
-
 /* Write `output_size' bytes of `output_buffer' to file
    descriptor OUT_DES and reset `output_size' and `out_buff'.  */
 
 void
-tape_empty_output_buffer (out_des)
-     int out_des;
+tape_empty_output_buffer (int out_des)
 {
   int bytes_written;
 
@@ -110,8 +101,7 @@ tape_empty_output_buffer (out_des)
    insure this.  */
 
 void
-disk_empty_output_buffer (out_des)
-     int out_des;
+disk_empty_output_buffer (int out_des)
 {
   int bytes_written;
 
@@ -152,9 +142,7 @@ disk_empty_output_buffer (out_des)
    boundary.  */
 
 void
-swahw_array (ptr, count)
-     char *ptr;
-     int count;
+swahw_array (char *ptr, int count)
 {
   char tmp;
 
@@ -181,9 +169,7 @@ static long input_bytes_before_lseek = 0;
 #endif
 
 static void
-tape_fill_input_buffer (in_des, num_bytes)
-     int in_des;
-     int num_bytes;
+tape_fill_input_buffer (int in_des, int num_bytes)
 {
 #ifdef BROKEN_LONG_TAPE_DRIVER
   /* Some tape drivers seem to have a signed internal seek pointer and
@@ -221,9 +207,7 @@ tape_fill_input_buffer (in_des, num_bytes)
    Exit with an error if end of file is reached.  */
 
 static int
-disk_fill_input_buffer (in_des, num_bytes)
-     int in_des;
-     int num_bytes;
+disk_fill_input_buffer (int in_des, int num_bytes)
 {
   in_buff = input_buffer;
   num_bytes = (num_bytes < DISK_IO_BLOCK_SIZE) ? num_bytes : DISK_IO_BLOCK_SIZE;
@@ -243,10 +227,7 @@ disk_fill_input_buffer (in_des, num_bytes)
    When `out_buff' fills up, flush it to file descriptor OUT_DES.  */
 
 void
-tape_buffered_write (in_buf, out_des, num_bytes)
-     char *in_buf;
-     int out_des;
-     long num_bytes;
+tape_buffered_write (char *in_buf, int out_des, long num_bytes)
 {
   register long bytes_left = num_bytes;	/* Bytes needing to be copied.  */
   register long space_left;	/* Room left in output buffer.  */
@@ -273,10 +254,7 @@ tape_buffered_write (in_buf, out_des, num_bytes)
    When `out_buff' fills up, flush it to file descriptor OUT_DES.  */
 
 void
-disk_buffered_write (in_buf, out_des, num_bytes)
-     char *in_buf;
-     int out_des;
-     long num_bytes;
+disk_buffered_write (char *in_buf, int out_des, long num_bytes)
 {
   register long bytes_left = num_bytes;	/* Bytes needing to be copied.  */
   register long space_left;	/* Room left in output buffer.  */
@@ -304,10 +282,7 @@ disk_buffered_write (in_buf, out_des, num_bytes)
    When `in_buff' is exhausted, refill it from file descriptor IN_DES.  */
 
 void
-tape_buffered_read (in_buf, in_des, num_bytes)
-     char *in_buf;
-     int in_des;
-     long num_bytes;
+tape_buffered_read (char *in_buf, int in_des, long num_bytes)
 {
   register long bytes_left = num_bytes;	/* Bytes needing to be copied.  */
   register long space_left;	/* Bytes to copy from input buffer.  */
@@ -337,10 +312,7 @@ tape_buffered_read (in_buf, in_des, num_bytes)
    then EOF has been reached.  */
 
 int
-tape_buffered_peek (peek_buf, in_des, num_bytes)
-     char *peek_buf;
-     int in_des;
-     int num_bytes;
+tape_buffered_peek (char *peek_buf, int in_des, int num_bytes)
 {
   long tmp_input_size;
   long got_bytes;
@@ -404,9 +376,7 @@ tape_buffered_peek (peek_buf, in_des, num_bytes)
 /* Skip the next NUM_BYTES bytes of file descriptor IN_DES.  */
 
 void
-tape_toss_input (in_des, num_bytes)
-     int in_des;
-     long num_bytes;
+tape_toss_input (int in_des, long num_bytes)
 {
   register long bytes_left = num_bytes;	/* Bytes needing to be copied.  */
   register long space_left;	/* Bytes to copy from input buffer.  */
@@ -433,6 +403,27 @@ tape_toss_input (in_des, num_bytes)
     }
 }
 
+static void
+write_nuls_to_file (long num_bytes, int out_des)
+{
+  long	blocks;
+  long	extra_bytes;
+  long	i;
+
+  blocks = num_bytes / 512;
+  extra_bytes = num_bytes % 512;
+  for (i = 0; i < extra_bytes; ++i)
+    {
+      if (write (out_des, zeros_512, 512) != 512)
+	error (1, errno, _("error writing NUL's"));
+    }
+  if (extra_bytes != 0)
+    {
+      if (write (out_des, zeros_512, extra_bytes) != extra_bytes)
+	error (1, errno, _("error writing NUL's"));
+    }
+}
+
 /* Copy a file using the input and output buffers, which may start out
    partly full.  After the copy, the files are not closed nor the last
    block flushed to output, and the input buffer may still be partly
@@ -442,10 +433,7 @@ tape_toss_input (in_des, num_bytes)
    NUM_BYTES is the number of bytes to copy.  */
 
 void
-copy_files_tape_to_disk (in_des, out_des, num_bytes)
-     int in_des;
-     int out_des;
-     long num_bytes;
+copy_files_tape_to_disk (int in_des, int out_des, long num_bytes)
 {
   long size;
   long k;
@@ -475,11 +463,8 @@ copy_files_tape_to_disk (in_des, out_des, num_bytes)
    NUM_BYTES is the number of bytes to copy.  */
 
 void
-copy_files_disk_to_tape (in_des, out_des, num_bytes, filename)
-     int in_des;
-     int out_des;
-     long num_bytes;
-     char *filename;
+copy_files_disk_to_tape (int in_des, int out_des, long num_bytes,
+			 char *filename)
 {
   long size;
   long k;
@@ -525,11 +510,8 @@ copy_files_disk_to_tape (in_des, out_des, num_bytes, filename)
    NUM_BYTES is the number of bytes to copy.  */
 
 void
-copy_files_disk_to_disk (in_des, out_des, num_bytes, filename)
-     int in_des;
-     int out_des;
-     long num_bytes;
-     char *filename;
+copy_files_disk_to_disk (int in_des, int out_des, long num_bytes,
+			 char *filename)
 {
   long size;
   long k;
@@ -567,10 +549,8 @@ copy_files_disk_to_disk (in_des, out_des, num_bytes, filename)
 /* Warn if file changed while it was being copied.  */
 
 void
-warn_if_file_changed(file_name, old_file_size, old_file_mtime)
-     char *file_name;
-     unsigned long old_file_size;
-     unsigned long old_file_mtime;
+warn_if_file_changed (char *file_name, unsigned long old_file_size,
+		      unsigned long old_file_mtime)
 {
   struct stat new_file_stat;
   if ((*xstat) (file_name, &new_file_stat) < 0)
@@ -593,8 +573,7 @@ warn_if_file_changed(file_name, old_file_size, old_file_mtime)
    Do not destroy any nondirectories while creating directories.  */
 
 void
-create_all_directories (name)
-     char *name;
+create_all_directories (char *name)
 {
   char *dir;
   int   mode;
@@ -638,8 +617,7 @@ create_all_directories (name)
    are disk files.  */
 
 void
-prepare_append (out_file_des)
-     int out_file_des;
+prepare_append (int out_file_des)
 {
   int start_of_header;
   int start_of_block;
@@ -697,10 +675,8 @@ static int hash_num;
    associated with NODE_NUM, return NULL.  */
 
 char *
-find_inode_file (node_num, major_num, minor_num)
-     unsigned long node_num;
-     unsigned long major_num;
-     unsigned long minor_num;
+find_inode_file (unsigned long node_num, unsigned long major_num,
+		 unsigned long minor_num)
 {
   int start;			/* Initial hash location.  */
   int temp;			/* Rehash search variable.  */
@@ -733,14 +709,43 @@ find_inode_file (node_num, major_num, minor_num)
   return NULL;
 }
 
+/* Do the hash insert.  Used in normal inserts and resizing the hash
+   table.  It is guaranteed that there is room to insert the item.
+   NEW_VALUE is the pointer to the previously allocated inode, file
+   name association record.  */
+
+static void
+hash_insert (struct inode_val *new_value)
+{
+  int start;			/* Home position for the value.  */
+  int temp;			/* Used for rehashing.  */
+
+  /* Hash function is node number modulo the table size.  */
+  start = new_value->inode % hash_size;
+
+  /* Do the initial look into the table.  */
+  if (hash_table[start] == NULL)
+    {
+      hash_table[start] = new_value;
+      return;
+    }
+
+  /* If we get to here, the home position is full with a different inode
+     record.  Do a linear search for the first NULL pointer and insert
+     the new item there.  */
+  temp = (start + 1) % hash_size;
+  while (hash_table[temp] != NULL)
+    temp = (temp + 1) % hash_size;
+
+  /* Insert at the NULL.  */
+  hash_table[temp] = new_value;
+}
+
 /* Associate FILE_NAME with the inode NODE_NUM.  (Insert into hash table.)  */
 
 void
-add_inode (node_num, file_name, major_num, minor_num)
-     unsigned long node_num;
-     char *file_name;
-     unsigned long major_num;
-     unsigned long minor_num;
+add_inode (unsigned long node_num, char *file_name, unsigned long major_num,
+	   unsigned long minor_num)
 {
   struct inode_val *temp;
 
@@ -786,46 +791,13 @@ add_inode (node_num, file_name, major_num, minor_num)
   hash_num++;
 }
 
-/* Do the hash insert.  Used in normal inserts and resizing the hash
-   table.  It is guaranteed that there is room to insert the item.
-   NEW_VALUE is the pointer to the previously allocated inode, file
-   name association record.  */
-
-static void
-hash_insert (new_value)
-     struct inode_val *new_value;
-{
-  int start;			/* Home position for the value.  */
-  int temp;			/* Used for rehashing.  */
-
-  /* Hash function is node number modulo the table size.  */
-  start = new_value->inode % hash_size;
-
-  /* Do the initial look into the table.  */
-  if (hash_table[start] == NULL)
-    {
-      hash_table[start] = new_value;
-      return;
-    }
-
-  /* If we get to here, the home position is full with a different inode
-     record.  Do a linear search for the first NULL pointer and insert
-     the new item there.  */
-  temp = (start + 1) % hash_size;
-  while (hash_table[temp] != NULL)
-    temp = (temp + 1) % hash_size;
-
-  /* Insert at the NULL.  */
-  hash_table[temp] = new_value;
-}
 
 /* Open FILE in the mode specified by the command line options
    and return an open file descriptor for it,
    or -1 if it can't be opened.  */
 
 int
-open_archive (file)
-     char *file;
+open_archive (char *file)
 {
   int fd;
   void (*copy_in) ();		/* Workaround for pcc bug.  */
@@ -850,15 +822,14 @@ open_archive (file)
    and take it offline.  */
 
 void
-tape_offline (tape_des)
-     int tape_des;
+tape_offline (int tape_des)
 {
 #if defined(MTIOCTOP) && defined(MTOFFL)
   struct mtop control;
 
   control.mt_op = MTOFFL;
   control.mt_count = 1;
-  rmtioctl (tape_des, MTIOCTOP, &control);	/* Don't care if it fails.  */
+  rmtioctl (tape_des, MTIOCTOP, (char*) &control);	/* Don't care if it fails.  */
 #endif
 }
 
@@ -872,8 +843,7 @@ tape_offline (tape_des)
    device to use.  */
 
 void
-get_next_reel (tape_des)
-     int tape_des;
+get_next_reel (int tape_des)
 {
   static int reel_number = 1;
   FILE *tty_in;			/* File for interacting with user.  */
@@ -886,12 +856,12 @@ get_next_reel (tape_des)
   ds_init (&new_name, 128);
 
   /* Open files for interactive communication.  */
-  tty_in = fopen (CONSOLE, "r");
+  tty_in = fopen (TTY_NAME, "r");
   if (tty_in == NULL)
-    error (2, errno, CONSOLE);
-  tty_out = fopen (CONSOLE, "w");
+    error (2, errno, TTY_NAME);
+  tty_out = fopen (TTY_NAME, "w");
   if (tty_out == NULL)
-    error (2, errno, CONSOLE);
+    error (2, errno, TTY_NAME);
 
   old_tape_des = tape_des;
   tape_offline (tape_des);
@@ -971,8 +941,7 @@ get_next_reel (tape_des)
    a copy of MESSAGE after the string "%d".  */
 
 void
-set_new_media_message (message)
-     char *message;
+set_new_media_message (char *message)
 {
   char *p;
   int prev_was_percent;
@@ -1014,10 +983,7 @@ set_new_media_message (message)
    modes we have to set the umask first.  */
 
 int
-umasked_symlink (name1, name2, mode)
-  char *name1;
-  char *name2;
-  int mode;
+umasked_symlink (char *name1, char *name2, int mode)
 {
   int	old_umask;
   int	rc;
@@ -1047,8 +1013,7 @@ umasked_symlink (name1, name2, mode)
    the string) instead of the original input string.  */
 
 char *
-add_cdf_double_slashes (input_name)
-  char *input_name;
+add_cdf_double_slashes (char *input_name)
 {
   static char *ret_name = NULL;	/* re-usuable return buffer (malloc'ed)  */
   static int ret_size = -1;	/* size of return buffer.  */
@@ -1141,9 +1106,8 @@ add_cdf_double_slashes (input_name)
    then it is.  This is only the case for cpio archives, but we don't
    have to worry about tar because tar always has the directory before
    its files (or else we lose).  */
-
-islastparentcdf(path)
-  char	*path;
+int
+islastparentcdf (char *path)
 {
   char *newpath;
   char *slash;
@@ -1176,9 +1140,7 @@ enum sparse_write_states { begin, in_zeros, not_in_zeros };
 
 
 static int
-buf_all_zeros (buf, bufsize)
-  char *buf;
-  int bufsize;
+buf_all_zeros (char *buf, int bufsize)
 {
   int	i;
   for (i = 0; i < bufsize; ++i)
@@ -1195,10 +1157,7 @@ int delayed_seek_count = 0;
    Return the number of bytes written on success, -1 on error.  */
 
 int
-sparse_write (fildes, buf, nbyte)
-     int fildes;
-     char *buf;
-     unsigned int nbyte;
+sparse_write (int fildes, char *buf, unsigned int nbyte)
 {
   int complete_block_count;
   int leftover_bytes_count;
@@ -1290,27 +1249,4 @@ sparse_write (fildes, buf, nbyte)
       write_rc = write (fildes, buf, leftover_bytes_count);
     }
   return nbyte;
-}
-
-static void
-write_nuls_to_file (num_bytes, out_des)
-    long	num_bytes;
-    int		out_des;
-{
-  long	blocks;
-  long	extra_bytes;
-  long	i;
-
-  blocks = num_bytes / 512;
-  extra_bytes = num_bytes % 512;
-  for (i = 0; i < extra_bytes; ++i)
-    {
-      if (write (out_des, zeros_512, 512) != 512)
-	error (1, errno, _("error writing NUL's"));
-    }
-  if (extra_bytes != 0)
-    {
-      if (write (out_des, zeros_512, extra_bytes) != extra_bytes)
-	error (1, errno, _("error writing NUL's"));
-    }
 }
