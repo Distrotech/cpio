@@ -1,0 +1,12 @@
+# Makefile variables for PO directory
+# Copyright (C) 2004 Free Software Foundation, Inc.
+
+DOMAIN = $(PACKAGE)
+
+subdir = po
+top_builddir = ..
+
+XGETTEXT_OPTIONS = --keyword=_ --keyword=N_
+COPYRIGHT_HOLDER = Free Software Foundation, Inc.
+MSGID_BUGS_ADDRESS = bug-cpio@gnu.org
+EXTRA_LOCALE_CATEGORIES =
