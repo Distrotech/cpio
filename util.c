@@ -41,6 +41,10 @@
 #include <sys/mtio.h>
 #endif
 
+#if !HAVE_DECL_ERRNO
+extern int errno;
+#endif
+
 static void tape_fill_input_buffer P_((int in_des, int num_bytes));
 static int disk_fill_input_buffer P_((int in_des, int num_bytes));
 static void hash_insert ();
