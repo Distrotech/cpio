@@ -451,9 +451,11 @@ process_copy_out ()
 	    case CP_IFLNK:
 	      {
 		char *link_name = (char *) xmalloc (file_stat.st_size + 1);
+		int link_size;
 
-		if (readlink (input_name.ds_string, link_name,
-			      file_stat.st_size) < 0)
+		link_size = readlink (input_name.ds_string, link_name,
+			              file_stat.st_size);
+		if (link_size < 0)
 		  {
 		    error (0, errno, "%s", input_name.ds_string);
 		    free (link_name);
@@ -461,14 +463,14 @@ process_copy_out ()
 		  }
 		if (archive_format == arf_tar || archive_format == arf_ustar)
 		  {
-		    if (file_stat.st_size + 1 > 100)
+		    if (link_size + 1 > 100)
 		      {
 			error (0, 0, "%s: symbolic link too long",
 			       file_hdr.c_name);
 		      }
 		    else
 		      {
-			link_name[file_stat.st_size] = '\0';
+			link_name[link_size] = '\0';
 			file_hdr.c_tar_linkname = link_name;
 			write_out_header (&file_hdr, out_file_des);
 		      }

@@ -331,16 +331,18 @@ process_copy_pass ()
       else if (S_ISLNK (in_file_stat.st_mode))
 	{
 	  char *link_name;
+	  int link_size;
 	  link_name = (char *) xmalloc ((unsigned int) in_file_stat.st_size + 1);
 
-	  if (readlink (input_name.ds_string, link_name,
-			in_file_stat.st_size) < 0)
+	  link_size = readlink (input_name.ds_string, link_name,
+			        in_file_stat.st_size);
+	  if (link_size < 0)
 	    {
 	      error (0, errno, "%s", input_name.ds_string);
 	      free (link_name);
 	      continue;
 	    }
-	  link_name[in_file_stat.st_size] = '\0';
+	  link_name[link_size] = '\0';
 
 	  res = UMASKED_SYMLINK (link_name, output_name.ds_string,
 				 in_file_stat.st_mode);
