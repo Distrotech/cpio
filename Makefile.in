@@ -70,11 +70,15 @@ binprefix =
 # Prefix for each installed man page, normally empty or `g'.
 manprefix = 
 
+
 # Where to install the cpio and mt executables.
 bindir = $(exec_prefix)/bin
 
 # Where to put the rmt executable.
 libdir = $(exec_prefix)/lib
+
+# Where to put the info 
+infodir = $(prefix)/info
 
 # Where to put the Unix-style manual pages.
 mandir = $(prefix)/man/man1
@@ -84,6 +88,15 @@ manext = 1
 #### End of system configuration section. ####
 
 SHELL = /bin/sh
+
+MAKEINFO = makeinfo
+TEXI2DVI = texi2dvi
+
+TEXFILES = *.aux *.cp *.cps *.dvi *.fn *.fns *.ky *.log *.pg *.toc *.tp *.vr
+
+INFOS = cpio.info*
+INFO_DEPS = cpio.info
+DVIS = cpio.dvi
 
 SRCS = copyin.c copyout.c copypass.c defer.c dstring.c global.c \
 main.c tar.c util.c error.c getopt.c getopt1.c filemode.c version.c \
@@ -98,10 +111,11 @@ MT_SRCS = mt.c argmatch.c
 MT_OBJS = mt.o argmatch.o error.o getopt.o getopt1.o \
 xmalloc.o version.o $(RTAPELIB) @ALLOCA@
 HDRS = cpio.h cpiohdr.h tar.h tarhdr.h defer.h dstring.h extern.h filetypes.h \
-system.h fnmatch.h getopt.h rmt.h 
+system.h fnmatch.h getopt.h rmt.h safe-stat.h
 DISTFILES = $(SRCS) $(HDRS) COPYING COPYING.LIB ChangeLog Makefile.in \
 README NEWS INSTALL cpio.1 mt.1 makefile.pc makefile.os2 cpio.def \
-configure configure.in mkinstalldirs $(MT_SRCS) rmt.c tcexparg.c alloca.c
+configure configure.in mkinstalldirs $(MT_SRCS) rmt.c tcexparg.c alloca.c \
+cpio.texi texinfo.tex
 
 all:	@PROGS@
 
@@ -116,7 +130,7 @@ install: installdirs all $(srcdir)/cpio.1 $(srcdir)/mt.1
 	-test ! -f mt || $(INSTALL_DATA) $(srcdir)/mt.1 $(mandir)/$(manprefix)mt.$(manext)
 
 installdirs:
-	$(srcdir)/mkinstalldirs $(bindir) $(libdir) $(mandir)
+	$(srcdir)/mkinstalldirs $(bindir) $(libdir) $(mandir) $(infodir)
 
 uninstall:
 	cd $(bindir); rm -f $(binprefix)cpio $(binprefix)mt
@@ -155,6 +169,32 @@ configure: configure.in
 
 TAGS:	$(SRCS)
 	etags $(SRCS)
+
+.SUFFIXES: .texi .info .dvi
+
+.texi.info:
+	$(MAKEINFO) -I$(srcdir) $<
+
+.texi.dvi:
+	TEXINPUTS=$(srcdir):$$TEXINPUTS $(TEXI2DVI) $<
+
+info:: $(INFO_DEPS)
+
+dvi:: $(DVIS)
+
+install:: install-info
+
+install-info: $(INFO_DEPS)
+	cd $(srcdir); for file in *.info*; do \
+	  $(INSTALL_DATA) $$file $(infodir)/$$file; \
+	done
+
+uninstall:: uninstall-info
+
+uninstall-info:
+	cd $(srcdir); for file in *.info*; do \
+	  rm -f $(infodir)/$$file; \
+	done
 
 clean:
 	rm -f cpio rmt mt *.o core
