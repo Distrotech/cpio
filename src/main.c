@@ -736,11 +736,6 @@ main (int argc, char *argv[])
 
   program_name = argv[0];
 
-#ifdef __EMX__			/* gcc on OS/2.  */
-  _response (&argc, &argv);
-  _wildcard (&argc, &argv);
-#endif
-
   process_args (argc, argv);
   
   initialize_buffers ();
