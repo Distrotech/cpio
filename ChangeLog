@@ -1,3 +1,13 @@
+2004-09-07  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/main.c (process_args): Bugfix. Allow extra arguments
+	in copy_in mode.
+	* src/util.c (write_nuls_to_file): Use buffered I/O. All
+	callers changed. Thanks Matthew Braithwaite <mab@cnet.com>
+	for noticing.
+	Bugfix: extra_bytes was mistakenly used instead of blocks.
+	* THANKS: Added Matthew Braithwaite.
+
 2004-09-06  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Started merging with tar into paxutils. Sources before
