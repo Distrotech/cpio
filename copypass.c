@@ -380,11 +380,14 @@ process_copy_pass ()
 
   if (dot_flag)
     fputc ('\n', stderr);
-  res = (output_bytes + io_block_size - 1) / io_block_size;
-  if (res == 1)
-    fprintf (stderr, "1 block\n");
-  else
-    fprintf (stderr, "%d blocks\n", res);
+  if (!quiet_flag)
+    {
+      res = (output_bytes + io_block_size - 1) / io_block_size;
+      if (res == 1)
+	fprintf (stderr, "1 block\n");
+      else
+	fprintf (stderr, "%d blocks\n", res);
+    }
 }
 
 /* Try and create a hard link from FILE_NAME to another file 
