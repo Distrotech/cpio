@@ -22,7 +22,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
-#ifndef errno
+
+#if !HAVE_DECL_ERRNO
 extern int errno;
 #endif
 

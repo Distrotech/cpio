@@ -52,7 +52,7 @@
 #include <setjmp.h>
 #include <sys/stat.h>
 
-#ifndef errno
+#if! HAVE_DECL_ERRNO
 extern int errno;
 #endif
 

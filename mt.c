@@ -83,12 +83,20 @@
 #include <strings.h>
 #endif
 
-#if defined(STDC_HEADERS)
-#include <stdlib.h>
-#else
+#if defined(HAVE_STDLIB_H)
+# include <stdlib.h>
+#endif
+
+#if !HAVE_DECL_ERRNO
 extern int errno;
+#endif
+#if !HAVE_DECL_GETENV
 char *getenv ();
+#endif
+#if !HAVE_DECL_ATOI
 int atoi ();
+#endif
+#if !HAVE_DECL_EXIT
 void exit ();
 #endif
 

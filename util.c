@@ -1051,7 +1051,6 @@ chown (path, owner, group)
 int
 utime (char *filename, struct utimbuf *utb)
 {
-  extern int errno;
   struct tm *tm;
   struct ftime filetime;
   time_t when;
