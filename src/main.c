@@ -319,7 +319,6 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
 	case 'R':		/* Set the owner.  */
 	  if (no_chown_flag)
 	    usage (stderr, 2);
-#ifndef __MSDOS__
 	  {
 	    char *e, *u, *g;
 
@@ -337,7 +336,6 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
 		set_group_flag = TRUE;
 	      }
 	  }
-#endif
 	  break;
 
 	case 's':		/* Swap bytes.  */
@@ -458,13 +456,11 @@ crc newc odc bin ustar tar (all-caps also recognized)"), optarg);
 	error (1, errno, "%s", archive_name);
     }
 
-#ifndef __MSDOS__
   /* Prevent SysV non-root users from giving away files inadvertantly.
      This happens automatically on BSD, where only root can give
      away files.  */
   if (set_owner_flag == FALSE && set_group_flag == FALSE && geteuid ())
     no_chown_flag = TRUE;
-#endif
 }
 
 /* Initialize the input and output buffers to their proper size and

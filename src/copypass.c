@@ -131,7 +131,6 @@ process_copy_pass ()
       /* Do the real copy or link.  */
       if (S_ISREG (in_file_stat.st_mode))
 	{
-#ifndef __MSDOS__
 	  /* Can the current file be linked to a another file?
 	     Set link_name to the original file name.  */
 	  if (link_flag)
@@ -145,7 +144,6 @@ process_copy_pass ()
 				major (in_file_stat.st_dev), 
 				minor (in_file_stat.st_dev), 
 				in_file_stat.st_ino);
-#endif
 
 	  /* If the file was not linked, copy contents of file.  */
 	  if (link_res < 0)
@@ -291,7 +289,6 @@ process_copy_pass ()
 		error (0, errno, "%s", output_name.ds_string);
 	    }
 	}
-#ifndef __MSDOS__
       else if (S_ISCHR (in_file_stat.st_mode) ||
 	       S_ISBLK (in_file_stat.st_mode) ||
 #ifdef S_ISFIFO
@@ -346,7 +343,6 @@ process_copy_pass ()
 		}
 	    }
 	}
-#endif
 
 #ifdef S_ISLNK
       else if (S_ISLNK (in_file_stat.st_mode))
@@ -428,7 +424,6 @@ link_to_maj_min_ino (file_name, st_dev_maj, st_dev_min, st_ino)
   int	link_res;
   char *link_name;
   link_res = -1;
-#ifndef __MSDOS__
   /* Is the file a link to a previously copied file?  */
   link_name = find_inode_file (st_ino,
 			       st_dev_maj,
@@ -439,7 +434,6 @@ link_to_maj_min_ino (file_name, st_dev_maj, st_dev_min, st_ino)
 	       st_dev_min);
   else
     link_res = link_to_name (file_name, link_name);
-#endif
   return link_res;
 }
 
@@ -456,11 +450,7 @@ link_to_name (link_name, link_target)
   char *link_name;
   char *link_target;
 {
-  int res;
-#ifdef __MSDOS__
-  res = -1;
-#else /* not __MSDOS__ */
-  res = link (link_target, link_name);
+  int res = link (link_target, link_name);
   if (res < 0 && create_dir_flag)
     {
       create_all_directories (link_name);
@@ -477,6 +467,5 @@ link_to_name (link_name, link_target)
       error (0, errno, _("cannot link %s to %s"),
 	     link_target, link_name);
     }
-#endif /* not __MSDOS__ */
   return res;
 }

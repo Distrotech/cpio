@@ -122,7 +122,6 @@ write_out_tar_header (file_hdr, out_des)
     case CP_IFDIR:
       tar_hdr->typeflag = DIRTYPE;
       break;
-#ifndef __MSDOS__
     case CP_IFCHR:
       tar_hdr->typeflag = CHRTYPE;
       break;
@@ -144,7 +143,6 @@ write_out_tar_header (file_hdr, out_des)
       to_oct (0, 12, tar_hdr->size);
       break;
 #endif /* CP_IFLNK */
-#endif /* !__MSDOS__ */
     }
 
   if (archive_format == arf_ustar)
@@ -154,14 +152,12 @@ write_out_tar_header (file_hdr, out_des)
       strncpy (tar_hdr->magic, TMAGIC, TMAGLEN);
       strncpy (tar_hdr->magic + TMAGLEN, TVERSION, TVERSLEN);
 
-#ifndef __MSDOS__
       name = getuser (file_hdr->c_uid);
       if (name)
 	strcpy (tar_hdr->uname, name);
       name = getgroup (file_hdr->c_gid);
       if (name)
 	strcpy (tar_hdr->gname, name);
-#endif
 
       to_oct (file_hdr->c_rdev_maj, 8, tar_hdr->devmajor);
       to_oct (file_hdr->c_rdev_min, 8, tar_hdr->devminor);
@@ -202,10 +198,8 @@ read_in_tar_header (file_hdr, in_des)
   int warned = FALSE;
   union tar_record tar_rec;
   struct tar_header *tar_hdr = (struct tar_header *) &tar_rec;
-#ifndef __MSDOS__
   uid_t *uidp;
   gid_t *gidp;
-#endif
 
   tape_buffered_read ((char *) &tar_rec, in_des, TARRECORDSIZE);
 
@@ -268,19 +262,16 @@ read_in_tar_header (file_hdr, in_des)
   /* Debian hack: This version of cpio uses the -n flag also to extract
      tar archives using the numeric UID/GID instead of the user/group
      names in /etc/passwd and /etc/groups.  (98/10/15) -BEM */
-#ifndef __MSDOS__
       if (archive_format == arf_ustar && !numeric_uid
 	  && (uidp = getuidbyname (tar_hdr->uname)))
 	file_hdr->c_uid = *uidp;
       else
-#endif
 	otoa (tar_hdr->uid, &file_hdr->c_uid);
-#ifndef __MSDOS__
+
       if (archive_format == arf_ustar && !numeric_uid
 	  && (gidp = getgidbyname (tar_hdr->gname)))
 	file_hdr->c_gid = *gidp;
       else
-#endif
 	otoa (tar_hdr->gid, &file_hdr->c_gid);
       otoa (tar_hdr->size, &file_hdr->c_filesize);
       otoa (tar_hdr->mtime, &file_hdr->c_mtime);
@@ -298,7 +289,6 @@ read_in_tar_header (file_hdr, in_des)
 	case DIRTYPE:
 	  file_hdr->c_mode |= CP_IFDIR;
 	  break;
-#ifndef __MSDOS__
 	case CHRTYPE:
 	  file_hdr->c_mode |= CP_IFCHR;
 	  /* If a POSIX tar header has a valid linkname it's always supposed
@@ -341,7 +331,7 @@ read_in_tar_header (file_hdr, in_des)
 	  file_hdr->c_tar_linkname = stash_tar_linkname (tar_hdr->linkname);
 	  file_hdr->c_filesize = 0;
 	  break;
-#endif /* !__MSDOS__ */
+
 	case AREGTYPE:
 	  /* Old tar format; if the last char in filename is '/' then it is
 	     a directory, otherwise it's a regular file.  */

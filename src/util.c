@@ -28,11 +28,7 @@
 #include "extern.h"
 #include "rmt.h"
 
-#ifndef __MSDOS__
 #include <sys/ioctl.h>
-#else
-#include <io.h>
-#endif
 
 #ifdef HAVE_SYS_MTIO_H
 #ifdef HAVE_SYS_IO_TRIOCTL_H
@@ -706,7 +702,6 @@ find_inode_file (node_num, major_num, minor_num)
      unsigned long major_num;
      unsigned long minor_num;
 {
-#ifndef __MSDOS__
   int start;			/* Initial hash location.  */
   int temp;			/* Rehash search variable.  */
 
@@ -735,7 +730,6 @@ find_inode_file (node_num, major_num, minor_num)
 	    return hash_table[temp]->file_name;
 	}
     }
-#endif
   return NULL;
 }
 
@@ -748,7 +742,6 @@ add_inode (node_num, file_name, major_num, minor_num)
      unsigned long major_num;
      unsigned long minor_num;
 {
-#ifndef __MSDOS__
   struct inode_val *temp;
 
   /* Create new inode record.  */
@@ -791,7 +784,6 @@ add_inode (node_num, file_name, major_num, minor_num)
       hash table.  */
   hash_insert (temp);
   hash_num++;
-#endif /* __MSDOS__ */
 }
 
 /* Do the hash insert.  Used in normal inserts and resizing the hash
@@ -1037,58 +1029,6 @@ umasked_symlink (name1, name2, mode)
 }
 #endif /* SYMLINK_USES_UMASK */
 
-#if defined(__MSDOS__) && !defined(__GNUC__)
-int
-chown (path, owner, group)
-     char *path;
-     int owner, group;
-{
-  return 0;
-}
-#endif
-
-#ifdef __TURBOC__
-#include <time.h>
-#include <fcntl.h>
-#include <io.h>
-
-int
-utime (char *filename, struct utimbuf *utb)
-{
-  struct tm *tm;
-  struct ftime filetime;
-  time_t when;
-  int fd;
-  int status;
-
-  if (utb == 0)
-      when = time (0);
-  else
-      when = utb->modtime;
-
-    fd = _open (filename, O_RDWR);
-  if (fd == -1)
-      return -1;
-
-    tm = localtime (&when);
-  if (tm->tm_year < 80)
-      filetime.ft_year = 0;
-  else
-      filetime.ft_year = tm->tm_year - 80;
-    filetime.ft_month = tm->tm_mon + 1;
-    filetime.ft_day = tm->tm_mday;
-  if (tm->tm_hour < 0)
-      filetime.ft_hour = 0;
-  else
-      filetime.ft_hour = tm->tm_hour;
-    filetime.ft_min = tm->tm_min;
-    filetime.ft_tsec = tm->tm_sec / 2;
-
-    status = setftime (fd, &filetime);
-    _close (fd);
-    return status;
-}
-#endif
 #ifdef HPUX_CDF
 /* When we create a cpio archive we mark CDF's by putting an extra `/'
    after their component name so we can distinguish the CDF's when we

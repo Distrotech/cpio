@@ -196,7 +196,7 @@ read_in_old_ascii (file_hdr, in_des)
     free (file_hdr->c_name);
   file_hdr->c_name = (char *) xmalloc (file_hdr->c_namesize + 1);
   tape_buffered_read (file_hdr->c_name, in_des, (long) file_hdr->c_namesize);
-#ifndef __MSDOS__
+
   /* HP/UX cpio creates archives that look just like ordinary archives,
      but for devices it sets major = 0, minor = 1, and puts the
      actual major/minor number in the filesize field.  See if this
@@ -225,7 +225,6 @@ read_in_old_ascii (file_hdr, in_des)
       default:
 	break;
     }
-#endif  /* __MSDOS__ */
 }
 
 /* Fill in FILE_HDR by reading a new-format ASCII format cpio header from
@@ -320,7 +319,6 @@ read_in_binary (file_hdr, in_des)
   if (file_hdr->c_namesize % 2)
     tape_toss_input (in_des, 1L);
 
-#ifndef __MSDOS__
   /* HP/UX cpio creates archives that look just like ordinary archives,
      but for devices it sets major = 0, minor = 1, and puts the
      actual major/minor number in the filesize field.  See if this
@@ -349,7 +347,6 @@ read_in_binary (file_hdr, in_des)
       default:
 	break;
     }
-#endif  /* __MSDOS__ */
 }
 
 /* Exchange the bytes of each element of the array of COUNT shorts
@@ -427,9 +424,6 @@ process_copy_in ()
       time (&current_time);
     }
 
-#ifdef __MSDOS__
-  setmode (archive_des, O_BINARY);
-#endif
   /* Check whether the input file might be a tape.  */
   in_file_des = archive_des;
   if (_isrmt (in_file_des))
@@ -768,7 +762,6 @@ copyin_file(file_hdr, in_file_des)
       copyin_directory(file_hdr, existing_dir);
       break;
 
-#ifndef __MSDOS__
     case CP_IFCHR:
     case CP_IFBLK:
 #ifdef CP_IFSOCK
@@ -779,7 +772,6 @@ copyin_file(file_hdr, in_file_des)
 #endif
       copyin_device(file_hdr);
       break;
-#endif
 
 #ifdef CP_IFLNK
     case CP_IFLNK:
@@ -844,7 +836,6 @@ copyin_regular_file(file_hdr, in_file_des)
 {
   int out_file_des;		/* Output file descriptor.  */
 
-#ifndef __MSDOS__
   /* Can the current file be linked to a previously copied file? */
   if (file_hdr->c_nlink > 1 && (archive_format == arf_newascii
       || archive_format == arf_crcascii) )
@@ -917,7 +908,6 @@ copyin_regular_file(file_hdr, in_file_des)
 	}
       return;
     }
-#endif
 
   /* If not linked, copy the contents of the file.  */
   out_file_des = open (file_hdr->c_name,
@@ -1252,12 +1242,9 @@ long_format (file_hdr, link_name)
 
   printf ("%s %3u ", mbuf, file_hdr->c_nlink);
 
-#ifndef __MSDOS__
   if (numeric_uid)
-#endif
     printf ("%-8u %-8u ", (unsigned int) file_hdr->c_uid,
 	    (unsigned int) file_hdr->c_gid);
-#ifndef __MSDOS__
   else
     printf ("%-8.8s %-8.8s ", getuser (file_hdr->c_uid),
 	    getgroup (file_hdr->c_gid));
@@ -1267,7 +1254,6 @@ long_format (file_hdr, link_name)
     printf ("%3u, %3u ", file_hdr->c_rdev_maj,
 	    file_hdr->c_rdev_min);
   else
-#endif
     printf ("%8lu ", file_hdr->c_filesize);
 
   printf ("%s ", tbuf + 4);
@@ -1291,11 +1277,9 @@ print_name_with_quoting (p)
     {
       switch (c)
 	{
-#ifndef __MSDOS__
 	case '\\':
 	  printf ("\\\\");
 	  break;
-#endif
 
 	case '\n':
 	  printf ("\\n");
@@ -1326,13 +1310,7 @@ print_name_with_quoting (p)
 	  break;
 
 	default:
-	  if (c > 040 &&
-#ifdef __MSDOS__
-	      c < 0377 && c != 0177
-#else
-	      c < 0177
-#endif
-	    )
+	  if (c > 040 && c < 0177)
 	    putchar (c);
 	  else
 	    printf ("\\%03o", (unsigned int) c);

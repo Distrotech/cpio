@@ -73,7 +73,6 @@ write_out_header (file_hdr, out_des)
   else if (archive_format == arf_oldascii || archive_format == arf_hpoldascii)
     {
       char ascii_header[78];
-#ifndef __MSDOS__
       dev_t dev;
       dev_t rdev;
 
@@ -107,9 +106,6 @@ write_out_header (file_hdr, out_des)
 		break;
 	    }
 	}
-#else
-      int dev = 0, rdev = 0;
-#endif
 
       if ((file_hdr->c_ino >> 16) != 0)
 	error (0, 0, _("%s: truncating inode number"), file_hdr->c_name);
@@ -216,9 +212,6 @@ process_copy_out ()
   bzero (&times, sizeof (struct utimbuf));
   file_hdr.c_magic = 070707;
 
-#ifdef __MSDOS__
-  setmode (archive_des, O_BINARY);
-#endif
   /* Check whether the output file might be a tape.  */
   out_file_des = archive_des;
   if (_isrmt (out_file_des))
@@ -348,7 +341,6 @@ process_copy_out ()
 	  switch (file_hdr.c_mode & CP_IFMT)
 	    {
 	    case CP_IFREG:
-#ifndef __MSDOS__
 	      if (archive_format == arf_tar || archive_format == arf_ustar)
 		{
 		  char *otherfile;
@@ -374,7 +366,6 @@ process_copy_out ()
 		      break;
 		    }
 		}
-#endif
 	      in_file_des = open (input_name.ds_string,
 				  O_RDONLY | O_BINARY, 0);
 	      if (in_file_des < 0)
@@ -393,11 +384,9 @@ process_copy_out ()
 	      warn_if_file_changed(input_name.ds_string, file_hdr.c_filesize,
                                    file_hdr.c_mtime);
 
-#ifndef __MSDOS__
 	      if (archive_format == arf_tar || archive_format == arf_ustar)
 		add_inode (file_hdr.c_ino, file_hdr.c_name, file_hdr.c_dev_maj,
 			   file_hdr.c_dev_min);
-#endif
 
 	      tape_pad_output (out_file_des, file_hdr.c_filesize);
 
@@ -423,7 +412,6 @@ process_copy_out ()
 	      write_out_header (&file_hdr, out_file_des);
 	      break;
 
-#ifndef __MSDOS__
 	    case CP_IFCHR:
 	    case CP_IFBLK:
 #ifdef CP_IFSOCK
@@ -459,7 +447,6 @@ process_copy_out ()
 	      file_hdr.c_filesize = 0;
 	      write_out_header (&file_hdr, out_file_des);
 	      break;
-#endif
 
 #ifdef CP_IFLNK
 	    case CP_IFLNK:
@@ -800,11 +787,9 @@ writeout_defered_file (header, out_file_des)
   copy_files_disk_to_tape (in_file_des, out_file_des, file_hdr.c_filesize, header->c_name);
   warn_if_file_changed(header->c_name, file_hdr.c_filesize, file_hdr.c_mtime);
 
-#ifndef __MSDOS__
   if (archive_format == arf_tar || archive_format == arf_ustar)
     add_inode (file_hdr.c_ino, file_hdr.c_name, file_hdr.c_dev_maj,
 	       file_hdr.c_dev_min);
-#endif
 
   tape_pad_output (out_file_des, file_hdr.c_filesize);
 
