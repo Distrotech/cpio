@@ -735,18 +735,14 @@ main (int argc, char *argv[])
   textdomain (PACKAGE);
 
   program_name = argv[0];
-  umask (0);
 
-#ifdef __TURBOC__
-  _fmode = O_BINARY;		/* Put stdin and stdout in binary mode.  */
-#endif
 #ifdef __EMX__			/* gcc on OS/2.  */
   _response (&argc, &argv);
   _wildcard (&argc, &argv);
 #endif
 
   process_args (argc, argv);
-
+  
   initialize_buffers ();
 
   (*copy_function) ();
