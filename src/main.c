@@ -40,7 +40,7 @@
 #include <localedir.h>
 
 enum cpio_options {
-  NO_ABSOLUTE_FILENAMES_OPTION,  
+  NO_ABSOLUTE_FILENAMES_OPTION=256,  
   NO_PRESERVE_OWNER_OPTION,      
   ONLY_VERIFY_CRC_OPTION,        
   RENAME_BATCH_FILE_OPTION,      
