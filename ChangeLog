@@ -1,3 +1,128 @@
+2004-02-27  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	Changed from flat to deep package layout. Added the framework
+	for NLS support.
+	
+	* .cvsignore: Updated
+	* Makefile.am: Updated
+	* configure.ac: Updated
+	* NEWS: Updated
+	* README-alpha: Updated
+	* THANKS: Updated
+
+	* autogen.sh: New file
+	
+	* alloca.c: Moved to src
+	* argmatch.c: Likewise
+	* bcopy.c: Likewise
+	* dstring.h: Likewise
+	* copyin.c: Likewise
+	* copyout.c: Likewise
+	* copypass.c: Likewise
+	* cpio.h: Likewise
+	* cpiohdr.h: Likewise
+	* defer.c: Likewise
+	* defer.h: Likewise
+	* dirname.c: Likewise
+	* dstring.c: Likewise
+	* dstring.h: Likewise
+        * error.c: Likewise
+        * extern.h: Likewise
+        * filemode.c: Likewise
+        * filetypes.h: Likewise
+        * fnmatch.c: Likewise
+        * fnmatch.h: Likewise
+        * getopt.c: Likewise
+        * getopt.h: Likewise
+        * getopt1.c: Likewise
+        * global.c: Likewise
+        * idcache.c: Likewise
+        * main.c: Likewise
+        * makepath.c: Likewise
+        * mkdir.c: Likewise
+        * mt.c: Likewise
+        * rmt.c: Likewise
+        * rmt.h: Likewise
+        * rtapelib.c: Likewise
+        * safe-stat.h: Likewise
+        * strdup.c: Likewise
+        * strerror.c: Likewise
+        * stripslash.c: Likewise
+        * system.h: Likewise
+	* tar.c: Likewise
+	* tar.h: Likewise
+	* tarhdr.h: Likewise
+	* userspec.c: Likewise
+	* util.c: Likewise
+	* xmalloc.c: Likewise
+	* xstrdup.c: Likewise
+
+ 	* cpio.1: Moved to doc
+	* cpio.texi: Likewise
+        * mt.1: Likewise
+
+	* src: New directory
+        * src/.cvsignore: New file
+        * src/Makefile.am: Likewise
+        * src/alloca.c: Likewise
+        * src/argmatch.c: Likewise
+        * src/bcopy.c: Likewise
+        * src/copyin.c: Likewise
+        * src/copyout.c: Likewise
+        * src/copypass.c: Likewise
+        * src/cpio.h: Likewise
+        * src/cpiohdr.h: Likewise
+        * src/defer.c: Likewise
+        * src/defer.h: Likewise
+        * src/dirname.c: Likewise
+        * src/dstring.c: Likewise
+        * src/dstring.h: Likewise
+        * src/error.c: Likewise
+        * src/extern.h: Likewise
+        * src/filemode.c: Likewise
+        * src/filetypes.h: Likewise
+        * src/fnmatch.c: Likewise
+        * src/fnmatch.h: Likewise
+        * src/getopt.c: Likewise
+        * src/getopt.h: Likewise
+        * src/getopt1.c: Likewise
+        * src/gettext.h: Likewise
+        * src/global.c: Likewise
+        * src/idcache.c: Likewise
+        * src/main.c: Likewise
+        * src/makepath.c: Likewise
+        * src/mkdir.c: Likewise
+        * src/mt.c: Likewise
+        * src/rmt.c: Likewise
+        * src/rmt.h: Likewise
+        * src/rtapelib.c: Likewise
+        * src/safe-stat.h: Likewise
+        * src/strdup.c: Likewise
+        * src/strerror.c: Likewise
+        * src/stripslash.c: Likewise
+        * src/system.h: Likewise
+        * src/tar.c: Likewise
+        * src/tar.h: Likewise
+        * src/tarhdr.h: Likewise
+        * src/userspec.c: Likewise
+        * src/util.c: Likewise
+	* src/xmalloc.c: Likewise
+	* src/xstrdup.c: Likewise
+
+	* doc: New directory
+	* doc/.cvsignore: New file
+	* doc/Makefile.am: New file
+	* doc/cpio.1: New file
+	* doc/cpio.info: New file
+	* doc/cpio.texi: New file
+	* doc/mt.1: New file
+
+	* po: New directory
+	* po/.cvsignore: New file
+	* po/LINGUAS: New file
+	* po/Makevars: New file
+	* po/POTFILES.in: New file
+	
 2003-11-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Added various checks
