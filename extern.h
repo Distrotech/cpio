@@ -44,6 +44,7 @@ extern int set_group_flag;
 extern gid_t set_group;
 extern int no_chown_flag;
 extern int sparse_flag;
+extern int ignore_disk_input_errors_flag;
 extern int no_abs_paths_flag;
 
 extern int last_header_start;
@@ -156,8 +157,8 @@ void tape_buffered_read P_((char *in_buf, int in_des, long num_bytes));
 int tape_buffered_peek P_((char *peek_buf, int in_des, int num_bytes));
 void tape_toss_input P_((int in_des, long num_bytes));
 void copy_files_tape_to_disk P_((int in_des, int out_des, long num_bytes));
-void copy_files_disk_to_tape P_((int in_des, int out_des, long num_bytes));
-void copy_files_disk_to_disk P_((int in_des, int out_des, long num_bytes));
+void copy_files_disk_to_tape P_((int in_des, int out_des, long num_bytes, char *filename));
+void copy_files_disk_to_disk P_((int in_des, int out_des, long num_bytes, char *filename));
 void create_all_directories P_((char *name));
 void prepare_append P_((int out_file_des));
 char *find_inode_file P_((unsigned long node_num,
