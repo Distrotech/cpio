@@ -112,7 +112,7 @@ write_out_header (file_hdr, out_des)
 	error (0, 0, "%s: truncating inode number", file_hdr->c_name);
 
       sprintf (ascii_header,
-	       "%06lo%06lo%06lo%06lo%06lo%06lo%06lo%06lo%011lo%06lo%011lo",
+	       "%06o%06o%06lo%06lo%06lo%06lo%06lo%06o%011lo%06lo%011lo",
 	       file_hdr->c_magic & 0xFFFF, dev & 0xFFFF,
 	       file_hdr->c_ino & 0xFFFF, file_hdr->c_mode & 0xFFFF,
 	       file_hdr->c_uid & 0xFFFF, file_hdr->c_gid & 0xFFFF,
@@ -525,11 +525,14 @@ process_copy_out ()
   tape_empty_output_buffer (out_file_des);
   if (dot_flag)
     fputc ('\n', stderr);
-  res = (output_bytes + io_block_size - 1) / io_block_size;
-  if (res == 1)
-    fprintf (stderr, "1 block\n");
-  else
-    fprintf (stderr, "%d blocks\n", res);
+  if (!quiet_flag)
+    {
+      res = (output_bytes + io_block_size - 1) / io_block_size;
+      if (res == 1)
+	fprintf (stderr, "1 block\n");
+      else
+	fprintf (stderr, "%d blocks\n", res);
+    }
 }
 
 /* Read FILE_SIZE bytes of FILE_NAME from IN_FILE_DES and
