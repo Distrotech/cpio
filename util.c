@@ -42,6 +42,7 @@
 static void tape_fill_input_buffer P_((int in_des, int num_bytes));
 static int disk_fill_input_buffer P_((int in_des, int num_bytes));
 static void hash_insert ();
+static void write_nuls_to_file P_((long num_bytes, int out_des));
 
 /* Write `output_size' bytes of `output_buffer' to file
    descriptor OUT_DES and reset `output_size' and `out_buff'.  */
@@ -470,6 +471,7 @@ copy_files_disk_to_tape (in_des, out_des, num_bytes, filename)
      int in_des;
      int out_des;
      long num_bytes;
+     char *filename;
 {
   long size;
   long k;
@@ -489,7 +491,7 @@ copy_files_disk_to_tape (in_des, out_des, num_bytes, filename)
 		   "%s reading %s at byte offset; filling archive copy with NUL's",
 		   (rc > 0) ? "Premature end of file" : "Input error",
 		   filename, original_num_bytes - num_bytes);
-		fill_bogus (num_bytes);
+		write_nuls_to_file (num_bytes, out_des);
 		break;
 	      }
 	    else
@@ -1322,4 +1324,27 @@ sparse_write (fildes, buf, nbyte)
       write_rc = write (fildes, buf, leftover_bytes_count);
     }
   return nbyte;
+}
+
+static void
+write_nuls_to_file (num_bytes, out_des)
+    long	num_bytes;
+    int		out_des;
+{
+  long	blocks;
+  long	extra_bytes;
+  long	i;
+
+  blocks = num_bytes / 512;
+  extra_bytes = num_bytes % 512;
+  for (i = 0; i < extra_bytes; ++i)
+    {
+      if (write (out_des, zeros_512, 512) != 512)
+	error (1, errno, "error writing nuls");
+    }
+  if (extra_bytes != 0)
+    {
+      if (write (out_des, zeros_512, extra_bytes) != extra_bytes)
+	error (1, errno, "error writing nuls");
+    }
 }
