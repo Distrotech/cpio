@@ -63,6 +63,7 @@ mt_SOURCES = \
 mt_LDADD = @LIBOBJS@
 
 rmt_SOURCES = rmt.c
+rmt_LDADD = @LIBOBJS@
 
 EXTRA_DIST=\
  getopt.c\
