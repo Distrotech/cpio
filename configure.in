@@ -33,7 +33,25 @@ AC_C_CONST
 AC_TYPE_UID_T
 AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h string.h fcntl.h utime.h sys/io/trioctl.h)
-AC_REPLACE_FUNCS(fnmatch bcopy mkdir strdup)
+AC_REPLACE_FUNCS(bcopy mkdir strdup)
+dnl Checks for fnmatch
+have_fnmatch=no
+AC_MSG_CHECKING(for working fnmatch)
+dnl Some versions of Soalris have a fnmatch() function, but it doesn't work!
+dnl So we run a test program.  If we're cross-compiling, do it th old way.
+AC_TRY_RUN([
+main() {
+if (fnmatch ("a*", "abc", 0) == 0) return 0;
+else return 1; }],
+have_fnmatch=yes, have_fnmatch=no, have_fnmatch=no)
+if test $have_fnmatch = yes ; then
+  AC_MSG_RESULT(yes)
+  FNMATCH=
+else
+  AC_MSG_RESULT(no)
+  FNMATCH=fnmatch.o
+fi
+AC_SUBST(FNMATCH)
 AC_CHECK_FUNCS(strerror lchown)
 AC_FUNC_VPRINTF
 AC_FUNC_ALLOCA
