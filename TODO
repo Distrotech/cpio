@@ -3,15 +3,6 @@ Many of them appear to be fixed, but quite a number of them is
 probably still waiting for being handled. The list is sorted
 in reverse chronological order.
 
-   3. [cpio] Extracting to stdout (score: 10)
-          Author: Vincent <cpio@hightek.org>
-          Date: Thu, 31 Jul 2003 21:14:09 -0500
-          Hi. Is there any specific reason you cannot extract archives to
-          stdout. I often need that ability to operate on the data as a
-          stream. I commonly use it with tar but could not find any way
-          of doing it
-          /archive/html/bug-gnu-utils/2003-07/msg00454.html (3,737 bytes)
-          
    4. copyin.c cpio probably questions/rfc (score: 35)
           Author: Grzegorz Jaskiewicz <gj@pointblue.com.pl>
           Date: Tue, 24 Jun 2003 17:12:45 +0100
@@ -243,16 +234,6 @@ in reverse chronological order.
           the '--sparse' option of gnu cpio causes data corruption
           (blocks of zeros are lost or appended to other files). C.S.
           /archive/html/bug-gnu-utils/2001-03/msg00235.html (3,671 bytes)
-          
-   48. cpio 2.4.2: lose the useless "truncating inode number" message
-          already (score: 36)
-          Author: Jamie Zawinski <jwz@jwz.org>
-          Date: Sun, 25 Mar 2001 13:46:38 -0800
-          As far as I understand it, no purpose is served by having cpio
-          print "cpio: <file>: truncating inode number" to stderr for
-          *every single file* it places in an archive. Yes, I could just
-          redirect stde
-          /archive/html/bug-gnu-utils/2001-03/msg00227.html (4,740 bytes)
           
    49. Re: bug with gnu cpio 2.4.2 (score: 38)
           Author: Hans-Bernhard Broeker <broeker@physik.rwth-aachen.de>

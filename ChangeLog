@@ -1,3 +1,31 @@
+2004-09-08  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* NEWS: Updated
+	* TODO: Updated
+	* bootstrap: Install po files by default
+	* po/LINGUAS: Removed. File is generated automatically
+	* po/.cvsignore: Updated
+	* src/copyin.c: Implemented --to-stdout option
+	* src/copyout.c: Display the annoying 'truncating inode number'
+	message only if the user wishes it.
+	* src/extern.h: Added new globals.
+	* src/global.c: Likewise.
+
+	* src/main.c: Added support for --to-stdout and --warning options
+	* src/tar.c (read_in_tar_header): Use warn_junk_bytes()
+	* src/util.c (create_all_directories): Use dir_name.
+
+	* configure.ac: Added support for the test suite
+	* Makefile.am: Likewise
+
+	* tests: New directory
+	* tests/.cvsignore: New file
+	* tests/Makefile.am: New file
+	* tests/testsuite.at: New file
+	* tests/inout.at: New file
+	* tests/version.at: New file
+	* tests/atlocal.in: New file
+	
 2004-09-07  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/main.c (process_args): Bugfix. Allow extra arguments

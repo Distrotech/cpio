@@ -16,3 +16,4 @@ remove-potcdate.sed
 stamp-po
 *.mo
 *.gmo
+*.po

@@ -67,3 +67,7 @@ xalloc-die.c
 xalloc.h
 xmalloc.c
 xstrdup.c
+alloca.h
+localedir.h
+stdbool.h
+sysexits.h

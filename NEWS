@@ -12,9 +12,25 @@ Version 2.5.90
 
 * Improved invocation consistency checking and help output
 
+* Printing warning about truncation of inode numbers is suppressed by
+default. See below.
+
+* New option --warning (-W) controls the level of output warnings:
+
+    -Wnone       Disables all warnings
+    -Wtruncate   Enable warning about truncation of the inode number
+    -Wall        Enables all warnings
+
+  To disable a particular warning, prefix its name with 'no-', just
+  like in gcc.
+
+* New option --to-stdout extracts files to standard output.
+       
 * Bugfixes:
 ** If a file grew n bytes in copy-pass mode, these n bytes got prepended
-to the contents of all subsequent files. 
+to the contents of all subsequent files.
+** Padding the archive with zero bytes upon truncation of the file being
+archived was broken.
 
 
 Major changes in version 2.5:
