@@ -126,7 +126,7 @@ make_path (char *argpath,
       slash = dirpath;
       while (*slash == '/')
 	slash++;
-      while ((slash = index (slash, '/')))
+      while ((slash = strchr (slash, '/')))
 	{
 #ifdef HPUX_CDF
 	  int	iscdf;

@@ -142,7 +142,7 @@ write_out_tar_header (struct new_cpio_header *file_hdr, int out_des)
   union tar_record tar_rec;
   struct tar_header *tar_hdr = (struct tar_header *) &tar_rec;
 
-  bzero ((char *) &tar_rec, TARRECORDSIZE);
+  memset (&tar_rec, 0, sizeof tar_rec);
 
   /* process_copy_out must ensure that file_hdr->c_name is short enough,
      or we will lose here.  */
@@ -307,8 +307,7 @@ read_in_tar_header (struct new_cpio_header *file_hdr, int in_des)
 	      error (0, 0, _("invalid header: checksum error"));
 	      warned = true;
 	    }
-	  bcopy (((char *) &tar_rec) + 1, (char *) &tar_rec,
-		 TARRECORDSIZE - 1);
+	  memmove (&tar_rec, ((char *) &tar_rec) + 1, TARRECORDSIZE - 1);
 	  tape_buffered_read (((char *) &tar_rec) + (TARRECORDSIZE - 1), in_des, 1);
 	  ++bytes_skipped;
 	  continue;

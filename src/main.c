@@ -725,9 +725,6 @@ initialize_buffers ()
   out_buff = output_buffer;
   output_size = 0;
   output_bytes = 0;
-
-  /* Clear the block of zeros.  */
-  bzero (zeros_512, 512);
 }
 
 int

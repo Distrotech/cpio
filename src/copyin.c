@@ -356,8 +356,9 @@ create_final_defers ()
   int	link_res;
   int	out_file_des;
   struct utimbuf times;		/* For setting file times.  */
+
   /* Initialize this in case it has members we don't know to set.  */
-  bzero (&times, sizeof (struct utimbuf));
+  memset (&times, 0, sizeof (struct utimbuf));
   
   for (d = deferments; d != NULL; d = d->next)
     {
@@ -583,7 +584,7 @@ copyin_regular_file (struct new_cpio_header* file_hdr, int in_file_des)
     {
       struct utimbuf times;		/* For setting file times.  */
       /* Initialize this in case it has members we don't know to set.  */
-      bzero (&times, sizeof (struct utimbuf));
+      memset (&times, 0, sizeof (struct utimbuf));
 
       times.actime = times.modtime = file_hdr->c_mtime;
       if (utime (file_hdr->c_name, &times) < 0)
@@ -690,7 +691,7 @@ copyin_directory(struct new_cpio_header* file_hdr, int existing_dir)
     {
       struct utimbuf times;		/* For setting file times.  */
       /* Initialize this in case it has members we don't know to set.  */
-      bzero (&times, sizeof (struct utimbuf));
+      memset (&times, 0, sizeof (struct utimbuf));
 
       times.actime = times.modtime = file_hdr->c_mtime;
       if (utime (file_hdr->c_name, &times) < 0)
@@ -768,7 +769,7 @@ copyin_device(struct new_cpio_header* file_hdr)
     {
       struct utimbuf times;		/* For setting file times.  */
       /* Initialize this in case it has members we don't know to set.  */
-      bzero (&times, sizeof (struct utimbuf));
+      memset (&times, 0, sizeof (struct utimbuf));
 
       times.actime = times.modtime = file_hdr->c_mtime;
       if (utime (file_hdr->c_name, &times) < 0)
@@ -1134,7 +1135,7 @@ read_in_header (struct new_cpio_header *file_hdr, int in_des)
 	  break;
 	}
       bytes_skipped++;
-      bcopy ((char *) file_hdr + 1, (char *) file_hdr, 5);
+      memmove (file_hdr, (char *) file_hdr + 1, 5);
       tape_buffered_read ((char *) file_hdr + 5, in_des, 1L);
     }
 }

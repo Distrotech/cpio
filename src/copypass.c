@@ -59,7 +59,7 @@ process_copy_pass ()
   output_name.ds_string[dirname_len] = '/';
   output_is_seekable = true;
   /* Initialize this in case it has members we don't know to set.  */
-  bzero (&times, sizeof (struct utimbuf));
+  memset (&times, 0, sizeof (struct utimbuf));
 
   /* Copy files with names read from stdin.  */
   while (ds_fgetstr (stdin, &input_name, name_end) != NULL)
