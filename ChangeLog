@@ -1,3 +1,10 @@
+2004-12-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: New option --enable-mt
+	Check for locale.h
+	* doc/cpio.info: Removed
+	* src/mt.c (main): Use argmatch_invalid()
+
 2004-12-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Released version 2.6. Sources up to this point are tagged
