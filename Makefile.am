@@ -15,6 +15,8 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
+AUTOMAKE_OPTIONS = gnits dist-bzip2 std-options
+
 bin_PROGRAMS=cpio @CPIO_MT_PROG@
 libexec_PROGRAMS=@CPIO_RMT_PROG@
 EXTRA_PROGRAMS=mt rmt
