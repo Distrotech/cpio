@@ -576,7 +576,7 @@ create_all_directories (char *name)
   int   cdf;
 #endif
 
-  dir = dirname (name);
+  dir = dir_name (name);
   mode = 0700;
 #ifdef HPUX_CDF
   cdf = islastparentcdf (name);
