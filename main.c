@@ -48,7 +48,7 @@ struct option long_opts[] =
   {"list", 0, &table_flag, TRUE},
   {"make-directories", 0, &create_dir_flag, TRUE},
   {"message", 1, 0, 'M'},
-  {"no-absolute-paths", 0, 0, 136},
+  {"no-absolute-filenames", 0, 0, 136},
   {"no-preserve-owner", 0, 0, 134},
   {"nonmatching", 0, &copy_matching_files, FALSE},
   {"numeric-uid-gid", 0, &numeric_uid, TRUE},
@@ -97,7 +97,7 @@ Usage: %s {-o|--create} [-0acvABLV] [-C bytes] [-H format] [-M message]\n\
        [--unconditional] [--verbose] [--block-size=blocks] [--swap-halfwords]\n\
        [--io-size=bytes] [--pattern-file=file] [--format=format]\n\
        [--owner=[user][:.][group]] [--no-preserve-owner] [--message=message]\n\
-       [--force-local] [--no-absolute-paths] [--sparse] [--only-verify-crc]\n\
+       [--force-local] [--no-absolute-filenames] [--sparse] [--only-verify-crc]\n\
        [--quiet] [--help] [--version] [pattern...] [< archive]\n",
 	   program_name);
   fprintf (fp, "\
@@ -258,7 +258,7 @@ crc newc odc bin ustar tar (all-caps also recognized)", optarg);
 	  numeric_uid = TRUE;
 	  break;
 
-	case 136:		/* --no-absolute-paths */
+	case 136:		/* --no-absolute-filenames */
 	  no_abs_paths_flag = TRUE;
 	  break;
 	
