@@ -473,7 +473,6 @@ is_tar_filename_too_long (char *name)
 {
   int whole_name_len;
   int prefix_name_len;
-  char *p;
 
   whole_name_len = strlen (name);
   if (whole_name_len <= TARNAMESIZE)
