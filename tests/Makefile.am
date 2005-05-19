@@ -73,10 +73,10 @@ installcheck-local:
 
 check_PROGRAMS = genfile
 
-genfile_SOURCES = genfile.c
+genfile_SOURCES = genfile.c argcv.c argcv.h
 
 localedir = $(datadir)/locale
 INCLUDES = -I$(top_srcdir)/lib -I../lib -I$(top_srcdir)/src
 
-LDADD = ../lib/libcpio.a $(LIBINTL)
+LDADD = ../lib/libcpio.a $(LIBINTL) $(LIB_CLOCK_GETTIME)
 
