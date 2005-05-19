@@ -1,5 +1,9 @@
 2005-05-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* bootstrap: Port recent changes from tar bootstrap.
+	* gnulib.modules: New file
+	* tests/Makefile.am (genfile_SOURCES,LDADD): Updated
+
 	* THANKS: Updated
 	* configure.ac: Remove check for gethostname, it is never used.
 	Remove check for setsockopt, it is provided by paxutils.

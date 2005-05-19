@@ -9,7 +9,9 @@ The following is a list of people who contributed to GNU cpio by
 reporting problems, suggesting various improvements or submitting actual
 code. Help us keep it complete and exempt of errors.
 
+Brian Mays              <brian@debian.org>
+Dmitry V. Levin         <ldv@altlinux.org>
+Holger Fleischmann	<holger_fleischmann@mra.man.de>
 Matthew Braithwaite     <mab@cnet.com>
 Mitsuru Chinen		<mchinen@yamato.ibm.com>
-Holger Fleischmann	<holger_fleischmann@mra.man.de>
-Dmitry V. Levin         <ldv@altlinux.org>
+Peter Vrabec            <pvrabec@redhat.com>
