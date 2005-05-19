@@ -18,7 +18,7 @@ dnl 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 AC_INIT([GNU cpio], [2.6], [bug-cpio@gnu.org], [cpio])
 AC_CONFIG_SRCDIR(src/cpio.h)
-AC_CONFIG_AUX_DIR([scripts])
+AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS([config.h])
 
@@ -102,8 +102,6 @@ fi
 AC_CHECK_FUNCS(lchown endpwent endgrent)
 AC_FUNC_VPRINTF
 AC_FUNC_ALLOCA
-AC_CHECK_LIB(nsl, gethostname, [LIBS="$LIBS -lnsl"])
-AC_CHECK_LIB(socket, setsockopt, [LIBS="$LIBS -lsocket"])
 
 # Gettext.
 AM_GNU_GETTEXT([external], [need-ngettext])
