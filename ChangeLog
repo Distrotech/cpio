@@ -1,5 +1,19 @@
 2005-05-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* bootstrap (copy_files): Accept optional third argument: a prefix
+	to be appended to destination file names.
+	Import paxutils/paxlib files.
+	* lib/Makefile.tmpl (libcpio_a_SOURCES): Add paxerror.c paxexit.c
+	paxconvert.c
+	* src/copyin.c: Use paxutils error reporting functions
+	* src/copyout.c: Likewise
+	* src/copypass.c: Likewise
+	* src/util.c: Likewise. Add missing includes
+	* src/main.c (USAGE_ERROR): Removed
+	(CHECK_USAGE,parse_opt,process_args): Use error() instead of USAGE_ERROR
+	(fatal_exit): New function
+	* src/tar.c (is_tar_filename_too_long): Removed unused variable
+
 	* Makefile.am, configure.ac, doc/Makefile.am,
 	doc/cpio.texi, doc/gendocs_template, headers/Makefile.am,
 	headers/fnmatch.h, lib/Makefile.tmpl, lib/mkdir.c,
