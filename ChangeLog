@@ -1,5 +1,7 @@
 2005-05-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* po/POTFILES.in: Add paxerror.c paxexit.c paxconvert.c
+
 	* bootstrap (copy_files): Accept optional third argument: a prefix
 	to be appended to destination file names.
 	Import paxutils/paxlib files.
