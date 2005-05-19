@@ -24,15 +24,17 @@
 #include "cpiohdr.h"
 #include "dstring.h"
 #include "extern.h"
+#include <safe-read.h>
+#include <full-write.h>
 #include <rmt.h>
 
 #include <sys/ioctl.h>
 
 #ifdef HAVE_SYS_MTIO_H
-#ifdef HAVE_SYS_IO_TRIOCTL_H
-#include <sys/io/trioctl.h>
-#endif
-#include <sys/mtio.h>
+# ifdef HAVE_SYS_IO_TRIOCTL_H
+#  include <sys/io/trioctl.h>
+# endif
+# include <sys/mtio.h>
 #endif
 
 #if !HAVE_DECL_ERRNO
@@ -474,8 +476,8 @@ copy_files_disk_to_tape (int in_des, int out_des, off_t num_bytes,
     {
       if (input_size == 0)
 	if (rc = disk_fill_input_buffer (in_des,
-	  num_bytes < DISK_IO_BLOCK_SIZE ?
-	  num_bytes : DISK_IO_BLOCK_SIZE))
+					 num_bytes < DISK_IO_BLOCK_SIZE ?
+					 num_bytes : DISK_IO_BLOCK_SIZE))
 	  {
 	    if (rc > 0)
 	      error (0, 0, _("File %s shrunk by %lld bytes, padding with zeros"),
@@ -552,7 +554,7 @@ warn_if_file_changed (char *file_name, unsigned long old_file_size,
   struct stat new_file_stat;
   if ((*xstat) (file_name, &new_file_stat) < 0)
     {
-      error (0, errno, "%s", file_name);
+      stat_error (file_name);
       return;
     }
 
@@ -889,7 +891,7 @@ get_next_reel (int tape_des)
 
       tape_des = open_archive (archive_name);
       if (tape_des == -1)
-	error (1, errno, "%s", archive_name);
+	open_error (archive_name);
     }
   else
     {
@@ -909,7 +911,7 @@ get_next_reel (int tape_des)
 
 	  tape_des = open_archive (next_archive_name);
 	  if (tape_des == -1)
-	    error (0, errno, "%s", next_archive_name);
+	    open_error (next_archive_name);
 	}
       while (tape_des < 0);
     }
@@ -1057,7 +1059,7 @@ add_cdf_double_slashes (char *input_name)
   *p = '\0';
   if ((*xstat) (input_name, &dir_stat) < 0)
     {
-      error (0, errno, "%s", input_name);
+      stat_error (input_name);
       return input_name;
     }
 
@@ -1083,7 +1085,7 @@ add_cdf_double_slashes (char *input_name)
 	  *p = '\0';
 	  if ((*xstat) (input_name, &dir_stat) < 0)
 	    {
-	      error (0, errno, "%s", input_name);
+	      stat_error (input_name);
 	      return input_name;
 	    }
 	  *p = '/';

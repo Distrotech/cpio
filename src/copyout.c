@@ -342,7 +342,7 @@ write_out_header (struct new_cpio_header *file_hdr, int out_des)
 #endif
 		file_hdr->c_filesize = makedev (file_hdr->c_rdev_maj,
 						file_hdr->c_rdev_min);
-		rdev = 1;
+		dev = rdev = 1;
 		break;
 	      default:
 		dev = makedev (file_hdr->c_dev_maj, file_hdr->c_dev_min);

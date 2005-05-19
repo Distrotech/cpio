@@ -86,7 +86,7 @@ process_copy_pass ()
 
       if ((*xstat) (input_name.ds_string, &in_file_stat) < 0)
 	{
-	  error (0, errno, "%s", input_name.ds_string);
+	  stat_error (input_name.ds_string);
 	  continue;
 	}
 
@@ -154,7 +154,7 @@ process_copy_pass ()
 				  O_RDONLY | O_BINARY, 0);
 	      if (in_file_des < 0)
 		{
-		  error (0, errno, "%s", input_name.ds_string);
+		  open_error (input_name.ds_string);
 		  continue;
 		}
 	      out_file_des = open (output_name.ds_string,
@@ -167,7 +167,7 @@ process_copy_pass ()
 		}
 	      if (out_file_des < 0)
 		{
-		  error (0, errno, "%s", output_name.ds_string);
+		  open_error (output_name.ds_string);
 		  close (in_file_des);
 		  continue;
 		}
@@ -184,20 +184,23 @@ process_copy_pass ()
 		  delayed_seek_count = 0;
 		}
 	      if (close (in_file_des) < 0)
-		error (0, errno, "%s", input_name.ds_string);
+		close_error (input_name.ds_string);
 	      if (close (out_file_des) < 0)
-		error (0, errno, "%s", output_name.ds_string);
+		close_error (output_name.ds_string);
 
 	      /* Set the attributes of the new file.  */
 	      if (!no_chown_flag)
-		if ((chown (output_name.ds_string,
-			    set_owner_flag ? set_owner : in_file_stat.st_uid,
-		      set_group_flag ? set_group : in_file_stat.st_gid) < 0)
-		    && errno != EPERM)
-		  error (0, errno, "%s", output_name.ds_string);
+                { 
+                  uid_t uid = set_owner_flag ? set_owner : in_file_stat.st_uid;
+                  uid_t gid = set_group_flag ? set_group : in_file_stat.st_gid;
+		  if ((chown (output_name.ds_string, uid, gid) < 0)
+  		      && errno != EPERM)
+		    chown_error_details (output_name.ds_string, uid, gid);
+                }
 	      /* chown may have turned off some permissions we wanted. */
 	      if (chmod (output_name.ds_string, in_file_stat.st_mode) < 0)
-		error (0, errno, "%s", output_name.ds_string);
+		chmod_error_details (output_name.ds_string, 
+                                     in_file_stat.st_mode);
 	      if (reset_time_flag)
 		{
 		  times.actime = in_file_stat.st_atime;
@@ -209,16 +212,16 @@ process_copy_pass ()
                      "bug-gnu-utils@prep.ai.mit.edu".  -BEM */
 		  if (utime (input_name.ds_string, &times) < 0
 		      && errno != EROFS)
-		    error (0, errno, "%s", input_name.ds_string);
+		    utime_error (input_name.ds_string);
 		  if (utime (output_name.ds_string, &times) < 0
 		      && errno != EROFS)
-		    error (0, errno, "%s", output_name.ds_string);
+		    utime_error (output_name.ds_string);
 		}
 	      if (retain_time_flag)
 		{
 		  times.actime = times.modtime = in_file_stat.st_mtime;
 		  if (utime (output_name.ds_string, &times) < 0)
-		    error (0, errno, "%s", output_name.ds_string);
+		    utime_error (output_name.ds_string);
 		}
 	      warn_if_file_changed(input_name.ds_string, in_file_stat.st_size,
                                    in_file_stat.st_mtime);
@@ -265,19 +268,21 @@ process_copy_pass ()
       		   (lstat (output_name.ds_string, &out_file_stat) != 0) ||
 	           !(S_ISDIR (out_file_stat.st_mode) ) )
 		{
-		  error (0, errno, "%s", output_name.ds_string);
+		  stat_error (output_name.ds_string);
 		  continue;
 		}
 	    }
 	  if (!no_chown_flag)
-	    if ((chown (output_name.ds_string,
-			set_owner_flag ? set_owner : in_file_stat.st_uid,
-		      set_group_flag ? set_group : in_file_stat.st_gid) < 0)
-		&& errno != EPERM)
-	      error (0, errno, "%s", output_name.ds_string);
+            {
+              uid_t uid = set_owner_flag ? set_owner : in_file_stat.st_uid;
+              gid_t gid = set_group_flag ? set_group : in_file_stat.st_gid;
+	      if ((chown (output_name.ds_string, uid, gid) < 0)
+		  && errno != EPERM)
+	        chown_error_details (output_name.ds_string, uid, gid);
+            }
 	  /* chown may have turned off some permissions we wanted. */
 	  if (chmod (output_name.ds_string, in_file_stat.st_mode) < 0)
-	    error (0, errno, "%s", output_name.ds_string);
+	    chmod_error_details (output_name.ds_string, in_file_stat.st_mode);
 #ifdef HPUX_CDF
 	  if (cdf_flag)
 	    /* Once we "hide" the directory with the chmod(),
@@ -288,7 +293,7 @@ process_copy_pass ()
 	    {
 	      times.actime = times.modtime = in_file_stat.st_mtime;
 	      if (utime (output_name.ds_string, &times) < 0)
-		error (0, errno, "%s", output_name.ds_string);
+		utime_error (output_name.ds_string);
 	    }
 	}
       else if (S_ISCHR (in_file_stat.st_mode) ||
@@ -325,23 +330,26 @@ process_copy_pass ()
 		}
 	      if (res < 0)
 		{
-		  error (0, errno, "%s", output_name.ds_string);
+		  mknod_error (output_name.ds_string);
 		  continue;
 		}
 	      if (!no_chown_flag)
-		if ((chown (output_name.ds_string,
-			    set_owner_flag ? set_owner : in_file_stat.st_uid,
-			  set_group_flag ? set_group : in_file_stat.st_gid) < 0)
-		    && errno != EPERM)
-		  error (0, errno, "%s", output_name.ds_string);
+                {
+                  uid_t uid = set_owner_flag ? set_owner : in_file_stat.st_uid;
+                  gid_t gid = set_group_flag ? set_group : in_file_stat.st_gid;
+		  if ((chown (output_name.ds_string, uid, gid) < 0)
+		      && errno != EPERM)
+		     chown_error_details (output_name.ds_string, uid, gid);
+                }
 	      /* chown may have turned off some permissions we wanted. */
 	      if (chmod (output_name.ds_string, in_file_stat.st_mode) < 0)
-		error (0, errno, "%s", output_name.ds_string);
+		chmod_error_details (output_name.ds_string, 
+                                     in_file_stat.st_mode);
 	      if (retain_time_flag)
 		{
 		  times.actime = times.modtime = in_file_stat.st_mtime;
 		  if (utime (output_name.ds_string, &times) < 0)
-		    error (0, errno, "%s", output_name.ds_string);
+		    utime_error (output_name.ds_string);
 		}
 	    }
 	}
@@ -357,7 +365,7 @@ process_copy_pass ()
 			        in_file_stat.st_size);
 	  if (link_size < 0)
 	    {
-	      error (0, errno, "%s", input_name.ds_string);
+	      readlink_error (input_name.ds_string);
 	      free (link_name);
 	      continue;
 	    }
@@ -373,18 +381,20 @@ process_copy_pass ()
 	    }
 	  if (res < 0)
 	    {
-	      error (0, errno, "%s", output_name.ds_string);
+	      symlink_error (output_name.ds_string);
 	      free (link_name);
 	      continue;
 	    }
 
 	  /* Set the attributes of the new link.  */
 	  if (!no_chown_flag)
-	    if ((lchown (output_name.ds_string,
-			 set_owner_flag ? set_owner : in_file_stat.st_uid,
-		      set_group_flag ? set_group : in_file_stat.st_gid) < 0)
-		&& errno != EPERM)
-	      error (0, errno, "%s", output_name.ds_string);
+            {
+              uid_t uid = set_owner_flag ? set_owner : in_file_stat.st_uid;
+              gid_t gid = set_group_flag ? set_group : in_file_stat.st_gid;
+	      if ((lchown (output_name.ds_string, uid, gid) < 0)
+		  && errno != EPERM)
+	        chown_error_details (output_name.ds_string, uid, gid);
+            }
 	  free (link_name);
 	}
 #endif

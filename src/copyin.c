@@ -1,5 +1,6 @@
 /* copyin.c - extract or list a cpio archive
-   Copyright (C) 1990,1991,1992,2001,2002,2003,2004 Free Software Foundation, Inc.
+   Copyright (C) 1990,1991,1992,2001,2002,2003,2004,
+   2005 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -177,7 +178,7 @@ list_file(struct new_cpio_header* file_hdr, int in_file_des)
 #endif
       if (crc != file_hdr->c_chksum)
 	{
-	  error (0, 0, _("%s: checksum error (0x%x, should be 0x%x)"),
+	  error (0, 0, _("%s: checksum error (0x%lx, should be 0x%lx)"),
 		 file_hdr->c_name, crc, file_hdr->c_chksum);
 	}
     }
@@ -308,7 +309,6 @@ create_defered_links_to_skipped (struct new_cpio_header *file_hdr,
   int	ino;
   int 	maj;
   int   min;
-  int 	link_res;
   if (file_hdr->c_filesize == 0)
     {
       /* The file doesn't have any data attached to it so we don't have
@@ -387,28 +387,30 @@ create_final_defers ()
 	}
       if (out_file_des < 0)
 	{
-	  error (0, errno, "%s", d->header.c_name);
+	  open_error (d->header.c_name);
 	  continue;
 	}
 
       if (close (out_file_des) < 0)
-	error (0, errno, "%s", d->header.c_name);
+	close_error (d->header.c_name);
 
       /* File is now copied; set attributes.  */
       if (!no_chown_flag)
-	if ((chown (d->header.c_name,
-		    set_owner_flag ? set_owner : d->header.c_uid,
-	       set_group_flag ? set_group : d->header.c_gid) < 0)
-	    && errno != EPERM)
-	  error (0, errno, "%s", d->header.c_name);
+        {
+          uid_t uid = set_owner_flag ? set_owner : d->header.c_uid;
+          gid_t gid = set_group_flag ? set_group : d->header.c_gid; 
+	  if ((chown (d->header.c_name, uid, gid) < 0)
+	      && errno != EPERM)
+	    chown_error_details (d->header.c_name, uid, gid);
+        }
       /* chown may have turned off some permissions we wanted. */
       if (chmod (d->header.c_name, (int) d->header.c_mode) < 0)
-	error (0, errno, "%s", d->header.c_name);
+	chmod_error_details (d->header.c_name, d->header.c_mode);
       if (retain_time_flag)
 	{
 	  times.actime = times.modtime = d->header.c_mtime;
 	  if (utime (d->header.c_name, &times) < 0)
-	    error (0, errno, "%s", d->header.c_name);
+	    utime_error (d->header.c_name);
 	}
     }
 }
@@ -511,7 +513,7 @@ copyin_regular_file (struct new_cpio_header* file_hdr, int in_file_des)
       
       if (out_file_des < 0)
 	{
-	  error (0, errno, "%s", file_hdr->c_name);
+	  open_error (file_hdr->c_name);
 	  tape_toss_input (in_file_des, file_hdr->c_filesize);
 	  tape_skip_padding (in_file_des, file_hdr->c_filesize);
 	  return;
@@ -543,7 +545,7 @@ copyin_regular_file (struct new_cpio_header* file_hdr, int in_file_des)
       if (archive_format == arf_crcascii)
 	{
 	  if (crc != file_hdr->c_chksum)
-	    error (0, 0, _("%s: checksum error (0x%x, should be 0x%x)"),
+	    error (0, 0, _("%s: checksum error (0x%lx, should be 0x%lx)"),
 		   file_hdr->c_name, crc, file_hdr->c_chksum);
 	}
       tape_skip_padding (in_file_des, file_hdr->c_filesize);
@@ -560,26 +562,27 @@ copyin_regular_file (struct new_cpio_header* file_hdr, int in_file_des)
       delayed_seek_count = 0;
     }
   if (close (out_file_des) < 0)
-    error (0, errno, "%s", file_hdr->c_name);
+    close_error (file_hdr->c_name);
 
   if (archive_format == arf_crcascii)
     {
       if (crc != file_hdr->c_chksum)
-	error (0, 0, _("%s: checksum error (0x%x, should be 0x%x)"),
+	error (0, 0, _("%s: checksum error (0x%lx, should be 0x%lx)"),
 	       file_hdr->c_name, crc, file_hdr->c_chksum);
     }
 
   /* File is now copied; set attributes.  */
   if (!no_chown_flag)
-    if ((chown (file_hdr->c_name,
-		set_owner_flag ? set_owner : file_hdr->c_uid,
-	   set_group_flag ? set_group : file_hdr->c_gid) < 0)
-	&& errno != EPERM)
-      error (0, errno, "%s", file_hdr->c_name);
-  
+    {
+      uid_t uid = set_owner_flag ? set_owner : file_hdr->c_uid;
+      gid_t gid = set_group_flag ? set_group : file_hdr->c_gid;
+      if ((chown (file_hdr->c_name, uid, gid) < 0)
+	   && errno != EPERM)
+        chown_error_details (file_hdr->c_name, uid, gid);
+    } 
   /* chown may have turned off some permissions we wanted. */
   if (chmod (file_hdr->c_name, (int) file_hdr->c_mode) < 0)
-    error (0, errno, "%s", file_hdr->c_name);
+    chmod_error_details (file_hdr->c_name, file_hdr->c_mode);
   
   if (retain_time_flag)
     {
@@ -589,7 +592,7 @@ copyin_regular_file (struct new_cpio_header* file_hdr, int in_file_des)
 
       times.actime = times.modtime = file_hdr->c_mtime;
       if (utime (file_hdr->c_name, &times) < 0)
-	error (0, errno, "%s", file_hdr->c_name);
+	utime_error (file_hdr->c_name);
     }
   
   tape_skip_padding (in_file_des, file_hdr->c_filesize);
@@ -665,23 +668,34 @@ copyin_directory(struct new_cpio_header* file_hdr, int existing_dir)
 	 because the directory exists.  If that's the case,
 	 don't complain about it.  */
       struct stat file_stat;
-      if ( (errno != EEXIST) ||
-	   (lstat (file_hdr->c_name, &file_stat) != 0) ||
-	   !(S_ISDIR (file_stat.st_mode) ) )
+      if (errno != EEXIST)
 	{
-	  error (0, errno, "%s", file_hdr->c_name);
+	  mkdir_error (file_hdr->c_name);
+	  return;
+	}
+      if (lstat (file_hdr->c_name, &file_stat))
+	{
+	  stat_error (file_hdr->c_name);
+	  return;
+	}
+      if (!(S_ISDIR (file_stat.st_mode)))
+	{
+	  error (0, 0, _("%s is not a directory"),
+		 quotearg_colon (file_hdr->c_name));
 	  return;
 	}
     }
   if (!no_chown_flag)
-    if ((chown (file_hdr->c_name,
-		set_owner_flag ? set_owner : file_hdr->c_uid,
-		set_group_flag ? set_group : file_hdr->c_gid) < 0)
-	&& errno != EPERM)
-      error (0, errno, "%s", file_hdr->c_name);
+    {
+      uid_t uid = set_owner_flag ? set_owner : file_hdr->c_uid;
+      gid_t gid = set_group_flag ? set_group : file_hdr->c_gid;
+      if ((chown (file_hdr->c_name, uid, gid) < 0)
+	  && errno != EPERM)
+        chown_error_details (file_hdr->c_name, uid, gid);
+    }
   /* chown may have turned off some permissions we wanted. */
   if (chmod (file_hdr->c_name, (int) file_hdr->c_mode) < 0)
-    error (0, errno, "%s", file_hdr->c_name);
+    chmod_error_details (file_hdr->c_name, file_hdr->c_mode);
 #ifdef HPUX_CDF
   if (cdf_flag)
     /* Once we "hide" the directory with the chmod(),
@@ -696,7 +710,7 @@ copyin_directory(struct new_cpio_header* file_hdr, int existing_dir)
 
       times.actime = times.modtime = file_hdr->c_mtime;
       if (utime (file_hdr->c_name, &times) < 0)
-	error (0, errno, "%s", file_hdr->c_name);
+	utime_error (file_hdr->c_name);
     }
 }
 
@@ -754,18 +768,20 @@ copyin_device(struct new_cpio_header* file_hdr)
     }
   if (res < 0)
     {
-      error (0, errno, "%s", file_hdr->c_name);
+      mknod_error (file_hdr->c_name);
       return;
     }
   if (!no_chown_flag)
-    if ((chown (file_hdr->c_name,
-		set_owner_flag ? set_owner : file_hdr->c_uid,
-		set_group_flag ? set_group : file_hdr->c_gid) < 0)
-	&& errno != EPERM)
-      error (0, errno, "%s", file_hdr->c_name);
+    {
+      uid_t uid = set_owner_flag ? set_owner : file_hdr->c_uid;
+      gid_t gid = set_group_flag ? set_group : file_hdr->c_gid;
+      if ((chown (file_hdr->c_name, uid, gid) < 0)
+	  && errno != EPERM)
+        chown_error_details (file_hdr->c_name, uid, gid);
+    }
   /* chown may have turned off some permissions we wanted. */
   if (chmod (file_hdr->c_name, file_hdr->c_mode) < 0)
-    error (0, errno, "%s", file_hdr->c_name);
+    chmod_error_details (file_hdr->c_name, file_hdr->c_mode);
   if (retain_time_flag)
     {
       struct utimbuf times;		/* For setting file times.  */
@@ -774,7 +790,7 @@ copyin_device(struct new_cpio_header* file_hdr)
 
       times.actime = times.modtime = file_hdr->c_mtime;
       if (utime (file_hdr->c_name, &times) < 0)
-	error (0, errno, "%s", file_hdr->c_name);
+	utime_error (file_hdr->c_name);
     }
 }
 
@@ -809,18 +825,19 @@ copyin_link(struct new_cpio_header *file_hdr, int in_file_des)
     }
   if (res < 0)
     {
-      error (0, errno, "%s", file_hdr->c_name);
+      error (0, errno, _("%s: Cannot symlink to %s"),
+	     quotearg_colon (link_name), quote_n (1, file_hdr->c_name));
       free (link_name);
       return;
     }
   if (!no_chown_flag)
-    if ((lchown (file_hdr->c_name,
-		 set_owner_flag ? set_owner : file_hdr->c_uid,
-	     set_group_flag ? set_group : file_hdr->c_gid) < 0)
-	&& errno != EPERM)
-      {
-	error (0, errno, "%s", file_hdr->c_name);
-      }
+    {
+      uid_t uid = set_owner_flag ? set_owner : file_hdr->c_uid;
+      gid_t gid = set_group_flag ? set_group : file_hdr->c_gid;
+      if ((lchown (file_hdr->c_name, uid, gid) < 0)
+  	  && errno != EPERM)
+	chown_error_details (file_hdr->c_name, uid, gid);
+    }
   free (link_name);
 }
 
@@ -899,7 +916,7 @@ long_format (struct new_cpio_header *file_hdr, char *link_name)
     }
   tbuf[16] = '\0';
 
-  printf ("%s %3u ", mbuf, file_hdr->c_nlink);
+  printf ("%s %3lu ", mbuf, file_hdr->c_nlink);
 
   if (numeric_uid)
     printf ("%-8u %-8u ", (unsigned int) file_hdr->c_uid,
@@ -910,7 +927,7 @@ long_format (struct new_cpio_header *file_hdr, char *link_name)
 
   if ((file_hdr->c_mode & CP_IFMT) == CP_IFCHR
       || (file_hdr->c_mode & CP_IFMT) == CP_IFBLK)
-    printf ("%3u, %3u ", file_hdr->c_rdev_maj,
+    printf ("%3lu, %3lu ", file_hdr->c_rdev_maj,
 	    file_hdr->c_rdev_min);
   else
     printf ("%8lu ", file_hdr->c_filesize);
@@ -999,7 +1016,7 @@ read_pattern_file ()
 
   pattern_fp = fopen (pattern_file_name, "r");
   if (pattern_fp == NULL)
-    error (1, errno, "%s", pattern_file_name);
+    open_error (pattern_file_name);
   while (ds_fgetstr (pattern_fp, &pattern_name, '\n') != NULL)
     {
       if (new_num_patterns >= max_new_patterns)
@@ -1013,7 +1030,7 @@ read_pattern_file ()
       ++new_num_patterns;
     }
   if (ferror (pattern_fp) || fclose (pattern_fp) == EOF)
-    error (1, errno, "%s", pattern_file_name);
+    close_error (pattern_file_name);
 
   for (i = 0; i < num_patterns; ++i)
     new_save_patterns[i] = save_patterns[i];
@@ -1344,9 +1361,9 @@ void
 process_copy_in ()
 {
   char done = false;		/* True if trailer reached.  */
-  FILE *tty_in;			/* Interactive file for rename option.  */
-  FILE *tty_out;		/* Interactive file for rename option.  */
-  FILE *rename_in;		/* Batch file for rename option.  */
+  FILE *tty_in = NULL;		/* Interactive file for rename option.  */
+  FILE *tty_out = NULL;		/* Interactive file for rename option.  */
+  FILE *rename_in = NULL;	/* Batch file for rename option.  */
   struct stat file_stat;	/* Output file stat record.  */
   struct new_cpio_header file_hdr;	/* Output header information.  */
   int in_file_des;		/* Input file descriptor.  */
@@ -1535,7 +1552,7 @@ process_copy_in ()
 	    tape_skip_padding (in_file_des, file_hdr.c_filesize);
 	    if (crc != file_hdr.c_chksum)
 	      {
-		error (0, 0, _("%s: checksum error (0x%x, should be 0x%x)"),
+		error (0, 0, _("%s: checksum error (0x%lx, should be 0x%lx)"),
 		       file_hdr.c_name, crc, file_hdr.c_chksum);
 	      }
          /* Debian hack: -v and -V now work with --only-verify-crc.
