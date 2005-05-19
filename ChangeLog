@@ -1,3 +1,25 @@
+2005-05-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* THANKS: Updated
+	* configure.ac: Remove check for gethostname, it is never used.
+	Remove check for setsockopt, it is provided by paxutils.
+
+	Fix LFS support issues. Proposed by Peter Vrabec and Dmitry V. Levin
+
+	* src/extern.h (copy_files_tape_to_disk, copy_files_disk_to_tape,
+	copy_files_disk_to_disk): Change num_bytes argument type from
+	long to off_t.
+	* src/util.c (copy_files_tape_to_disk, copy_files_disk_to_tape,
+	copy_files_disk_to_disk, disk_fill_input_buffer,
+	write_nuls_to_file): Likewise.
+	(write_nuls_to_file, copy_files_disk_to_tape,
+	copy_files_disk_to_disk): Handle `off_t num_bytes' properly.
+
+	* src/util.c (find_inode_file): Fix typos causing function to
+	occasionally miss inodes and, therefore, to copy out the same
+	(hard-linked) file several times to archive. Proposed by Brian
+	Mays.
+
 2005-03-24  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/main.c (process_args): Fixed discrepancy I have been
