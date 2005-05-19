@@ -160,13 +160,13 @@ char *parse_user_spec P_((char *name, uid_t *uid, gid_t *gid,
 void tape_empty_output_buffer P_((int out_des));
 void disk_empty_output_buffer P_((int out_des));
 void swahw_array P_((char *ptr, int count));
-void tape_buffered_write P_((char *in_buf, int out_des, long num_bytes));
-void tape_buffered_read P_((char *in_buf, int in_des, long num_bytes));
+void tape_buffered_write P_((char *in_buf, int out_des, off_t num_bytes));
+void tape_buffered_read P_((char *in_buf, int in_des, off_t num_bytes));
 int tape_buffered_peek P_((char *peek_buf, int in_des, int num_bytes));
 void tape_toss_input P_((int in_des, long num_bytes));
-void copy_files_tape_to_disk P_((int in_des, int out_des, long num_bytes));
-void copy_files_disk_to_tape P_((int in_des, int out_des, long num_bytes, char *filename));
-void copy_files_disk_to_disk P_((int in_des, int out_des, long num_bytes, char *filename));
+void copy_files_tape_to_disk P_((int in_des, int out_des, off_t num_bytes));
+void copy_files_disk_to_tape P_((int in_des, int out_des, off_t num_bytes, char *filename));
+void copy_files_disk_to_disk P_((int in_des, int out_des, off_t num_bytes, char *filename));
 void warn_if_file_changed P_((char *file_name, unsigned long old_file_size,
                               unsigned long old_file_mtime));
 void create_all_directories P_((char *name));
@@ -188,9 +188,9 @@ int utime P_((char *filename, struct utimbuf *utb));
 #ifdef HPUX_CDF
 char *add_cdf_double_slashes P_((char *filename));
 #endif
-void write_nuls_to_file P_((long num_bytes, int out_des, 
+void write_nuls_to_file P_((off_t num_bytes, int out_des, 
 			    void (*writer) (char *in_buf,
-					    int out_des, long num_bytes)));
+					    int out_des, off_t num_bytes)));
 #define DISK_IO_BLOCK_SIZE	(512)
 
 /* FIXME: Move to system.h? */
