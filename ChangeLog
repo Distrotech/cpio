@@ -1,5 +1,18 @@
 2005-05-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* Makefile.am, configure.ac, doc/Makefile.am,
+	doc/cpio.texi, doc/gendocs_template, headers/Makefile.am,
+	headers/fnmatch.h, lib/Makefile.tmpl, lib/mkdir.c,
+	lib/strdup.c, lib/strerror.c, src/Makefile.am,
+	src/copyin.c, src/copyout.c, src/copypass.c, src/cpio.h,
+	src/cpiohdr.h, src/defer.c, src/defer.h, src/dstring.c,
+	src/dstring.h, src/extern.h, src/filemode.c,
+	src/filetypes.h, src/global.c, src/idcache.c,
+	src/main.c, src/makepath.c, src/mt.c, src/tar.c,
+	src/tar.h, src/tarhdr.h, src/userspec.c, src/util.c,
+	tests/Makefile.am, tests/inout.at, tests/testsuite.at,
+	tests/version.at: Updated FSF postal mail address.
+
 	* bootstrap: Port recent changes from tar bootstrap.
 	* gnulib.modules: New file
 	* tests/Makefile.am (genfile_SOURCES,LDADD): Updated
