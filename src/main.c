@@ -22,6 +22,7 @@
    and Sergey Poznyakoff <gray@mirddin.farlep.net> */
 
 #include <system.h>
+#include <paxerror.h>
 
 #include <stdio.h>
 #include <getopt.h>
@@ -72,9 +73,9 @@ Examples:\n\
 
 /*  Print usage error message and exit with error.  */
 
-#define USAGE_ERROR(args) do { error args; exit(2); } while (0)
 #define CHECK_USAGE(cond, opt, mode_opt) \
- if (cond) USAGE_ERROR((0, 0, _("%s is meaningless with %s"), opt, mode_opt));
+ if (cond) \
+   ERROR((PAXEXIT_FAILURE, 0, _("%s is meaningless with %s"), opt, mode_opt));
 
 static struct argp_option options[] = {
   /* ********** */
@@ -320,7 +321,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case 'c':		/* Use the old portable ASCII format.  */
       if (archive_format != arf_unknown)
-	USAGE_ERROR ((0, 0, _("Archive format multiply defined")));
+	error (0, EXIT_FAILURE, _("Archive format multiply defined"));
 #ifdef SVR4_COMPAT
       archive_format = arf_newascii; /* -H newc.  */
 #else
@@ -352,7 +353,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case 'H':		/* Header format name.  */
       if (archive_format != arf_unknown)
-	USAGE_ERROR ((0, 0, _("Archive format multiply defined")));
+	error (PAXEXIT_FAILURE, 0, _("Archive format multiply defined"));
       if (!strcasecmp (arg, "crc"))
 	archive_format = arf_crcascii;
       else if (!strcasecmp (arg, "newc"))
@@ -377,7 +378,7 @@ crc newc odc bin ustar tar (all-caps also recognized)"), arg);
 	  
     case 'i':		/* Copy-in mode.  */
       if (copy_function != 0)
-	USAGE_ERROR ((0, 0, _("Mode already defined")));
+	error (PAXEXIT_FAILURE, 0, _("Mode already defined"));
       copy_function = process_copy_in;
       break;
 
@@ -416,14 +417,14 @@ crc newc odc bin ustar tar (all-caps also recognized)"), arg);
 	
     case NO_PRESERVE_OWNER_OPTION:		/* --no-preserve-owner */
       if (set_owner_flag || set_group_flag)
-	USAGE_ERROR ((0, 0,
-	             _("--no-preserve-owner cannot be used with --owner")));
+	error (PAXEXIT_FAILURE, 0, 
+               _("--no-preserve-owner cannot be used with --owner"));
       no_chown_flag = true;
       break;
 
     case 'o':		/* Copy-out mode.  */
       if (copy_function != 0)
-	USAGE_ERROR ((0, 0, _("Mode already defined")));
+	error (PAXEXIT_FAILURE, 0, _("Mode already defined"));
       copy_function = process_copy_out;
       break;
 
@@ -437,7 +438,7 @@ crc newc odc bin ustar tar (all-caps also recognized)"), arg);
 
     case 'p':		/* Copy-pass mode.  */
       if (copy_function != 0)
-	USAGE_ERROR ((0, 0, _("Mode already defined")));
+	error (PAXEXIT_FAILURE, 0, _("Mode already defined"));
       copy_function = process_copy_pass;
       break;
 	  
@@ -459,25 +460,26 @@ crc newc odc bin ustar tar (all-caps also recognized)"), arg);
 
     case 'R':		/* Set the owner.  */
       if (no_chown_flag)
-	USAGE_ERROR ((0, 0,
-		      _("--owner cannot be used with --no-preserve-owner")));
-      {
-	char *e, *u, *g;
-
-	e = parse_user_spec (arg, &set_owner, &set_group, &u, &g);
-	if (e)
-	  error (2, 0, "%s: %s", arg, e);
-	if (u)
-	  {
-	    free (u);
-	    set_owner_flag = true;
-	  }
-	if (g)
-	  {
-	    free (g);
-	    set_group_flag = true;
-	  }
-      }
+	error (PAXEXIT_FAILURE, 0, 
+	       _("--owner cannot be used with --no-preserve-owner"));
+      else
+	{
+	  char *e, *u, *g;
+	  
+	  e = parse_user_spec (arg, &set_owner, &set_group, &u, &g);
+	  if (e)
+	    error (PAXEXIT_FAILURE, 0, "%s: %s", arg, e);
+	  if (u)
+	    {
+	      free (u);
+	      set_owner_flag = true;
+	    }
+	  if (g)
+	    {
+	      free (g);
+	      set_group_flag = true;
+	    }
+	}
       break;
 
     case 's':		/* Swap bytes.  */
@@ -571,9 +573,9 @@ process_args (int argc, char *argv[])
   int index;
 
   if (argc < 2)
-    USAGE_ERROR ((0, 0,
-		  _("You must specify one of -oipt options.\nTry `%s --help' or `%s --usage' for more information.\n"),
-		  program_name, program_name));
+    error (PAXEXIT_FAILURE, 0, 
+	   _("You must specify one of -oipt options.\nTry `%s --help' or `%s --usage' for more information.\n"),
+	   program_name, program_name);
 
   xstat = lstat;
 
@@ -587,9 +589,9 @@ process_args (int argc, char *argv[])
       if (table_flag)
 	copy_function = process_copy_in;
       else
-	USAGE_ERROR ((0, 0,
-		      _("You must specify one of -oipt options.\nTry `%s --help' or `%s --usage' for more information.\n"),
-		      program_name, program_name));
+	error (PAXEXIT_FAILURE, 0, 
+	       _("You must specify one of -oipt options.\nTry `%s --help' or `%s --usage' for more information.\n"),
+	       program_name, program_name);
     }
 
   /* Work around for pcc bug.  */
@@ -615,7 +617,8 @@ process_args (int argc, char *argv[])
 	}
       
       if (archive_name && input_archive_name)
-	USAGE_ERROR((0, 0, _("Both -I and -F are used in copy-in mode")));
+	error (PAXEXIT_FAILURE, 0, 
+	       _("Both -I and -F are used in copy-in mode"));
 
       if (archive_format == arf_crcascii)
 	crc_i_flag = true;
@@ -627,7 +630,7 @@ process_args (int argc, char *argv[])
   else if (copy_function == copy_out)
     {
       if (index != argc)
-	USAGE_ERROR ((0, 0, _("Too many arguments")));
+	error (PAXEXIT_FAILURE, 0, _("Too many arguments"));
 
       archive_des = 1;
       CHECK_USAGE(create_dir_flag, "--make-directories", "--create");
@@ -646,14 +649,15 @@ process_args (int argc, char *argv[])
       CHECK_USAGE(to_stdout_option, "--to-stdout", "--create");
       
       if (append_flag && !(archive_name || output_archive_name))
-	USAGE_ERROR ((0, 0,
-		      _("--append is used but no archive file name is given (use -F or -O options)")));
+	error (PAXEXIT_FAILURE, 0, 
+	       _("--append is used but no archive file name is given (use -F or -O options)"));
 
       CHECK_USAGE(rename_batch_file, "--rename-batch-file", "--create");
       CHECK_USAGE(no_abs_paths_flag, "--no-absolute-pathnames", "--create");
       CHECK_USAGE(input_archive_name, "-I", "--create");
       if (archive_name && output_archive_name)
-	USAGE_ERROR ((0, 0, _("Both -O and -F are used in copy-out mode")));
+	error (PAXEXIT_FAILURE, 0, 
+	       _("Both -O and -F are used in copy-out mode"));
 
       if (archive_format == arf_unknown)
 	archive_format = arf_binary;
@@ -664,11 +668,11 @@ process_args (int argc, char *argv[])
     {
       /* Copy pass.  */
       if (index != argc - 1)
-	USAGE_ERROR ((0, 0, _("Too many arguments")));
+	error (PAXEXIT_FAILURE, 0, _("Too many arguments"));
 
       if (archive_format != arf_unknown)
-	USAGE_ERROR((0, 0,
-		     _("Archive format is not specified in copy-pass mode (use --format option)")));
+	error (PAXEXIT_FAILURE, 0, 
+	       _("Archive format is not specified in copy-pass mode (use --format option)"));
 
       CHECK_USAGE(swap_bytes_flag, "--swap-bytes (--swap)", "--pass-through");
       CHECK_USAGE(swap_halfwords_flag, "--swap-halfwords (--swap)",
@@ -687,11 +691,11 @@ process_args (int argc, char *argv[])
   if (archive_name)
     {
       if (copy_function != copy_in && copy_function != copy_out)
-	USAGE_ERROR ((0, 0,
-		      _("-F can be used only with --create or --extract")));
+	error (PAXEXIT_FAILURE, 0, 
+	       _("-F can be used only with --create or --extract"));
       archive_des = open_archive (archive_name);
       if (archive_des < 0)
-	error (1, errno, "%s", archive_name);
+	error (PAXEXIT_FAILURE, errno, "%s", archive_name);
     }
 		     
   /* Prevent SysV non-root users from giving away files inadvertantly.
@@ -744,6 +748,12 @@ initialize_buffers ()
   out_buff = output_buffer;
   output_size = 0;
   output_bytes = 0;
+}
+
+void
+fatal_exit ()
+{
+  exit (PAXEXIT_FAILURE);
 }
 
 int
