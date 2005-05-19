@@ -18,8 +18,8 @@
 ## 02110-1301, USA.
 
 noinst_LIBRARIES = libcpio.a
-noinst_HEADERS = system.h localedir.h rmt.h
-libcpio_a_SOURCES = rtapelib.c
+noinst_HEADERS = system.h localedir.h rmt.h paxerror.h
+libcpio_a_SOURCES = rtapelib.c paxerror.c paxexit.c paxconvert.c
 
 EXTRA_DIST=Makefile.tmpl bcopy.c mkdir.c strdup.c strerror.c
 
