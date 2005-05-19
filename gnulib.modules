@@ -1,0 +1,19 @@
+# List of gnulib modules needed for GNU cpio.
+# A module name per line. Empty lines and comments are ignored.
+
+alloca
+argp
+argmatch
+dirname
+error
+fileblocks
+fnmatch-gnu
+full-write
+getopt
+gettext
+safe-read
+savedir
+stdbool
+unlocked-io
+xalloc
+xalloc-die
