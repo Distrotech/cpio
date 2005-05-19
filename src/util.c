@@ -207,7 +207,7 @@ tape_fill_input_buffer (int in_des, int num_bytes)
    Exit with an error if end of file is reached.  */
 
 static int
-disk_fill_input_buffer (int in_des, int num_bytes)
+disk_fill_input_buffer (int in_des, off_t num_bytes)
 {
   in_buff = input_buffer;
   num_bytes = (num_bytes < DISK_IO_BLOCK_SIZE) ? num_bytes : DISK_IO_BLOCK_SIZE;
@@ -227,10 +227,10 @@ disk_fill_input_buffer (int in_des, int num_bytes)
    When `out_buff' fills up, flush it to file descriptor OUT_DES.  */
 
 void
-tape_buffered_write (char *in_buf, int out_des, long num_bytes)
+tape_buffered_write (char *in_buf, int out_des, off_t num_bytes)
 {
-  register long bytes_left = num_bytes;	/* Bytes needing to be copied.  */
-  register long space_left;	/* Room left in output buffer.  */
+  off_t bytes_left = num_bytes;	/* Bytes needing to be copied.  */
+  off_t space_left;	/* Room left in output buffer.  */
 
   while (bytes_left > 0)
     {
@@ -254,10 +254,10 @@ tape_buffered_write (char *in_buf, int out_des, long num_bytes)
    When `out_buff' fills up, flush it to file descriptor OUT_DES.  */
 
 void
-disk_buffered_write (char *in_buf, int out_des, long num_bytes)
+disk_buffered_write (char *in_buf, int out_des, off_t num_bytes)
 {
-  register long bytes_left = num_bytes;	/* Bytes needing to be copied.  */
-  register long space_left;	/* Room left in output buffer.  */
+  off_t bytes_left = num_bytes;	/* Bytes needing to be copied.  */
+  off_t space_left;	/* Room left in output buffer.  */
 
   while (bytes_left > 0)
     {
@@ -282,10 +282,10 @@ disk_buffered_write (char *in_buf, int out_des, long num_bytes)
    When `in_buff' is exhausted, refill it from file descriptor IN_DES.  */
 
 void
-tape_buffered_read (char *in_buf, int in_des, long num_bytes)
+tape_buffered_read (char *in_buf, int in_des, off_t num_bytes)
 {
-  register long bytes_left = num_bytes;	/* Bytes needing to be copied.  */
-  register long space_left;	/* Bytes to copy from input buffer.  */
+  off_t bytes_left = num_bytes;	/* Bytes needing to be copied.  */
+  off_t space_left;	/* Bytes to copy from input buffer.  */
 
   while (bytes_left > 0)
     {
@@ -404,12 +404,12 @@ tape_toss_input (int in_des, long num_bytes)
 }
 
 void
-write_nuls_to_file (long num_bytes, int out_des, 
-                    void (*writer) (char *in_buf, int out_des, long num_bytes))
+write_nuls_to_file (off_t num_bytes, int out_des, 
+                    void (*writer) (char *in_buf, int out_des, off_t num_bytes))
 {
-  long	blocks;
-  long	extra_bytes;
-  long	i;
+  off_t	blocks;
+  off_t	extra_bytes;
+  off_t	i;
   static char zeros_512[512];
   
   blocks = num_bytes / sizeof zeros_512;
@@ -429,7 +429,7 @@ write_nuls_to_file (long num_bytes, int out_des,
    NUM_BYTES is the number of bytes to copy.  */
 
 void
-copy_files_tape_to_disk (int in_des, int out_des, long num_bytes)
+copy_files_tape_to_disk (int in_des, int out_des, off_t num_bytes)
 {
   long size;
   long k;
@@ -459,13 +459,13 @@ copy_files_tape_to_disk (int in_des, int out_des, long num_bytes)
    NUM_BYTES is the number of bytes to copy.  */
 
 void
-copy_files_disk_to_tape (int in_des, int out_des, long num_bytes,
+copy_files_disk_to_tape (int in_des, int out_des, off_t num_bytes,
 			 char *filename)
 {
   long size;
   long k;
   int rc;
-  long original_num_bytes;
+  off_t original_num_bytes;
 
   original_num_bytes = num_bytes;
 
@@ -477,10 +477,10 @@ copy_files_disk_to_tape (int in_des, int out_des, long num_bytes,
 	  num_bytes : DISK_IO_BLOCK_SIZE))
 	  {
 	    if (rc > 0)
-	      error (0, 0, _("File %s shrunk by %ld bytes, padding with zeros"),
+	      error (0, 0, _("File %s shrunk by %lld bytes, padding with zeros"),
 				filename, num_bytes);
 	    else
-	      error (0, 0, _("Read error at byte %ld in file %s, padding with zeros"),
+	      error (0, 0, _("Read error at byte %lld in file %s, padding with zeros"),
 			original_num_bytes - num_bytes, filename);
 	    write_nuls_to_file (num_bytes, out_des, tape_buffered_write);
 	    break;
@@ -506,12 +506,12 @@ copy_files_disk_to_tape (int in_des, int out_des, long num_bytes,
    NUM_BYTES is the number of bytes to copy.  */
 
 void
-copy_files_disk_to_disk (int in_des, int out_des, long num_bytes,
+copy_files_disk_to_disk (int in_des, int out_des, off_t num_bytes,
 			 char *filename)
 {
   long size;
   long k;
-  long original_num_bytes;
+  off_t original_num_bytes;
   int rc;
 
   original_num_bytes = num_bytes;
@@ -521,10 +521,10 @@ copy_files_disk_to_disk (int in_des, int out_des, long num_bytes,
 	if (rc = disk_fill_input_buffer (in_des, num_bytes))
 	  {
 	    if (rc > 0)
-	      error (0, 0, _("File %s shrunk by %ld bytes, padding with zeros"),
+	      error (0, 0, _("File %s shrunk by %lld bytes, padding with zeros"),
 				filename, num_bytes);
 	    else
-	      error (0, 0, _("Read error at byte %ld in file %s, padding with zeros"),
+	      error (0, 0, _("Read error at byte %lld in file %s, padding with zeros"),
 			original_num_bytes - num_bytes, filename);
 	    write_nuls_to_file (num_bytes, out_des, disk_buffered_write);
 	    break;
@@ -697,8 +697,8 @@ find_inode_file (unsigned long node_num, unsigned long major_num,
 	   temp = (temp + 1) % hash_size)
 	{
 	  if (hash_table[temp]->inode == node_num
-	      && hash_table[start]->major_num == major_num
-	      && hash_table[start]->minor_num == minor_num)
+	      && hash_table[temp]->major_num == major_num
+	      && hash_table[temp]->minor_num == minor_num)
 	    return hash_table[temp]->file_name;
 	}
     }
