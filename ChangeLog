@@ -1,3 +1,20 @@
+2005-05-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* NEWS: Updated
+	* src/copyin.c: Use set_perms.
+	* src/copypass.c: Likewise.
+	* src/copyout.c (process_copy_out): Use stat_to_cpio() to convert
+	struct stat to struct new_cpio_header.
+	* src/defer.h: Remove legacy P_() stuff.
+	* src/dstring.c: Likewise
+	* src/extern.h: Likewise
+	* src/util.c (stat_to_cpio,set_perms): New functions
+	* doc/.cvsignore: Updated
+	* lib/.cvsignore: Updated
+	* tests/.cvsignore: Updated
+	* .cvsignore: Updated
+	* COPYING: Added to the repository
+
 2005-05-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* po/POTFILES.in: Add paxerror.c paxexit.c paxconvert.c
