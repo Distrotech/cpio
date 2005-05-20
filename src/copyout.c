@@ -497,51 +497,7 @@ process_copy_out ()
       else
 	{
 	  /* Set values in output header.  */
-	  file_hdr.c_dev_maj = major (file_stat.st_dev);
-	  file_hdr.c_dev_min = minor (file_stat.st_dev);
-	  file_hdr.c_ino = file_stat.st_ino;
-	  /* For POSIX systems that don't define the S_IF macros,
-	     we can't assume that S_ISfoo means the standard Unix
-	     S_IFfoo bit(s) are set.  So do it manually, with a
-	     different name.  Bleah.  */
-	  file_hdr.c_mode = (file_stat.st_mode & 07777);
-	  if (S_ISREG (file_stat.st_mode))
-	    file_hdr.c_mode |= CP_IFREG;
-	  else if (S_ISDIR (file_stat.st_mode))
-	    file_hdr.c_mode |= CP_IFDIR;
-#ifdef S_ISBLK
-	  else if (S_ISBLK (file_stat.st_mode))
-	    file_hdr.c_mode |= CP_IFBLK;
-#endif
-#ifdef S_ISCHR
-	  else if (S_ISCHR (file_stat.st_mode))
-	    file_hdr.c_mode |= CP_IFCHR;
-#endif
-#ifdef S_ISFIFO
-	  else if (S_ISFIFO (file_stat.st_mode))
-	    file_hdr.c_mode |= CP_IFIFO;
-#endif
-#ifdef S_ISLNK
-	  else if (S_ISLNK (file_stat.st_mode))
-	    file_hdr.c_mode |= CP_IFLNK;
-#endif
-#ifdef S_ISSOCK
-	  else if (S_ISSOCK (file_stat.st_mode))
-	    file_hdr.c_mode |= CP_IFSOCK;
-#endif
-#ifdef S_ISNWK
-	  else if (S_ISNWK (file_stat.st_mode))
-	    file_hdr.c_mode |= CP_IFNWK;
-#endif
-	  file_hdr.c_uid = file_stat.st_uid;
-	  file_hdr.c_gid = file_stat.st_gid;
-	  file_hdr.c_nlink = file_stat.st_nlink;
-	  file_hdr.c_rdev_maj = major (file_stat.st_rdev);
-	  file_hdr.c_rdev_min = minor (file_stat.st_rdev);
-	  file_hdr.c_mtime = file_stat.st_mtime;
-	  file_hdr.c_filesize = file_stat.st_size;
-	  file_hdr.c_chksum = 0;
-	  file_hdr.c_tar_linkname = NULL;
+	  stat_to_cpio (&file_hdr, &file_stat);
 	  
 	  if (archive_format == arf_tar || archive_format == arf_ustar)
 	    {
