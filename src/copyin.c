@@ -394,24 +394,7 @@ create_final_defers ()
       if (close (out_file_des) < 0)
 	close_error (d->header.c_name);
 
-      /* File is now copied; set attributes.  */
-      if (!no_chown_flag)
-        {
-          uid_t uid = set_owner_flag ? set_owner : d->header.c_uid;
-          gid_t gid = set_group_flag ? set_group : d->header.c_gid; 
-	  if ((chown (d->header.c_name, uid, gid) < 0)
-	      && errno != EPERM)
-	    chown_error_details (d->header.c_name, uid, gid);
-        }
-      /* chown may have turned off some permissions we wanted. */
-      if (chmod (d->header.c_name, (int) d->header.c_mode) < 0)
-	chmod_error_details (d->header.c_name, d->header.c_mode);
-      if (retain_time_flag)
-	{
-	  times.actime = times.modtime = d->header.c_mtime;
-	  if (utime (d->header.c_name, &times) < 0)
-	    utime_error (d->header.c_name);
-	}
+      set_perms (&d->header);
     }
 }
 
@@ -571,30 +554,8 @@ copyin_regular_file (struct new_cpio_header* file_hdr, int in_file_des)
 	       file_hdr->c_name, crc, file_hdr->c_chksum);
     }
 
-  /* File is now copied; set attributes.  */
-  if (!no_chown_flag)
-    {
-      uid_t uid = set_owner_flag ? set_owner : file_hdr->c_uid;
-      gid_t gid = set_group_flag ? set_group : file_hdr->c_gid;
-      if ((chown (file_hdr->c_name, uid, gid) < 0)
-	   && errno != EPERM)
-        chown_error_details (file_hdr->c_name, uid, gid);
-    } 
-  /* chown may have turned off some permissions we wanted. */
-  if (chmod (file_hdr->c_name, (int) file_hdr->c_mode) < 0)
-    chmod_error_details (file_hdr->c_name, file_hdr->c_mode);
-  
-  if (retain_time_flag)
-    {
-      struct utimbuf times;		/* For setting file times.  */
-      /* Initialize this in case it has members we don't know to set.  */
-      memset (&times, 0, sizeof (struct utimbuf));
+  set_perms (file_hdr);
 
-      times.actime = times.modtime = file_hdr->c_mtime;
-      if (utime (file_hdr->c_name, &times) < 0)
-	utime_error (file_hdr->c_name);
-    }
-  
   tape_skip_padding (in_file_des, file_hdr->c_filesize);
   if (file_hdr->c_nlink > 1
       && (archive_format == arf_newascii || archive_format == arf_crcascii) )
@@ -685,33 +646,8 @@ copyin_directory(struct new_cpio_header* file_hdr, int existing_dir)
 	  return;
 	}
     }
-  if (!no_chown_flag)
-    {
-      uid_t uid = set_owner_flag ? set_owner : file_hdr->c_uid;
-      gid_t gid = set_group_flag ? set_group : file_hdr->c_gid;
-      if ((chown (file_hdr->c_name, uid, gid) < 0)
-	  && errno != EPERM)
-        chown_error_details (file_hdr->c_name, uid, gid);
-    }
-  /* chown may have turned off some permissions we wanted. */
-  if (chmod (file_hdr->c_name, (int) file_hdr->c_mode) < 0)
-    chmod_error_details (file_hdr->c_name, file_hdr->c_mode);
-#ifdef HPUX_CDF
-  if (cdf_flag)
-    /* Once we "hide" the directory with the chmod(),
-       we have to refer to it using name+ instead of name.  */
-    file_hdr->c_name [cdf_char] = '+';
-#endif
-  if (retain_time_flag)
-    {
-      struct utimbuf times;		/* For setting file times.  */
-      /* Initialize this in case it has members we don't know to set.  */
-      memset (&times, 0, sizeof (struct utimbuf));
 
-      times.actime = times.modtime = file_hdr->c_mtime;
-      if (utime (file_hdr->c_name, &times) < 0)
-	utime_error (file_hdr->c_name);
-    }
+  set_perms (file_hdr); 
 }
 
 static void

@@ -27,8 +27,19 @@
 #include "extern.h"
 
 #ifndef HAVE_LCHOWN
-#define lchown chown
+# define lchown chown
 #endif
+
+
+/* A wrapper around set_perms using another set of arguments */
+static void
+set_copypass_perms (const char *name, struct stat *st)
+{
+  struct new_cpio_header header;
+  header.c_name = name;
+  stat_to_cpio (&header, st);
+  set_perms (&header);
+}
 
 /* Copy files listed on the standard input into directory `directory_name'.
    If `link_flag', link instead of copying.  */
@@ -188,19 +199,8 @@ process_copy_pass ()
 	      if (close (out_file_des) < 0)
 		close_error (output_name.ds_string);
 
-	      /* Set the attributes of the new file.  */
-	      if (!no_chown_flag)
-                { 
-                  uid_t uid = set_owner_flag ? set_owner : in_file_stat.st_uid;
-                  uid_t gid = set_group_flag ? set_group : in_file_stat.st_gid;
-		  if ((chown (output_name.ds_string, uid, gid) < 0)
-  		      && errno != EPERM)
-		    chown_error_details (output_name.ds_string, uid, gid);
-                }
-	      /* chown may have turned off some permissions we wanted. */
-	      if (chmod (output_name.ds_string, in_file_stat.st_mode) < 0)
-		chmod_error_details (output_name.ds_string, 
-                                     in_file_stat.st_mode);
+	      set_copypass_perms (input_name.ds_string, &in_file_stat);
+
 	      if (reset_time_flag)
 		{
 		  times.actime = in_file_stat.st_atime;
@@ -217,12 +217,7 @@ process_copy_pass ()
 		      && errno != EROFS)
 		    utime_error (output_name.ds_string);
 		}
-	      if (retain_time_flag)
-		{
-		  times.actime = times.modtime = in_file_stat.st_mtime;
-		  if (utime (output_name.ds_string, &times) < 0)
-		    utime_error (output_name.ds_string);
-		}
+	      
 	      warn_if_file_changed(input_name.ds_string, in_file_stat.st_size,
                                    in_file_stat.st_mtime);
 	    }
@@ -272,29 +267,7 @@ process_copy_pass ()
 		  continue;
 		}
 	    }
-	  if (!no_chown_flag)
-            {
-              uid_t uid = set_owner_flag ? set_owner : in_file_stat.st_uid;
-              gid_t gid = set_group_flag ? set_group : in_file_stat.st_gid;
-	      if ((chown (output_name.ds_string, uid, gid) < 0)
-		  && errno != EPERM)
-	        chown_error_details (output_name.ds_string, uid, gid);
-            }
-	  /* chown may have turned off some permissions we wanted. */
-	  if (chmod (output_name.ds_string, in_file_stat.st_mode) < 0)
-	    chmod_error_details (output_name.ds_string, in_file_stat.st_mode);
-#ifdef HPUX_CDF
-	  if (cdf_flag)
-	    /* Once we "hide" the directory with the chmod(),
-	       we have to refer to it using name+ isntead of name.  */
-	    output_name.ds_string [cdf_char] = '+';
-#endif
-	  if (retain_time_flag)
-	    {
-	      times.actime = times.modtime = in_file_stat.st_mtime;
-	      if (utime (output_name.ds_string, &times) < 0)
-		utime_error (output_name.ds_string);
-	    }
+	  set_copypass_perms (output_name.ds_string, &in_file_stat);
 	}
       else if (S_ISCHR (in_file_stat.st_mode) ||
 	       S_ISBLK (in_file_stat.st_mode) ||
@@ -333,24 +306,7 @@ process_copy_pass ()
 		  mknod_error (output_name.ds_string);
 		  continue;
 		}
-	      if (!no_chown_flag)
-                {
-                  uid_t uid = set_owner_flag ? set_owner : in_file_stat.st_uid;
-                  gid_t gid = set_group_flag ? set_group : in_file_stat.st_gid;
-		  if ((chown (output_name.ds_string, uid, gid) < 0)
-		      && errno != EPERM)
-		     chown_error_details (output_name.ds_string, uid, gid);
-                }
-	      /* chown may have turned off some permissions we wanted. */
-	      if (chmod (output_name.ds_string, in_file_stat.st_mode) < 0)
-		chmod_error_details (output_name.ds_string, 
-                                     in_file_stat.st_mode);
-	      if (retain_time_flag)
-		{
-		  times.actime = times.modtime = in_file_stat.st_mtime;
-		  if (utime (output_name.ds_string, &times) < 0)
-		    utime_error (output_name.ds_string);
-		}
+	      set_copypass_perms (output_name.ds_string, &in_file_stat);
 	    }
 	}
 
