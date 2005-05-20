@@ -24,6 +24,7 @@
 #include "cpiohdr.h"
 #include "dstring.h"
 #include "extern.h"
+#include "filetypes.h"
 #include <safe-read.h>
 #include <full-write.h>
 #include <rmt.h>
@@ -1248,4 +1249,85 @@ sparse_write (int fildes, char *buf, unsigned int nbyte)
       write_rc = write (fildes, buf, leftover_bytes_count);
     }
   return nbyte;
+}
+
+void
+stat_to_cpio (struct new_cpio_header *hdr, struct stat *st)
+{
+  hdr->c_dev_maj = major (st->st_dev);
+  hdr->c_dev_min = minor (st->st_dev);
+  hdr->c_ino = st->st_ino;
+  /* For POSIX systems that don't define the S_IF macros,
+     we can't assume that S_ISfoo means the standard Unix
+     S_IFfoo bit(s) are set.  So do it manually, with a
+     different name.  Bleah.  */
+  hdr->c_mode = (st->st_mode & 07777);
+  if (S_ISREG (st->st_mode))
+    hdr->c_mode |= CP_IFREG;
+  else if (S_ISDIR (st->st_mode))
+    hdr->c_mode |= CP_IFDIR;
+#ifdef S_ISBLK
+  else if (S_ISBLK (st->st_mode))
+    hdr->c_mode |= CP_IFBLK;
+#endif
+#ifdef S_ISCHR
+  else if (S_ISCHR (st->st_mode))
+    hdr->c_mode |= CP_IFCHR;
+#endif
+#ifdef S_ISFIFO
+  else if (S_ISFIFO (st->st_mode))
+    hdr->c_mode |= CP_IFIFO;
+#endif
+#ifdef S_ISLNK
+  else if (S_ISLNK (st->st_mode))
+    hdr->c_mode |= CP_IFLNK;
+#endif
+#ifdef S_ISSOCK
+  else if (S_ISSOCK (st->st_mode))
+    hdr->c_mode |= CP_IFSOCK;
+#endif
+#ifdef S_ISNWK
+  else if (S_ISNWK (st->st_mode))
+    hdr->c_mode |= CP_IFNWK;
+#endif
+  hdr->c_uid = st->st_uid;
+  hdr->c_gid = st->st_gid;
+  hdr->c_nlink = st->st_nlink;
+  hdr->c_rdev_maj = major (st->st_rdev);
+  hdr->c_rdev_min = minor (st->st_rdev);
+  hdr->c_mtime = st->st_mtime;
+  hdr->c_filesize = st->st_size;
+  hdr->c_chksum = 0;
+  hdr->c_tar_linkname = NULL;
+}
+
+void
+set_perms (struct new_cpio_header *header)
+{
+  if (!no_chown_flag)
+    {
+      uid_t uid = set_owner_flag ? set_owner : header->c_uid;
+      gid_t gid = set_group_flag ? set_group : header->c_gid; 
+      if ((chown (header->c_name, uid, gid) < 0) && errno != EPERM)
+	chown_error_details (header->c_name, uid, gid);
+    }
+  /* chown may have turned off some permissions we wanted. */
+  if (chmod (header->c_name, header->c_mode) < 0)
+    chmod_error_details (header->c_name, header->c_mode);
+#ifdef HPUX_CDF
+  if ((header->c_mode & CP_IFMT) && cdf_flag)
+    /* Once we "hide" the directory with the chmod(),
+       we have to refer to it using name+ instead of name.  */
+    file_hdr->c_name [cdf_char] = '+';
+#endif
+  if (retain_time_flag)
+    {
+      struct utimbuf times;
+      
+      /* Initialize this in case it has members we don't know to set.  */
+      memset (&times, 0, sizeof (struct utimbuf));
+      times.actime = times.modtime = header->c_mtime;
+      if (utime (header->c_name, &times) < 0)
+	utime_error (header->c_name);
+    }
 }
