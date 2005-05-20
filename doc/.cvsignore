@@ -11,6 +11,8 @@ cpio.pg
 cpio.toc
 cpio.tp
 cpio.vr
+genfile.texi
+getdate.texi
 manual
 stamp-vti
 version.texi

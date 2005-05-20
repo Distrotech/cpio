@@ -1,5 +1,6 @@
 2005-05-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* configure.ac: Raised version number to 2.6.90
 	* NEWS: Updated
 	* src/copyin.c: Use set_perms.
 	* src/copypass.c: Likewise.
