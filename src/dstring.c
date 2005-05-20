@@ -28,13 +28,8 @@
 #endif
 #include "dstring.h"
 
-#if __STDC__
-# define P_(s) s
-#else
-# define P_(s) ()
-#endif
-char *xmalloc P_((unsigned n));
-char *xrealloc P_((char *p, unsigned n));
+char *xmalloc (unsigned n);
+char *xrealloc (char *p, unsigned n);
 
 /* Initialiaze dynamic string STRING with space for SIZE characters.  */
 
