@@ -29,11 +29,11 @@
 #include "defer.h"
 #include <rmt.h>
 #ifndef	FNM_PATHNAME
-#include <fnmatch.h>
+# include <fnmatch.h>
 #endif
 
 #ifndef HAVE_LCHOWN
-#define lchown chown
+# define lchown(f,u,g) 0
 #endif
 
 static void copyin_regular_file(struct new_cpio_header* file_hdr,
@@ -1403,26 +1403,18 @@ process_copy_in ()
 
       /* Do we have to ignore absolute paths, and if so, does the filename
          have an absolute path?  */
-      if (no_abs_paths_flag && file_hdr.c_name && file_hdr.c_name [0] == '/')
+      if (no_abs_paths_flag && file_hdr.c_name && file_hdr.c_name[0])
 	{
-	  char *p;
-
-	  p = file_hdr.c_name;
-	  while (*p == '/')
-	    ++p;
-	  if (*p == '\0')
+	  char *p = safer_name_suffix (file_hdr.c_name, false, false);
+	  if (p != file_hdr.c_name)
 	    {
-	      strcpy (file_hdr.c_name, ".");
-	    }
-	  else
-	    {
-              /* Debian hack: file_hrd.c_name is sometimes set to
+              /* Debian hack: file_hdr.c_name is sometimes set to
                  point to static memory by code in tar.c.  This
                  causes a segfault.  Therefore, memmove is used
                  instead of freeing and reallocating.  (Reported by
                  Horst Knobloch.)  This bug has been reported to
                  "bug-gnu-utils@prep.ai.mit.edu". (99/1/6) -BEM */
-	      (void)memmove (file_hdr.c_name, p, (size_t)(strlen (p) + 1));
+	      memmove (file_hdr.c_name, p, (size_t)(strlen (p) + 1));
 	    }
 	}
 
