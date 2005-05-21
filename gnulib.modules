@@ -11,6 +11,7 @@ fnmatch-gnu
 full-write
 getopt
 gettext
+hash
 safe-read
 savedir
 stdbool
