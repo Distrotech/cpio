@@ -1,5 +1,6 @@
 /* main.c - main program and argument processing for cpio.
-   Copyright (C) 1990, 1991, 1992, 2001, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001, 2003, 2004, 2005
+   Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -42,7 +43,8 @@
 #include <localedir.h>
 
 enum cpio_options {
-  NO_ABSOLUTE_FILENAMES_OPTION=256,  
+  NO_ABSOLUTE_FILENAMES_OPTION=256,
+  ABSOLUTE_FILENAMES_OPTION,
   NO_PRESERVE_OWNER_OPTION,      
   ONLY_VERIFY_CRC_OPTION,        
   RENAME_BATCH_FILE_OPTION,      
@@ -140,11 +142,13 @@ static struct argp_option options[] = {
   {NULL, 0, NULL, 0,
    N_("Operation modifiers valid only in copy-in mode:"), GRID },
   {"pattern-file", 'E', N_("FILE"), 0,
-   N_("In copy-in mode, read additional patterns specifying filenames to extract or list from FILE"), GRID+1 },
+   N_("Read additional patterns specifying filenames to extract or list from FILE"), 210},
+  {"absolute-filenames", ABSOLUTE_FILENAMES_OPTION, 0, 0,
+   N_("Do not strip file system prefix components from the file names"), GRID+1 },
   {"no-absolute-filenames", NO_ABSOLUTE_FILENAMES_OPTION, 0, 0,
    N_("Create all files relative to the current directory"), GRID+1 },
   {"only-verify-crc", ONLY_VERIFY_CRC_OPTION, 0, 0,
-   N_("When reading a CRC format archive in copy-in mode, only verify the CRC's of each file in the archive, don't actually extract the files"), GRID+1 },
+   N_("When reading a CRC format archive, only verify the CRC's of each file in the archive, don't actually extract the files"), 210},
   {"rename", 'r', 0, 0,
    N_("Interactively rename files"), GRID+1 },
   {"rename-batch-file", RENAME_BATCH_FILE_OPTION, N_("FILE"), OPTION_HIDDEN,
@@ -414,7 +418,11 @@ crc newc odc bin ustar tar (all-caps also recognized)"), arg);
     case NO_ABSOLUTE_FILENAMES_OPTION:		/* --no-absolute-filenames */
       no_abs_paths_flag = true;
       break;
-	
+
+    case ABSOLUTE_FILENAMES_OPTION:		/* --absolute-filenames */
+      no_abs_paths_flag = false;
+      break;
+      
     case NO_PRESERVE_OWNER_OPTION:		/* --no-preserve-owner */
       if (set_owner_flag || set_group_flag)
 	error (PAXEXIT_FAILURE, 0, 
@@ -654,6 +662,7 @@ process_args (int argc, char *argv[])
 
       CHECK_USAGE(rename_batch_file, "--rename-batch-file", "--create");
       CHECK_USAGE(no_abs_paths_flag, "--no-absolute-pathnames", "--create");
+      CHECK_USAGE(no_abs_paths_flag, "--absolute-pathnames", "--create");
       CHECK_USAGE(input_archive_name, "-I", "--create");
       if (archive_name && output_archive_name)
 	error (PAXEXIT_FAILURE, 0, 
@@ -682,6 +691,8 @@ process_args (int argc, char *argv[])
       CHECK_USAGE(append_flag, "--append", "--pass-through");
       CHECK_USAGE(rename_batch_file, "--rename-batch-file", "--pass-through");
       CHECK_USAGE(no_abs_paths_flag, "--no-absolute-pathnames",
+		  "--pass-through");
+      CHECK_USAGE(no_abs_paths_flag, "--absolute-pathnames",
 		  "--pass-through");
       CHECK_USAGE(to_stdout_option, "--to-stdout", "--pass-through");
       
