@@ -48,6 +48,8 @@ getopt_int.h
 gettext.h
 gettime.c
 gettimeofday.c
+hash.c
+hash.h
 localedir.h
 mempcpy.c
 mempcpy.h
@@ -55,8 +57,9 @@ minmax.h
 mktime.c
 paxconvert.c
 paxerror.c
-paxerror.h
 paxexit.c
+paxlib.h
+paxnames.c
 printf-args.c
 printf-args.h
 printf-parse.c

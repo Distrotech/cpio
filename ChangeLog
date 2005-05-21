@@ -1,4 +1,19 @@
-2005-05-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2005-05-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* lib/.cvsignore: Updated
+	* gnulib.modules: Add hash
+	* doc/cpio.texi (Reports): New chapter
+	* lib/Makefile.tmpl: Add new paxutils files.
+	* po/POTFILES.in: Likewise
+	* src/copyin.c [!HAVE_LCHOWN] (lchown): Define to 0 to avoid
+	changing ownership of the target file.
+	(process_copy_in): Use safer_name_suffix()
+	* src/main.c (parse_opt): Handle new --absolute-filenames option.
+	(process_args): Updated
+	* src/util.c: Rewrite inode lookup/insertion functions using hash
+	module. 
+
+u2005-05-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Raised version number to 2.6.90
 	* NEWS: Updated
