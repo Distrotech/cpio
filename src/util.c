@@ -28,6 +28,7 @@
 #include <safe-read.h>
 #include <full-write.h>
 #include <rmt.h>
+#include <hash.h>
 
 #include <sys/ioctl.h>
 
@@ -663,82 +664,40 @@ struct inode_val
 };
 
 /* Inode hash table.  Allocated by first call to add_inode.  */
-static struct inode_val **hash_table = NULL;
+static Hash_table *hash_table = NULL;
 
-/* Size of current hash table.  Initial size is 47.  (47 = 2*22 + 3) */
-static int hash_size = 22;
+static size_t
+inode_val_hasher (const void *val, size_t n_buckets)
+{
+  const struct inode_val *ival = val;
+  return ival->inode % n_buckets;
+}
 
-/* Number of elements in current hash table.  */
-static int hash_num;
-
-/* Find the file name associated with NODE_NUM.  If there is no file
-   associated with NODE_NUM, return NULL.  */
+static bool
+inode_val_compare (const void *val1, const void *val2)
+{
+  const struct inode_val *ival1 = val1;
+  const struct inode_val *ival2 = val2;
+  return ival1->inode == ival2->inode
+         && ival1->major_num == ival2->major_num
+         && ival1->minor_num == ival2->minor_num;
+}
 
 char *
 find_inode_file (unsigned long node_num, unsigned long major_num,
 		 unsigned long minor_num)
 {
-  int start;			/* Initial hash location.  */
-  int temp;			/* Rehash search variable.  */
-
-  if (hash_table != NULL)
-    {
-      /* Hash function is node number modulo the table size.  */
-      start = node_num % hash_size;
-
-      /* Initial look into the table.  */
-      if (hash_table[start] == NULL)
-	return NULL;
-      if (hash_table[start]->inode == node_num
-	  && hash_table[start]->major_num == major_num
-	  && hash_table[start]->minor_num == minor_num)
-	return hash_table[start]->file_name;
-
-      /* The home position is full with a different inode record.
-	 Do a linear search terminated by a NULL pointer.  */
-      for (temp = (start + 1) % hash_size;
-	   hash_table[temp] != NULL && temp != start;
-	   temp = (temp + 1) % hash_size)
-	{
-	  if (hash_table[temp]->inode == node_num
-	      && hash_table[temp]->major_num == major_num
-	      && hash_table[temp]->minor_num == minor_num)
-	    return hash_table[temp]->file_name;
-	}
-    }
-  return NULL;
-}
-
-/* Do the hash insert.  Used in normal inserts and resizing the hash
-   table.  It is guaranteed that there is room to insert the item.
-   NEW_VALUE is the pointer to the previously allocated inode, file
-   name association record.  */
-
-static void
-hash_insert (struct inode_val *new_value)
-{
-  int start;			/* Home position for the value.  */
-  int temp;			/* Used for rehashing.  */
-
-  /* Hash function is node number modulo the table size.  */
-  start = new_value->inode % hash_size;
-
-  /* Do the initial look into the table.  */
-  if (hash_table[start] == NULL)
-    {
-      hash_table[start] = new_value;
-      return;
-    }
-
-  /* If we get to here, the home position is full with a different inode
-     record.  Do a linear search for the first NULL pointer and insert
-     the new item there.  */
-  temp = (start + 1) % hash_size;
-  while (hash_table[temp] != NULL)
-    temp = (temp + 1) % hash_size;
-
-  /* Insert at the NULL.  */
-  hash_table[temp] = new_value;
+  struct inode_val sample;
+  struct inode_val *ival;
+  
+  if (!hash_table)
+    return NULL;
+  
+  sample.inode = node_num;
+  sample.major_num = major_num;
+  sample.minor_num = minor_num;
+  ival = hash_lookup (hash_table, &sample);
+  return ival ? ival->file_name : NULL;
 }
 
 /* Associate FILE_NAME with the inode NODE_NUM.  (Insert into hash table.)  */
@@ -748,7 +707,8 @@ add_inode (unsigned long node_num, char *file_name, unsigned long major_num,
 	   unsigned long minor_num)
 {
   struct inode_val *temp;
-
+  struct inode_val *e;
+  
   /* Create new inode record.  */
   temp = (struct inode_val *) xmalloc (sizeof (struct inode_val));
   temp->inode = node_num;
@@ -756,39 +716,12 @@ add_inode (unsigned long node_num, char *file_name, unsigned long major_num,
   temp->minor_num = minor_num;
   temp->file_name = xstrdup (file_name);
 
-  /* Do we have to increase the size of (or initially allocate)
-     the hash table?  */
-  if (hash_num == hash_size || hash_table == NULL)
-    {
-      struct inode_val **old_table;	/* Pointer to old table.  */
-      int i;			/* Index for re-insert loop.  */
-
-      /* Save old table.  */
-      old_table = hash_table;
-      if (old_table == NULL)
-	hash_num = 0;
-
-      /* Calculate new size of table and allocate it.
-         Sequence of table sizes is 47, 97, 197, 397, 797, 1597, 3197, 6397 ...
-	 where 3197 and most of the sizes after 6397 are not prime.  The other
-	 numbers listed are prime.  */
-      hash_size = 2 * hash_size + 3;
-      hash_table = (struct inode_val **)
-	xmalloc (hash_size * sizeof (struct inode_val *));
-      memset (hash_table, 0, hash_size * sizeof (struct inode_val *));
-
-      /* Insert the values from the old table into the new table.  */
-      for (i = 0; i < hash_num; i++)
-	hash_insert (old_table[i]);
-
-      if (old_table != NULL)
-	free (old_table);
-    }
-
-  /* Insert the new record and increment the count of elements in the
-      hash table.  */
-  hash_insert (temp);
-  hash_num++;
+  if (!((hash_table
+	 || (hash_table = hash_initialize (0, 0, inode_val_hasher,
+					   inode_val_compare, 0)))
+	&& (e = hash_insert (hash_table, temp))))
+    xalloc_die ();
+  /* FIXME: e is not used */
 }
 
 
