@@ -63,6 +63,7 @@ GNU cpio documentation and is consistant with @value{VERSION}.
 * Tutorial::                    Getting started.
 * Invoking `cpio'::             How to invoke `cpio'.
 * Media::                       Using tapes and other archive media.
+* Reports::                     Reporting bugs or suggestions
 * Concept Index::               Concept index.
 
 @detailmenu
@@ -505,7 +506,7 @@ Print the cpio program version number and exit.
 @end table
 
 
-@node Media, Concept Index, Invoking `cpio', Top
+@node Media, Reports, Invoking `cpio', Top
 @comment  node-name,  next,  previous,  up
 @chapter Magnetic Media
 @cindex magnetic media
@@ -528,8 +529,24 @@ be protected from such fields to avoid damage to stored data.  Sticking
 a floppy disk to a filing cabinet using a magnet is probably not a good
 idea.
 
+@node Reports, Concept Index, Media, Top
+@chapter Reporting bugs or suggestions
 
-@node Concept Index,  , Media, Top
+It is possible you will encounter a bug in @command{cpio}.
+If this happens, we would like to hear about it. As the purpose of bug
+reporting is to improve software, please be sure to include maximum
+information when reporting a bug. The information needed is:
+
+@itemize @bullet
+@item Version of the package you are using.
+@item Compilation options used when configuring the package.
+@item Conditions under which the bug appears.
+@end itemize 
+
+Send your report to <bug-cpio@@gnu.org>. Allow us a couple of
+days to answer.
+
+@node Concept Index, , Reports, Top
 @comment  node-name,  next,  previous,  up
 @unnumbered Concept Index
 @printindex cp
