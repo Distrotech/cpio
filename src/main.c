@@ -23,7 +23,7 @@
    and Sergey Poznyakoff <gray@mirddin.farlep.net> */
 
 #include <system.h>
-#include <paxerror.h>
+#include <paxlib.h>
 
 #include <stdio.h>
 #include <getopt.h>
