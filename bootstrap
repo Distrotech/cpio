@@ -187,6 +187,7 @@ fi
 # copy_files srcdir dstdir
 # copy_files srcdir dstdir
 copy_files() {
+  test -d $2 || mkdir $2
   for file in `cat $1/DISTFILES`
   do
     case $file in
@@ -273,7 +274,7 @@ for gnulib_file in $gnulib_files; do
   # old jm_.* macro names, so we have to keep both copies.
   m4/gettext.m4 | m4/glibc21.m4 | m4/inttypes_h.m4 | m4/lib-ld.m4 | \
   m4/lib-prefix.m4 | m4/po.m4 | m4/stdint_h.m4 | m4/uintmax_t.m4 | \
-  m4/ulonglong.m4)
+  m4/longlong.m4 | m4/ulonglong.m4)
     dest=`expr $gnulib_file : '\(.*\).m4'`_gl.m4;;
   esac
 
