@@ -143,10 +143,6 @@ static struct argp_option options[] = {
    N_("Operation modifiers valid only in copy-in mode:"), GRID },
   {"pattern-file", 'E', N_("FILE"), 0,
    N_("Read additional patterns specifying filenames to extract or list from FILE"), 210},
-  {"absolute-filenames", ABSOLUTE_FILENAMES_OPTION, 0, 0,
-   N_("Do not strip file system prefix components from the file names"), GRID+1 },
-  {"no-absolute-filenames", NO_ABSOLUTE_FILENAMES_OPTION, 0, 0,
-   N_("Create all files relative to the current directory"), GRID+1 },
   {"only-verify-crc", ONLY_VERIFY_CRC_OPTION, 0, 0,
    N_("When reading a CRC format archive, only verify the CRC's of each file in the archive, don't actually extract the files"), 210},
   {"rename", 'r', 0, 0,
@@ -172,8 +168,8 @@ static struct argp_option options[] = {
    N_("Append to an existing archive."), GRID+1 },
   {NULL, 'O', N_("[[USER@]HOST:]FILE-NAME"), 0,
    N_("Archive filename to use instead of standard output. Optional USER and HOST specify the user and host names in case of a remote archive"), GRID+1 },
+#undef GRID
   
-#undef GRID   
   /* ********** */
 #define GRID 400
   {NULL, 0, NULL, 0,
@@ -181,11 +177,22 @@ static struct argp_option options[] = {
   {"link", 'l', 0, 0,
    N_("Link files instead of copying them, when  possible"), GRID+1 },
 
-#undef GRID   
+#undef GRID
+  
   /* ********** */
 #define GRID 500
   {NULL, 0, NULL, 0,
-   N_("Operation modifiers valid for copy-out and copy-pass modes:"), GRID },
+   N_("Operation modifiers valid in copy-in and copy-out modes:"), GRID },
+  {"absolute-filenames", ABSOLUTE_FILENAMES_OPTION, 0, 0,
+   N_("Do not strip file system prefix components from the file names"),
+   GRID+1 },
+  {"no-absolute-filenames", NO_ABSOLUTE_FILENAMES_OPTION, 0, 0,
+   N_("Create all files relative to the current directory"), GRID+1 },
+#undef GRID  
+  /* ********** */
+#define GRID 600
+  {NULL, 0, NULL, 0,
+   N_("Operation modifiers valid in copy-out and copy-pass modes:"), GRID },
   {"null", '0', 0, 0,
    N_("A list of filenames is terminated by a null character instead of a newline"), GRID+1 },
   {NULL, 'I', N_("[[USER@]HOST:]FILE-NAME"), 0,
@@ -199,9 +206,9 @@ static struct argp_option options[] = {
 
 #undef GRID   
   /* ********** */
-#define GRID 600
+#define GRID 700
   {NULL, 0, NULL, 0,
-   N_("Operation modifiers valid for copy-in and copy-pass modes:"), GRID },
+   N_("Operation modifiers valid in copy-in and copy-pass modes:"), GRID },
   {"preserve-modification-time", 'm', 0, 0,
    N_("Retain previous file modification times when creating files"), GRID+1 },
   {"make-directories", 'd', 0, 0,
@@ -215,7 +222,7 @@ static struct argp_option options[] = {
 #undef GRID
   
   /* ********** */
-#define GRID 700
+#define GRID 800
   {NULL, 0, NULL, 0,
    N_("Informative options:"), GRID },
 
@@ -661,8 +668,6 @@ process_args (int argc, char *argv[])
 	       _("--append is used but no archive file name is given (use -F or -O options)"));
 
       CHECK_USAGE(rename_batch_file, "--rename-batch-file", "--create");
-      CHECK_USAGE(no_abs_paths_flag, "--no-absolute-pathnames", "--create");
-      CHECK_USAGE(no_abs_paths_flag, "--absolute-pathnames", "--create");
       CHECK_USAGE(input_archive_name, "-I", "--create");
       if (archive_name && output_archive_name)
 	error (PAXEXIT_FAILURE, 0, 
