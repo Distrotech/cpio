@@ -514,8 +514,10 @@ process_copy_out ()
 		}
 	    }
 	  
-	  /* Strip leading `./' from the filename.  */
-	  p = input_name.ds_string;
+	  p = safer_name_suffix (input_name.ds_string, false,
+				 !no_abs_paths_flag);
+	  /* No matter what no_abs_paths_flag setting is, strip
+	     leading `./' from the filename.  */
 	  while (*p == '.' && *(p + 1) == '/')
 	    {
 	      ++p;
