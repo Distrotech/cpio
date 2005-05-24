@@ -1403,20 +1403,20 @@ process_copy_in ()
 
       /* Do we have to ignore absolute paths, and if so, does the filename
          have an absolute path?  */
-      if (no_abs_paths_flag && file_hdr.c_name && file_hdr.c_name[0])
-	{
-	  char *p = safer_name_suffix (file_hdr.c_name, false, false);
-	  if (p != file_hdr.c_name)
-	    {
-              /* Debian hack: file_hdr.c_name is sometimes set to
-                 point to static memory by code in tar.c.  This
-                 causes a segfault.  Therefore, memmove is used
-                 instead of freeing and reallocating.  (Reported by
-                 Horst Knobloch.)  This bug has been reported to
-                 "bug-gnu-utils@prep.ai.mit.edu". (99/1/6) -BEM */
-	      memmove (file_hdr.c_name, p, (size_t)(strlen (p) + 1));
-	    }
-	}
+      {
+	char *p = safer_name_suffix (file_hdr.c_name, false,
+				     !no_abs_paths_flag);
+	if (p != file_hdr.c_name)
+	  {
+	    /* Debian hack: file_hdr.c_name is sometimes set to
+	       point to static memory by code in tar.c.  This
+	       causes a segfault.  Therefore, memmove is used
+	       instead of freeing and reallocating.  (Reported by
+	       Horst Knobloch.)  This bug has been reported to
+	       "bug-gnu-utils@prep.ai.mit.edu". (99/1/6) -BEM */
+	    memmove (file_hdr.c_name, p, (size_t)(strlen (p) + 1));
+	  }
+      }
 
       /* Does the file name match one of the given patterns?  */
       if (num_patterns <= 0)
