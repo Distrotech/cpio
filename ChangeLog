@@ -1,3 +1,11 @@
+2005-05-24  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/copyin.c (process_copy_in): Use safer_name_suffix no matter
+	what the value of no_abs_paths_flag. The function knows better
+	what to do in any case.
+	* src/copyout.c (process_copy_out): Honor no_abs_paths_flag.
+	* src/main.c (options): Minor fixes.
+
 2005-05-23  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* bootstrap (copy_files): Create destination directory if it does
