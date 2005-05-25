@@ -178,9 +178,9 @@ check_type (char *dev, int desc)
   if (_isrmt (desc))
     return;
   if (fstat (desc, &stats) == -1)
-    error (1, errno, "%s", dev);
+    stat_error (dev);
   if ((stats.st_mode & S_IFMT) != S_IFCHR)
-    error (1, 0, "%s is not a character special file", dev);
+    error (1, 0, _("%s is not a character special file"), dev);
 }
 void
 perform_operation (char *dev, int desc, short op, int count)
@@ -193,7 +193,7 @@ perform_operation (char *dev, int desc, short op, int count)
      error, not 0.  This bug has been reported to
      "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
   if (rmtioctl (desc, MTIOCTOP, (char*)&control) == -1)
-    error (2, errno, "%s", dev);
+    error (2, errno, _("%s: rmtioctl failed"), dev);
 }
 
 void
@@ -202,7 +202,7 @@ print_status (char *dev, int desc)
   struct mtget status;
 
   if (rmtioctl (desc, MTIOCGET, (char*)&status) == -1)
-    error (2, errno, "%s", dev);
+    error (2, errno, _("%s: rmtioctl failed"), dev);
 
   printf ("drive type = %d\n", (int) status.mt_type);
 #if defined(hpux) || defined(__hpux)
@@ -317,7 +317,7 @@ main (int argc, char **argv)
   else
     tapedesc = rmtopen (tapedev, O_RDONLY, 0, rsh_command_option);
   if (tapedesc == -1)
-    error (1, errno, "%s", tapedev);
+    error (1, errno, _("%s: rmtopen failed"), tapedev);
   check_type (tapedev, tapedesc);
 
   if (operation == MTASF)
@@ -330,7 +330,7 @@ main (int argc, char **argv)
     print_status (tapedev, tapedesc);
 
   if (rmtclose (tapedesc) == -1)
-    error (2, errno, "%s", tapedev);
+    error (2, errno, _("%s: rmtclose failed"), tapedev);
 
   exit (0);
 }

@@ -165,7 +165,7 @@ make_path (char *argpath,
 #endif
 		      )
 		    {
-		      error (0, errno, "%s", dirpath);
+		      chown_error_details (dirpath, owner, group);
 		      retval = 1;
 		    }
 		  if (re_protect)
@@ -232,14 +232,14 @@ make_path (char *argpath,
 #endif
 	      )
 	    {
-	      error (0, errno, "%s", dirpath);
+	      chown_error_details (dirpath, owner, group);
 	      retval = 1;
 	    }
 	}
 	  /* chown may have turned off some permission bits we wanted.  */
 	  if ((mode & 07000) != 0 && chmod (dirpath, mode))
 	    {
-	      error (0, errno, "%s", dirpath);
+	      chmod_error_details (dirpath, mode);
 	      retval = 1;
 	    }
 
@@ -256,7 +256,7 @@ make_path (char *argpath,
 	     bit so we don't break HP CDF's.  */
 	  if (chmod (dirpath, parent_mode))
 	    {
-	      error (0, errno, "%s", dirpath);
+	      chmod_error_details (dirpath, parent_mode);
 	      retval = 1;
 	    }
 #endif
@@ -287,12 +287,12 @@ make_path (char *argpath,
 #endif
 	  )
 	{
-	  error (0, errno, "%s", dirpath);
+	  chown_error_details (dirpath, owner, group);
 	  retval = 1;
 	}
       if (chmod (dirpath, mode))
 	{
-	  error (0, errno, "%s", dirpath);
+	  chmod_error_details (dirpath, mode);
 	  retval = 1;
 	}
     }

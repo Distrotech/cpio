@@ -27,6 +27,7 @@
 #include "extern.h"
 #include "defer.h"
 #include <rmt.h>
+#include <paxlib.h>
 
 /* Read FILE_SIZE bytes of FILE_NAME from IN_FILE_DES and
    compute and return a checksum for them.  */
@@ -218,7 +219,7 @@ writeout_defered_file (struct new_cpio_header *header, int out_file_des)
 		      O_RDONLY | O_BINARY, 0);
   if (in_file_des < 0)
     {
-      error (0, errno, "%s", header->c_name);
+      open_error (header->c_name);
       return;
     }
 
@@ -238,7 +239,7 @@ writeout_defered_file (struct new_cpio_header *header, int out_file_des)
   tape_pad_output (out_file_des, file_hdr.c_filesize);
 
   if (close (in_file_des) < 0)
-    error (0, errno, "%s", header->c_name);
+   close_error (header->c_name);
   if (reset_time_flag)
     {
       times.actime = file_hdr.c_mtime;
@@ -249,7 +250,7 @@ writeout_defered_file (struct new_cpio_header *header, int out_file_des)
          "bug-gnu-utils@prep.ai.mit.edu".  -BEM */
       if (utime (file_hdr.c_name, &times) < 0
 	  && errno != EROFS)
-	error (0, errno, "%s", file_hdr.c_name);
+	utime_error (file_hdr.c_name);
     }
   return;
 }
@@ -493,7 +494,7 @@ process_copy_out ()
 
       /* Process next file.  */
       if ((*xstat) (input_name.ds_string, &file_stat) < 0)
-	error (0, errno, "%s", input_name.ds_string);
+	stat_error (input_name.ds_string);
       else
 	{
 	  /* Set values in output header.  */
@@ -588,7 +589,7 @@ process_copy_out ()
 				  O_RDONLY | O_BINARY, 0);
 	      if (in_file_des < 0)
 		{
-		  error (0, errno, "%s", input_name.ds_string);
+		  open_error (input_name.ds_string);
 		  continue;
 		}
 
@@ -609,7 +610,7 @@ process_copy_out ()
 	      tape_pad_output (out_file_des, file_hdr.c_filesize);
 
 	      if (close (in_file_des) < 0)
-		error (0, errno, "%s", input_name.ds_string);
+		close_error (input_name.ds_string);
 	      if (reset_time_flag)
 		{
 		  times.actime = file_stat.st_atime;
@@ -621,7 +622,7 @@ process_copy_out ()
                      "bug-gnu-utils@prep.ai.mit.edu".  -BEM */
 		  if (utime (file_hdr.c_name, &times) < 0
 		      && errno != EROFS)
-		    error (0, errno, "%s", file_hdr.c_name);
+		    utime_error (file_hdr.c_name);
 		}
 	      break;
 
@@ -676,7 +677,7 @@ process_copy_out ()
 			              file_stat.st_size);
 		if (link_size < 0)
 		  {
-		    error (0, errno, "%s", input_name.ds_string);
+		    readlink_warn (input_name.ds_string);
 		    free (link_name);
 		    continue;
 		  }
