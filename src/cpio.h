@@ -26,6 +26,8 @@
    and variable length file data.
    A header for a filename "TRAILER!!!" indicates the end of the archive.  */
 
+#define CPIO_TRAILER_NAME "TRAILER!!!"
+
 /* All the fields in the header are ISO 646 (approximately ASCII) strings
    of octal numbers, left padded, not NUL terminated.
 
