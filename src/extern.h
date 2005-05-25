@@ -198,3 +198,5 @@ void write_nuls_to_file (off_t num_bytes, int out_des,
 
 void set_perms (struct new_cpio_header *header);
 void stat_to_cpio (struct new_cpio_header *hdr, struct stat *st);
+void cpio_safer_name_suffix (char *name, bool link_target,
+			     bool absolute_names, bool strip_leading_dots);
