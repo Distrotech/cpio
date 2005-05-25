@@ -1,5 +1,15 @@
 2005-05-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/copyin.c: Use cpio_safer_name_suffix() and CPIO_TRAILER_NAME
+	define instead of hardcoding the trailer file name.
+	* src/copyout.c: Likewise.
+	* src/cpio.h (CPIO_TRAILER_NAME): New define
+	* src/extern.h (cpio_safer_name_suffix): New proto
+	* src/tar.c: Use CPIO_TRAILER_NAME define instead of hardcoding
+	the trailer file name.
+	* src/util.c (cpio_safer_name_suffix): New function
+	(add_cdf_double_slashes): Add FIXME warning.
+	
 	* lib/fatal.c: New file
 	* lib/Makefile.tmpl (libcpio_a_SOURCES): Add fatal.c
 	* src/copyout.c: Use error reporting functions from paxlib
