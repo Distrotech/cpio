@@ -1,3 +1,12 @@
+2005-05-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* lib/fatal.c: New file
+	* lib/Makefile.tmpl (libcpio_a_SOURCES): Add fatal.c
+	* src/copyout.c: Use error reporting functions from paxlib
+	* src/makepath.c: Likewise
+	* src/mt.c: Likewise
+	* src/main.c (fatal_exit): Moved to lib/fatal.c
+
 2005-05-24  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/copyin.c (process_copy_in): Use safer_name_suffix no matter
