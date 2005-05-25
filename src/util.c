@@ -941,9 +941,10 @@ umasked_symlink (char *name1, char *name2, int mode)
 
 /* Take an input pathname and check it for CDF's.  Insert an extra
    `/' in the pathname after each "hidden" directory.  If we add
-   any `/'s, return a malloced string (which it will reuse for
-   later calls so our caller doesn't have to worry about freeing
-   the string) instead of the original input string.  */
+   any `/'s, return a malloced string instead of the original input
+   string.
+   FIXME: This creates a memory leak.
+*/
 
 char *
 add_cdf_double_slashes (char *input_name)
@@ -1264,3 +1265,23 @@ set_perms (struct new_cpio_header *header)
 	utime_error (header->c_name);
     }
 }
+
+/* Do we have to ignore absolute paths, and if so, does the filename
+   have an absolute path?  */
+void
+cpio_safer_name_suffix (char *name, bool link_target, bool absolute_names,
+			bool strip_leading_dots)
+{
+  char *p = safer_name_suffix (name, link_target, absolute_names);
+  if (strip_leading_dots)
+    /* strip leading `./' from the filename.  */
+    while (*p == '.' && *(p + 1) == '/')
+      {
+	++p;
+	while (*p == '/')
+	  ++p;
+      }
+  if (p != name)
+    memmove (name, p, (size_t)(strlen (p) + 1));
+}
+
