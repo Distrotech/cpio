@@ -281,7 +281,7 @@ read_in_tar_header (struct new_cpio_header *file_hdr, int in_des)
       if (null_block ((long *) &tar_rec, TARRECORDSIZE))
 #endif
 	{
-	  file_hdr->c_name = "TRAILER!!!";
+	  file_hdr->c_name = CPIO_TRAILER_NAME;
 	  return;
 	}
 #if 0
