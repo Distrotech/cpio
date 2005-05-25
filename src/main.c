@@ -711,7 +711,8 @@ process_args (int argc, char *argv[])
 	       _("-F can be used only with --create or --extract"));
       archive_des = open_archive (archive_name);
       if (archive_des < 0)
-	error (PAXEXIT_FAILURE, errno, "%s", archive_name);
+	error (PAXEXIT_FAILURE, errno, _("Cannot open %s"), 
+               quotearg_colon (archive_name));
     }
 		     
   /* Prevent SysV non-root users from giving away files inadvertantly.
@@ -764,12 +765,6 @@ initialize_buffers ()
   out_buff = output_buffer;
   output_size = 0;
   output_bytes = 0;
-}
-
-void
-fatal_exit ()
-{
-  exit (PAXEXIT_FAILURE);
 }
 
 int
