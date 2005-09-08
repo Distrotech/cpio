@@ -356,11 +356,7 @@ create_final_defers ()
   struct deferment *d;
   int	link_res;
   int	out_file_des;
-  struct utimbuf times;		/* For setting file times.  */
 
-  /* Initialize this in case it has members we don't know to set.  */
-  memset (&times, 0, sizeof (struct utimbuf));
-  
   for (d = deferments; d != NULL; d = d->next)
     {
       /* Debian hack: A line, which could cause an endless loop, was
@@ -719,15 +715,7 @@ copyin_device(struct new_cpio_header* file_hdr)
   if (chmod (file_hdr->c_name, file_hdr->c_mode) < 0)
     chmod_error_details (file_hdr->c_name, file_hdr->c_mode);
   if (retain_time_flag)
-    {
-      struct utimbuf times;		/* For setting file times.  */
-      /* Initialize this in case it has members we don't know to set.  */
-      memset (&times, 0, sizeof (struct utimbuf));
-
-      times.actime = times.modtime = file_hdr->c_mtime;
-      if (utime (file_hdr->c_name, &times) < 0)
-	utime_error (file_hdr->c_name);
-    }
+    set_file_times (file_hdr->c_name, file_hdr->c_mtime, file_hdr->c_mtime);
 }
 
 static void

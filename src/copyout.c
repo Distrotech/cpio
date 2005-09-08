@@ -208,9 +208,6 @@ writeout_defered_file (struct new_cpio_header *header, int out_file_des)
 {
   int in_file_des;
   struct new_cpio_header file_hdr;
-  struct utimbuf times;		/* For setting file times.  */
-  /* Initialize this in case it has members we don't know to set.  */
-  memset (&times, 0, sizeof (struct utimbuf));
 
   file_hdr = *header;
 
@@ -241,18 +238,7 @@ writeout_defered_file (struct new_cpio_header *header, int out_file_des)
   if (close (in_file_des) < 0)
    close_error (header->c_name);
   if (reset_time_flag)
-    {
-      times.actime = file_hdr.c_mtime;
-      times.modtime = file_hdr.c_mtime;
-      /* Debian hack: Silently ignore EROFS because reading the file
-         won't have upset its timestamp if it's on a read-only
-         filesystem.  This has been submitted as a suggestion to
-         "bug-gnu-utils@prep.ai.mit.edu".  -BEM */
-      if (utime (file_hdr.c_name, &times) < 0
-	  && errno != EROFS)
-	utime_error (file_hdr.c_name);
-    }
-  return;
+    set_file_times (file_hdr.c_name, file_hdr.c_mtime, file_hdr.c_mtime);
 }
 
 /* When writing newc and crc format archives we defer multiply linked
@@ -444,7 +430,6 @@ process_copy_out ()
 {
   int res;			/* Result of functions.  */
   dynamic_string input_name;	/* Name of file read from stdin.  */
-  struct utimbuf times;		/* For resetting file times after copy.  */
   struct stat file_stat;	/* Stat record for file.  */
   struct new_cpio_header file_hdr; /* Output header information.  */
   int in_file_des;		/* Source file descriptor.  */
@@ -452,8 +437,6 @@ process_copy_out ()
 
   /* Initialize the copy out.  */
   ds_init (&input_name, 128);
-  /* Initialize this in case it has members we don't know to set.  */
-  memset (&times, 0, sizeof (struct utimbuf));
   file_hdr.c_magic = 070707;
 
   /* Check whether the output file might be a tape.  */
@@ -603,18 +586,8 @@ process_copy_out ()
 	      if (close (in_file_des) < 0)
 		close_error (input_name.ds_string);
 	      if (reset_time_flag)
-		{
-		  times.actime = file_stat.st_atime;
-		  times.modtime = file_stat.st_mtime;
-		  /* Debian hack: Silently ignore EROFS because
-                     reading the file won't have upset its timestamp
-                     if it's on a read-only filesystem.  This has been
-                     submitted as a suggestion to
-                     "bug-gnu-utils@prep.ai.mit.edu".  -BEM */
-		  if (utime (file_hdr.c_name, &times) < 0
-		      && errno != EROFS)
-		    utime_error (file_hdr.c_name);
-		}
+                set_file_times (file_hdr.c_name,
+                                file_stat.st_atime, file_stat.st_mtime);
 	      break;
 
 	    case CP_IFDIR:

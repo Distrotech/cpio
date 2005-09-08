@@ -52,7 +52,6 @@ process_copy_pass ()
   int dirname_len;		/* Length of `directory_name'.  */
   int res;			/* Result of functions.  */
   char *slash;			/* For moving past slashes in input name.  */
-  struct utimbuf times;		/* For resetting file times after copy.  */
   struct stat in_file_stat;	/* Stat record for input file.  */
   struct stat out_file_stat;	/* Stat record for output file.  */
   int in_file_des;		/* Input file descriptor.  */
@@ -73,8 +72,6 @@ process_copy_pass ()
   strcpy (output_name.ds_string, directory_name);
   output_name.ds_string[dirname_len] = '/';
   output_is_seekable = true;
-  /* Initialize this in case it has members we don't know to set.  */
-  memset (&times, 0, sizeof (struct utimbuf));
 
   /* Copy files with names read from stdin.  */
   while (ds_fgetstr (stdin, &input_name, name_end) != NULL)
@@ -202,22 +199,14 @@ process_copy_pass ()
 	      set_copypass_perms (input_name.ds_string, &in_file_stat);
 
 	      if (reset_time_flag)
-		{
-		  times.actime = in_file_stat.st_atime;
-		  times.modtime = in_file_stat.st_mtime;
-		  /* Debian hack: Silently ignore EROFS because
-                     reading the file won't have upset its timestamp
-                     if it's on a read-only filesystem.  This has been
-                     submitted as a suggestion to
-                     "bug-gnu-utils@prep.ai.mit.edu".  -BEM */
-		  if (utime (input_name.ds_string, &times) < 0
-		      && errno != EROFS)
-		    utime_error (input_name.ds_string);
-		  if (utime (output_name.ds_string, &times) < 0
-		      && errno != EROFS)
-		    utime_error (output_name.ds_string);
-		}
-	      
+                {
+                  set_file_times (input_name.ds_string,
+                                  in_file_stat.st_atime,
+                                  in_file_stat.st_mtime);
+                  set_file_times (output_name.ds_string,
+                                  in_file_stat.st_atime,
+                                  in_file_stat.st_mtime);
+	        } 
 	      warn_if_file_changed(input_name.ds_string, in_file_stat.st_size,
                                    in_file_stat.st_mtime);
 	    }
