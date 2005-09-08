@@ -29,6 +29,7 @@
 #include <full-write.h>
 #include <rmt.h>
 #include <hash.h>
+#include <utimens.h>
 
 #include <sys/ioctl.h>
 
@@ -1255,15 +1256,23 @@ set_perms (struct new_cpio_header *header)
     file_hdr->c_name [cdf_char] = '+';
 #endif
   if (retain_time_flag)
-    {
-      struct utimbuf times;
-      
-      /* Initialize this in case it has members we don't know to set.  */
-      memset (&times, 0, sizeof (struct utimbuf));
-      times.actime = times.modtime = header->c_mtime;
-      if (utime (header->c_name, &times) < 0)
-	utime_error (header->c_name);
-    }
+    set_file_times (header->c_name, header->c_mtime, header->c_mtime);
+}
+
+void
+set_file_times (const char *name, unsigned long atime, unsigned long mtime)
+{
+  struct timespec ts[2];
+  
+  memset (&ts, 0, sizeof ts);
+
+  ts[0].tv_sec = atime;
+  ts[1].tv_sec = mtime;
+
+  /* Silently ignore EROFS because reading the file won't have upset its timestamp
+     if it's on a read-only filesystem. */
+  if (utimens (name, ts) < 0 && errno != EROFS)
+    utime_error (name);
 }
 
 /* Do we have to ignore absolute paths, and if so, does the filename
@@ -1273,7 +1282,7 @@ cpio_safer_name_suffix (char *name, bool link_target, bool absolute_names,
 			bool strip_leading_dots)
 {
   char *p = safer_name_suffix (name, link_target, absolute_names);
-  if (strip_leading_dots)
+  if (strip_leading_dots && strcmp (p, "./"))
     /* strip leading `./' from the filename.  */
     while (*p == '.' && *(p + 1) == '/')
       {
