@@ -16,5 +16,6 @@ safe-read
 savedir
 stdbool
 unlocked-io
+utimens
 xalloc
 xalloc-die
