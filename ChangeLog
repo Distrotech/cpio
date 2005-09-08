@@ -1,3 +1,14 @@
+2005-09-08  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* gnulib.modules: Add utimens
+	* src/util.c (cpio_safer_name_suffix): Preserve ./ no matter what
+	the value of strip_leading_dots is.
+	(set_file_times): New function
+	* src/extern.h (set_file_times): New function
+	* src/copyin.c: Use set_file_times() to update file atime/mtime
+	* src/copyout.c: Likewise.
+	* src/copypass.c: Likewise.
+
 2005-05-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/copyin.c: Use cpio_safer_name_suffix() and CPIO_TRAILER_NAME
