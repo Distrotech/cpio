@@ -479,6 +479,8 @@ process_copy_out ()
 	stat_error (input_name.ds_string);
       else
 	{
+	  char *orig_file_name;
+	  
 	  /* Set values in output header.  */
 	  stat_to_cpio (&file_hdr, &file_stat);
 	  
@@ -497,6 +499,7 @@ process_copy_out ()
 		}
 	    }
 	  
+	  orig_file_name = strdup (input_name.ds_string);
 	  cpio_safer_name_suffix (input_name.ds_string, false,
 				  !no_abs_paths_flag, true);
 #ifndef HPUX_CDF
@@ -559,34 +562,36 @@ process_copy_out ()
 		      break;
 		    }
 		}
-	      in_file_des = open (input_name.ds_string,
+	      in_file_des = open (orig_file_name,
 				  O_RDONLY | O_BINARY, 0);
 	      if (in_file_des < 0)
 		{
-		  open_error (input_name.ds_string);
+		  open_error (orig_file_name);
 		  continue;
 		}
 
 	      if (archive_format == arf_crcascii)
 		file_hdr.c_chksum = read_for_checksum (in_file_des,
 						       file_hdr.c_filesize,
-						       input_name.ds_string);
+						       orig_file_name);
 
 	      write_out_header (&file_hdr, out_file_des);
-	      copy_files_disk_to_tape (in_file_des, out_file_des, file_hdr.c_filesize, input_name.ds_string);
-	      warn_if_file_changed(input_name.ds_string, file_hdr.c_filesize,
+	      copy_files_disk_to_tape (in_file_des,
+				       out_file_des, file_hdr.c_filesize,
+				       orig_file_name);
+	      warn_if_file_changed(orig_file_name, file_hdr.c_filesize,
                                    file_hdr.c_mtime);
 
 	      if (archive_format == arf_tar || archive_format == arf_ustar)
-		add_inode (file_hdr.c_ino, file_hdr.c_name, file_hdr.c_dev_maj,
+		add_inode (file_hdr.c_ino, orig_file_name, file_hdr.c_dev_maj,
 			   file_hdr.c_dev_min);
 
 	      tape_pad_output (out_file_des, file_hdr.c_filesize);
 
 	      if (close (in_file_des) < 0)
-		close_error (input_name.ds_string);
+		close_error (orig_file_name);
 	      if (reset_time_flag)
-                set_file_times (file_hdr.c_name,
+                set_file_times (orig_file_name,
                                 file_stat.st_atime, file_stat.st_mtime);
 	      break;
 
@@ -606,7 +611,7 @@ process_copy_out ()
 	      if (archive_format == arf_tar)
 		{
 		  error (0, 0, _("%s not dumped: not a regular file"),
-			 file_hdr.c_name);
+			 orig_file_name);
 		  continue;
 		}
 	      else if (archive_format == arf_ustar)
@@ -624,7 +629,7 @@ process_copy_out ()
 		      write_out_header (&file_hdr, out_file_des);
 		      break;
 		    }
-		  add_inode (file_hdr.c_ino, file_hdr.c_name, 
+		  add_inode (file_hdr.c_ino, orig_file_name, 
 			     file_hdr.c_dev_maj, file_hdr.c_dev_min);
 		}
 	      file_hdr.c_filesize = 0;
@@ -637,14 +642,17 @@ process_copy_out ()
 		char *link_name = (char *) xmalloc (file_stat.st_size + 1);
 		int link_size;
 
-		link_size = readlink (input_name.ds_string, link_name,
+		link_size = readlink (orig_file_name, link_name,
 			              file_stat.st_size);
 		if (link_size < 0)
 		  {
-		    readlink_warn (input_name.ds_string);
+		    readlink_warn (orig_file_name);
 		    free (link_name);
 		    continue;
 		  }
+		cpio_safer_name_suffix (link_name, false,
+					!no_abs_paths_flag, true);
+		link_size = strlen (link_name);
 		file_hdr.c_filesize = link_size;
 		if (archive_format == arf_tar || archive_format == arf_ustar)
 		  {
@@ -672,13 +680,14 @@ process_copy_out ()
 #endif
 
 	    default:
-	      error (0, 0, _("%s: unknown file type"), input_name.ds_string);
+	      error (0, 0, _("%s: unknown file type"), orig_file_name);
 	    }
-
+	  
 	  if (verbose_flag)
-	    fprintf (stderr, "%s\n", input_name.ds_string);
+	    fprintf (stderr, "%s\n", orig_file_name);
 	  if (dot_flag)
 	    fputc ('.', stderr);
+	  free (orig_file_name);
 	}
     }
 
