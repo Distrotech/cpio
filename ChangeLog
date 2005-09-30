@@ -1,3 +1,9 @@
+2005-09-30  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/copyout.c (process_copy_out): Discern between original and
+	(eventually fixed) file name (in tar terminology, `file name'
+	vs. `member name'.
+
 2005-09-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* gnulib.modules: Add utimens
