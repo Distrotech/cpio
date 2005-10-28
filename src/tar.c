@@ -113,10 +113,10 @@ to_oct (register long value, register int digits, register char *where)
 /* Compute and return a checksum for TAR_HDR,
    counting the checksum bytes as if they were spaces.  */
 
-unsigned long
+unsigned int
 tar_checksum (struct tar_header *tar_hdr)
 {
-  unsigned long sum = 0;
+  unsigned int sum = 0;
   char *p = (char *) tar_hdr;
   char *q = p + TARRECORDSIZE;
   int i;
