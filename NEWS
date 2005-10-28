@@ -12,6 +12,7 @@ Version 2.6.90:
 ** Fix bug that eventually caused copying out the same hard-linked
 file several times to archive.
 ** Fix sever LFS-related issues.
+** Fix Debian bug 335580.
 
 
 Version 2.6

@@ -1,3 +1,21 @@
+2005-10-28  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/util.c: Include paxlib.
+	* bootstrap: If file `.bootstrap' exists in the cwd and is
+        readable, prepend its contents to the command line.
+
+	Fix Debian bug 335580:
+	
+	* src/copyout.c (read_for_checksum,write_out_header): CRC is a
+	32-bit unsigned value. Patch proposed by Jim Castleberry and
+	Peter Vrabec. 
+	* src/extern.h (crc): Change declaration
+	* src/global.c: Likewise
+	* src/tar.c (tar_checksum): Return unsigned int
+
+	* THANKS: Add Jim Castleberry
+	* NEWS: Updated
+	
 2005-09-30  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/copyout.c (process_copy_out): Discern between original and
