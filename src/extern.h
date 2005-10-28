@@ -21,6 +21,7 @@ enum archive_format
   arf_unknown, arf_binary, arf_oldascii, arf_newascii, arf_crcascii,
   arf_tar, arf_ustar, arf_hpoldascii, arf_hpbinary
 };
+
 extern enum archive_format archive_format;
 extern int reset_time_flag;
 extern int io_block_size;
@@ -67,7 +68,7 @@ extern char *new_media_message_after_number;
 extern int archive_des;
 extern char *archive_name;
 extern char *rsh_command_option;
-extern unsigned long crc;
+extern unsigned int crc;
 extern int delayed_seek_count;
 #ifdef DEBUG_CPIO
 extern int debug_flag;

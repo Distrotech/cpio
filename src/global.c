@@ -140,7 +140,7 @@ char *archive_name = NULL;
 char *rsh_command_option = NULL;
 
 /* CRC checksum.  */
-unsigned long crc;
+unsigned int crc;
 
 /* Input and output buffers.  */
 char *input_buffer, *output_buffer;
