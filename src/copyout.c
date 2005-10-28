@@ -32,10 +32,10 @@
 /* Read FILE_SIZE bytes of FILE_NAME from IN_FILE_DES and
    compute and return a checksum for them.  */
 
-static unsigned long
+static unsigned int
 read_for_checksum (int in_file_des, int file_size, char *file_name)
 {
-  unsigned long crc;
+  unsigned int crc;
   char buf[BUFSIZ];
   int bytes_left;
   int bytes_read;
@@ -292,9 +292,10 @@ write_out_header (struct new_cpio_header *file_hdr, int out_des)
 	       magic_string,
 	       file_hdr->c_ino, file_hdr->c_mode, file_hdr->c_uid,
 	       file_hdr->c_gid, file_hdr->c_nlink, file_hdr->c_mtime,
-	     file_hdr->c_filesize, file_hdr->c_dev_maj, file_hdr->c_dev_min,
-	   file_hdr->c_rdev_maj, file_hdr->c_rdev_min, file_hdr->c_namesize,
-	       file_hdr->c_chksum);
+	       file_hdr->c_filesize, file_hdr->c_dev_maj, file_hdr->c_dev_min,
+	       file_hdr->c_rdev_maj, file_hdr->c_rdev_min,
+	       file_hdr->c_namesize,
+	       file_hdr->c_chksum & 0xffffffff);
       tape_buffered_write (ascii_header, out_des, 110L);
 
       /* Write file name to output.  */
