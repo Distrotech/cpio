@@ -24,6 +24,7 @@
 #include "cpiohdr.h"
 #include "dstring.h"
 #include "extern.h"
+#include <paxlib.h>
 #include "filetypes.h"
 #include <safe-read.h>
 #include <full-write.h>
