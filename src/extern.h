@@ -108,7 +108,7 @@ void long_format (struct new_cpio_header *file_hdr, char *link_name);
 void print_name_with_quoting (char *p);
 
 /* copyout.c */
-void write_out_header (struct new_cpio_header *file_hdr, int out_des);
+int write_out_header (struct new_cpio_header *file_hdr, int out_des);
 void process_copy_out (void);
 
 /* copypass.c */
