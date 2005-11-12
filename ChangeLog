@@ -1,3 +1,13 @@
+2005-11-12  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* bootstrap: Minor fix
+	* src/copyout.c (write_out_header): Rewritten using separate
+	functions for each file format. Use to_ascii to convert numbers to
+	ascii representation. Check for overflows and report them if
+	appropriate. Return 0 if it is OK to proceed with archiving this
+	file, 1 otherwise. All callers updated.
+	* src/extern.h (write_out_header): Return int.
+
 2005-10-28  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/util.c: Include paxlib.
