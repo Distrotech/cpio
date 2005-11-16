@@ -701,6 +701,7 @@ process_copy_out ()
 		      file_hdr.c_tar_linkname = otherfile;
 		      if (write_out_header (&file_hdr, out_file_des))
 			continue;
+		      break;
 		    }
 		}
 	      if ( (archive_format == arf_newascii || archive_format == arf_crcascii)
