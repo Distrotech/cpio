@@ -236,19 +236,19 @@ make_path (char *argpath,
 	      retval = 1;
 	    }
 	}
-	  /* chown may have turned off some permission bits we wanted.  */
-	  if ((mode & 07000) != 0 && chmod (dirpath, mode))
-	    {
-	      chmod_error_details (dirpath, mode);
-	      retval = 1;
-	    }
+      /* chown may have turned off some permission bits we wanted.  */
+      if ((mode & 07000) != 0 && chmod (dirpath, mode))
+	{
+	  chmod_error_details (dirpath, mode);
+	  retval = 1;
+	}
 
       /* If the mode for leading directories didn't include owner "wx"
 	 privileges, we have to reset their protections to the correct
 	 value.  */
       for (p = leading_dirs; p != NULL; p = p->next)
 	{
-	  *(p->dirname_end) = '\0';
+	  *p->dirname_end = '\0';
 #if 0
 	  /* cpio always calls make_path with parent mode 0700, so
 	     we don't have to do this.  If we ever do have to do this,
