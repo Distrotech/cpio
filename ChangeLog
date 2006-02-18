@@ -1,3 +1,10 @@
+2006-02-18  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* gnulib.modules: Add stpcpy. Thanks Benigno B. Junior for
+	reporting.
+	* THANKS: Add Benigno B. Junior
+	* src/makepath.c: Fix indentation.
+
 2005-11-16  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/copyout.c (process_copy_out): Fix typo.
