@@ -77,6 +77,7 @@ genfile_SOURCES = genfile.c argcv.c argcv.h
 
 localedir = $(datadir)/locale
 INCLUDES = -I$(top_srcdir)/lib -I../lib -I$(top_srcdir)/src
+AM_CPPFLAGS = -DLOCALEDIR=\"$(localedir)\"
 
 LDADD = ../lib/libcpio.a $(LIBINTL) $(LIB_CLOCK_GETTIME)
 
