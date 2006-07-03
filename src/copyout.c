@@ -106,7 +106,7 @@ struct deferment *deferouts = NULL;
    already been defered.  */
 
 static int
-count_defered_links_to_dev_ino (struct new_cpio_header *file_hdr)
+count_defered_links_to_dev_ino (struct cpio_file_stat *file_hdr)
 {
   struct deferment *d;
   int	ino;
@@ -130,7 +130,7 @@ count_defered_links_to_dev_ino (struct new_cpio_header *file_hdr)
    we already seen and defered all of the other links?  */
 
 static int
-last_link (struct new_cpio_header *file_hdr)
+last_link (struct cpio_file_stat *file_hdr)
 {
   int	other_files_sofar;
 
@@ -147,7 +147,7 @@ last_link (struct new_cpio_header *file_hdr)
    list.  */
 
 static void
-add_link_defer (struct new_cpio_header *file_hdr)
+add_link_defer (struct cpio_file_stat *file_hdr)
 {
   struct deferment *d;
   d = create_deferment (file_hdr);
@@ -162,7 +162,7 @@ add_link_defer (struct new_cpio_header *file_hdr)
    deferouts list.  */
 
 static void
-writeout_other_defers (struct new_cpio_header *file_hdr, int out_des)
+writeout_other_defers (struct cpio_file_stat *file_hdr, int out_des)
 {
   struct deferment *d;
   struct deferment *d_prev;
@@ -204,10 +204,10 @@ writeout_other_defers (struct new_cpio_header *file_hdr, int out_des)
    for writeout_final_defers() to call.  */
 
 static void
-writeout_defered_file (struct new_cpio_header *header, int out_file_des)
+writeout_defered_file (struct cpio_file_stat *header, int out_file_des)
 {
   int in_file_des;
-  struct new_cpio_header file_hdr;
+  struct cpio_file_stat file_hdr;
 
   file_hdr = *header;
 
@@ -264,7 +264,7 @@ writeout_final_defers (int out_des)
 	}
       else
 	{
-	  struct new_cpio_header file_hdr;
+	  struct cpio_file_stat file_hdr;
 	  file_hdr = d->header;
 	  file_hdr.c_filesize = 0;
 	  write_out_header (&file_hdr, out_des);
@@ -272,10 +272,6 @@ writeout_final_defers (int out_des)
       deferouts = deferouts->next;
     }
 }
-
-/* FIXME: These two defines should be defined in paxutils */
-#define LG_8  3
-#define LG_16 4
 
 /* FIXME: to_ascii could be used instead of to_oct() and to_octal() from tar,
    so it should be moved to paxutils too.
@@ -335,7 +331,7 @@ to_ascii_or_error (char *where, uintmax_t n, size_t digits,
 
 int
 write_out_new_ascii_header (const char *magic_string,
-			    struct new_cpio_header *file_hdr, int out_des)
+			    struct cpio_file_stat *file_hdr, int out_des)
 {
   char ascii_header[110];
   char *p;
@@ -395,7 +391,7 @@ write_out_new_ascii_header (const char *magic_string,
 
 int
 write_out_old_ascii_header (dev_t dev, dev_t rdev,
-			    struct new_cpio_header *file_hdr, int out_des)
+			    struct cpio_file_stat *file_hdr, int out_des)
 {
   char ascii_header[76];
   char *p = ascii_header;
@@ -438,7 +434,7 @@ write_out_old_ascii_header (dev_t dev, dev_t rdev,
 }
 
 void
-hp_compute_dev (struct new_cpio_header *file_hdr, dev_t *pdev, dev_t *prdev)
+hp_compute_dev (struct cpio_file_stat *file_hdr, dev_t *pdev, dev_t *prdev)
 {
   /* HP/UX cpio creates archives that look just like ordinary archives,
      but for devices it sets major = 0, minor = 1, and puts the
@@ -467,7 +463,7 @@ hp_compute_dev (struct new_cpio_header *file_hdr, dev_t *pdev, dev_t *prdev)
 
 int
 write_out_binary_header (dev_t rdev,
-			 struct new_cpio_header *file_hdr, int out_des)
+			 struct cpio_file_stat *file_hdr, int out_des)
 {
   struct old_cpio_header short_hdr;
 
@@ -508,16 +504,16 @@ write_out_binary_header (dev_t rdev,
       return 1;
     }
 		      
-  short_hdr.c_filesize = file_hdr->c_filesize;
-  if (short_hdr.c_filesize != file_hdr->c_filesize)
+  short_hdr.c_filesizes[0] = file_hdr->c_filesize >> 16;
+  short_hdr.c_filesizes[1] = file_hdr->c_filesize & 0xFFFF;
+
+  if ((short_hdr.c_filesizes[0] << 16) + short_hdr.c_filesizes[1]
+       != file_hdr->c_filesize)
     {
       field_width_error (file_hdr->c_name, _("file size"));
       return 1;
     }
 		      
-  short_hdr.c_filesizes[0] = file_hdr->c_filesize >> 16;
-  short_hdr.c_filesizes[1] = file_hdr->c_filesize & 0xFFFF;
-
   /* Output the file header.  */
   tape_buffered_write ((char *) &short_hdr, out_des, 26);
 
@@ -533,7 +529,7 @@ write_out_binary_header (dev_t rdev,
    descriptor OUT_DES.  */
 
 int 
-write_out_header (struct new_cpio_header *file_hdr, int out_des)
+write_out_header (struct cpio_file_stat *file_hdr, int out_des)
 {
   dev_t dev;
   dev_t rdev;
@@ -592,7 +588,7 @@ process_copy_out ()
   int res;			/* Result of functions.  */
   dynamic_string input_name;	/* Name of file read from stdin.  */
   struct stat file_stat;	/* Stat record for file.  */
-  struct new_cpio_header file_hdr; /* Output header information.  */
+  struct cpio_file_stat file_hdr; /* Output header information.  */
   int in_file_des;		/* Source file descriptor.  */
   int out_file_des;		/* Output file descriptor.  */
 
