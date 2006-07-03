@@ -1,3 +1,36 @@
+2006-07-04  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* bootstrap (update_po): Fix single translation update
+	* lib/Makefile.tmpl: Initialize AM_CPPFLAGS
+
+	Start rewriting using a better suited internal representation for
+	the file meta-data.
+	
+	* src/cpiohdr.h (struct old_cpio_header): Remove unused fields
+	c_mtime, c_filesize and c_name.
+	(struct old_ascii_header): New data type
+	(struct new_ascii_header): New data type. Describes the header
+	structure, not its internal representation.
+	(struct cpio_file_stat): New data type. Describes internal
+	representation of a file metadata
+
+	* src/copyin.c (from_ascii): New function
+	Use cpio_file_stat for internal header representation.
+	* src/copyout.c: Use cpio_file_stat for internal header
+	representation. Among other things this fixes bug reported by
+	Peter Vrabec on Mar 2, 2006
+	(http://lists.gnu.org/archive/html/bug-cpio/2006-03/msg00000.html)
+	* src/copypass.c: Use cpio_file_stat for internal header
+	representation.
+	* src/tar.c: Likewise
+	* src/util.c: Likewise
+	* src/defer.c: Likewise
+	* src/defer.h: Likewise
+	* src/extern.h: Likewise
+	(from_ascii): New prototype
+	(LG_8,LG_16,FROM_OCTAL,FROM_HEX): New defines
+	* src/main.c: New command line option --HANG (hidden)
+
 2006-03-12  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* tests/Makefile.am (AM_CPPFLAGS): Define LOCALEDIR
