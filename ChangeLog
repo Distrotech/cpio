@@ -2,6 +2,7 @@
 
 	* bootstrap (update_po): Fix single translation update
 	* lib/Makefile.tmpl: Initialize AM_CPPFLAGS
+	(noinst_HEADERS): Add system-ioctl.h
 
 	Start rewriting using a better suited internal representation for
 	the file meta-data.
