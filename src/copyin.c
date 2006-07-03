@@ -36,7 +36,7 @@
 # define lchown(f,u,g) 0
 #endif
 
-static void copyin_regular_file(struct new_cpio_header* file_hdr,
+static void copyin_regular_file(struct cpio_file_stat* file_hdr,
 				int in_file_des);
 
 void
@@ -49,7 +49,7 @@ warn_junk_bytes (long bytes_skipped)
 
 
 static int
-query_rename(struct new_cpio_header* file_hdr, FILE *tty_in, FILE *tty_out,
+query_rename(struct cpio_file_stat* file_hdr, FILE *tty_in, FILE *tty_out,
 	     FILE *rename_in)
 {
   char *str_res;		/* Result for string function.  */
@@ -127,7 +127,7 @@ tape_skip_padding (int in_file_des, int offset)
 
 
 static void
-list_file(struct new_cpio_header* file_hdr, int in_file_des)
+list_file(struct cpio_file_stat* file_hdr, int in_file_des)
 {
   if (verbose_flag)
     {
@@ -185,7 +185,7 @@ list_file(struct new_cpio_header* file_hdr, int in_file_des)
 }
 
 static int
-try_existing_file(struct new_cpio_header* file_hdr, int in_file_des,
+try_existing_file(struct cpio_file_stat* file_hdr, int in_file_des,
 		  int *existing_dir)
 {
   struct stat file_stat;
@@ -240,7 +240,7 @@ struct deferment *deferments = NULL;
    go on one list, although we could optimize this if necessary.  */
 
 static void
-defer_copyin (struct new_cpio_header *file_hdr)
+defer_copyin (struct cpio_file_stat *file_hdr)
 {
   struct deferment *d;
   d = create_deferment (file_hdr);
@@ -254,7 +254,7 @@ defer_copyin (struct new_cpio_header *file_hdr)
    list and create any which are links to this file.  */
 
 static void
-create_defered_links (struct new_cpio_header *file_hdr)
+create_defered_links (struct cpio_file_stat *file_hdr)
 {
   struct deferment *d;
   struct deferment *d_prev;
@@ -301,7 +301,7 @@ create_defered_links (struct new_cpio_header *file_hdr)
    then create the other deferred links.  */
 
 static int
-create_defered_links_to_skipped (struct new_cpio_header *file_hdr,
+create_defered_links_to_skipped (struct cpio_file_stat *file_hdr,
 				 int in_file_des)
 {
   struct deferment *d;
@@ -395,7 +395,7 @@ create_final_defers ()
 }
 
 static void
-copyin_regular_file (struct new_cpio_header* file_hdr, int in_file_des)
+copyin_regular_file (struct cpio_file_stat* file_hdr, int in_file_des)
 {
   int out_file_des;		/* Output file descriptor.  */
 
@@ -565,7 +565,7 @@ copyin_regular_file (struct new_cpio_header* file_hdr, int in_file_des)
 }
 
 static void
-copyin_directory(struct new_cpio_header* file_hdr, int existing_dir)
+copyin_directory(struct cpio_file_stat* file_hdr, int existing_dir)
 {
   int res;			/* Result of various function calls.  */
 #ifdef HPUX_CDF
@@ -647,7 +647,7 @@ copyin_directory(struct new_cpio_header* file_hdr, int existing_dir)
 }
 
 static void
-copyin_device(struct new_cpio_header* file_hdr)
+copyin_device(struct cpio_file_stat* file_hdr)
 {
   int res;			/* Result of various function calls.  */
 
@@ -719,7 +719,7 @@ copyin_device(struct new_cpio_header* file_hdr)
 }
 
 static void
-copyin_link(struct new_cpio_header *file_hdr, int in_file_des)
+copyin_link(struct cpio_file_stat *file_hdr, int in_file_des)
 {
   char *link_name = NULL;	/* Name of hard and symbolic links.  */
   int res;			/* Result of various function calls.  */
@@ -766,7 +766,7 @@ copyin_link(struct new_cpio_header *file_hdr, int in_file_des)
 }
 
 static void
-copyin_file (struct new_cpio_header* file_hdr, int in_file_des)
+copyin_file (struct cpio_file_stat* file_hdr, int in_file_des)
 {
   int existing_dir;
 
@@ -819,7 +819,7 @@ static time_t current_time;
    this file is a symbolic link to.  */
 
 void
-long_format (struct new_cpio_header *file_hdr, char *link_name)
+long_format (struct cpio_file_stat *file_hdr, char *link_name)
 {
   char mbuf[11];
   char tbuf[40];
@@ -963,6 +963,50 @@ read_pattern_file ()
   num_patterns = new_num_patterns;
 }
 
+
+uintmax_t
+from_ascii (char const *where, size_t digs, unsigned logbase)
+{
+  uintmax_t value = 0;
+  char const *buf = where;
+  char const *end = buf + digs;
+  int overflow = 0;
+  static char codetab[] = "0123456789ABCDEF";
+
+  for (; *buf == ' '; buf++)
+    {
+      if (buf == end)
+	return 0;
+    }
+  
+  while (1)
+    {
+      unsigned d;
+      
+      char *p = strchr (codetab, toupper (*buf));
+      if (!p)
+	{
+	  error (0, 0, _("Malformed number %.*s"), digs, where);
+	  break;
+	}
+      
+      d = p - codetab;
+      if ((d >> logbase) > 1)
+	{
+	  error (0, 0, _("Malformed number %.*s"), digs, where);
+	  break;
+	}
+      value += d;
+      if (++buf == end || *buf == 0)
+	break;
+      overflow |= value ^ (value << logbase >> logbase);
+      value <<= logbase;
+    }
+  if (overflow)
+    error (0, 0, _("Archive value %.*s is out of range"),
+	   digs, where);
+  return value;
+}
 
 
 
@@ -973,8 +1017,13 @@ read_pattern_file ()
    descriptor IN_DES into FILE_HDR.  */
 
 void
-read_in_header (struct new_cpio_header *file_hdr, int in_des)
+read_in_header (struct cpio_file_stat *file_hdr, int in_des)
 {
+  union {
+    char str[6];
+    unsigned short num;
+    struct old_cpio_header old_header;
+  } magic;
   long bytes_skipped = 0;	/* Bytes of junk found before magic number.  */
 
   /* Search for a valid magic number.  */
@@ -1033,52 +1082,53 @@ read_in_header (struct new_cpio_header *file_hdr, int in_des)
 
   file_hdr->c_tar_linkname = NULL;
 
-  tape_buffered_read ((char *) file_hdr, in_des, 6L);
+  tape_buffered_read (magic.str, in_des, 6L);
   while (1)
     {
       if (append_flag)
 	last_header_start = input_bytes - io_block_size
 	  + (in_buff - input_buffer) - 6;
       if (archive_format == arf_newascii
-	  && !strncmp ((char *) file_hdr, "070701", 6))
+	  && !strncmp (magic.str, "070701", 6))
 	{
 	  if (bytes_skipped > 0)
 	    warn_junk_bytes (bytes_skipped);
+	  file_hdr->c_magic = 070701;
 	  read_in_new_ascii (file_hdr, in_des);
 	  break;
 	}
       if (archive_format == arf_crcascii
-	  && !strncmp ((char *) file_hdr, "070702", 6))
+	  && !strncmp (magic.str, "070702", 6))
 	{
 	  if (bytes_skipped > 0)
 	    warn_junk_bytes (bytes_skipped);
-
+	  file_hdr->c_magic = 070702;
 	  read_in_new_ascii (file_hdr, in_des);
 	  break;
 	}
       if ( (archive_format == arf_oldascii || archive_format == arf_hpoldascii)
-	  && !strncmp ((char *) file_hdr, "070707", 6))
+	  && !strncmp (magic.str, "070707", 6))
 	{
 	  if (bytes_skipped > 0)
 	    warn_junk_bytes (bytes_skipped);
-	  
+	  file_hdr->c_magic = 070707;
 	  read_in_old_ascii (file_hdr, in_des);
 	  break;
 	}
       if ( (archive_format == arf_binary || archive_format == arf_hpbinary)
-	  && (file_hdr->c_magic == 070707
-	      || file_hdr->c_magic == swab_short ((unsigned short) 070707)))
+	  && (magic.num == 070707
+	      || magic.num == swab_short ((unsigned short) 070707)))
 	{
 	  /* Having to skip 1 byte because of word alignment is normal.  */
 	  if (bytes_skipped > 0)
 	    warn_junk_bytes (bytes_skipped);
-	  
-	  read_in_binary (file_hdr, in_des);
+	  file_hdr->c_magic = 070707;
+	  read_in_binary (file_hdr, &magic.old_header, in_des);
 	  break;
 	}
       bytes_skipped++;
-      memmove (file_hdr, (char *) file_hdr + 1, 5);
-      tape_buffered_read ((char *) file_hdr + 5, in_des, 1L);
+      memmove (magic.str, magic.str + 1, 5);
+      tape_buffered_read (magic.str, in_des, 1L);
     }
 }
 
@@ -1087,25 +1137,30 @@ read_in_header (struct new_cpio_header *file_hdr, int in_des)
    already filled in.  */
 
 void
-read_in_old_ascii (struct new_cpio_header *file_hdr, int in_des)
+read_in_old_ascii (struct cpio_file_stat *file_hdr, int in_des)
 {
-  char ascii_header[78];
+  struct old_ascii_header ascii_header;
   unsigned long dev;
-  unsigned long rdev;
 
-  tape_buffered_read (ascii_header, in_des, 70L);
-  ascii_header[70] = '\0';
-  sscanf (ascii_header,
-	  "%6lo%6lo%6lo%6lo%6lo%6lo%6lo%11lo%6lo%11lo",
-	  &dev, &file_hdr->c_ino,
-	  &file_hdr->c_mode, &file_hdr->c_uid, &file_hdr->c_gid,
-	  &file_hdr->c_nlink, &rdev, &file_hdr->c_mtime,
-	  &file_hdr->c_namesize, &file_hdr->c_filesize);
+  tape_buffered_read (ascii_header.c_dev, in_des,
+		      sizeof ascii_header - sizeof ascii_header.c_magic);
+  dev = FROM_OCTAL (ascii_header.c_dev);
   file_hdr->c_dev_maj = major (dev);
   file_hdr->c_dev_min = minor (dev);
-  file_hdr->c_rdev_maj = major (rdev);
-  file_hdr->c_rdev_min = minor (rdev);
 
+  file_hdr->c_ino = FROM_OCTAL (ascii_header.c_ino);
+  file_hdr->c_mode = FROM_OCTAL (ascii_header.c_mode);
+  file_hdr->c_uid = FROM_OCTAL (ascii_header.c_uid);
+  file_hdr->c_gid = FROM_OCTAL (ascii_header.c_gid);
+  file_hdr->c_nlink = FROM_OCTAL (ascii_header.c_nlink);
+  dev = FROM_OCTAL (ascii_header.c_rdev);
+  file_hdr->c_rdev_maj = major (dev);
+  file_hdr->c_rdev_min = minor (dev);
+
+  file_hdr->c_mtime = FROM_OCTAL (ascii_header.c_mtime);
+  file_hdr->c_namesize = FROM_OCTAL (ascii_header.c_namesize);
+  file_hdr->c_filesize = FROM_OCTAL (ascii_header.c_filesize);
+  
   /* Read file name from input.  */
   if (file_hdr->c_name != NULL)
     free (file_hdr->c_name);
@@ -1147,19 +1202,27 @@ read_in_old_ascii (struct new_cpio_header *file_hdr, int in_des)
    already filled in.  */
 
 void
-read_in_new_ascii (struct new_cpio_header *file_hdr, int in_des)
+read_in_new_ascii (struct cpio_file_stat *file_hdr, int in_des)
 {
-  char ascii_header[112];
+  struct new_ascii_header ascii_header;
 
-  tape_buffered_read (ascii_header, in_des, 104L);
-  ascii_header[104] = '\0';
-  sscanf (ascii_header,
-	  "%8lx%8lx%8lx%8lx%8lx%8lx%8lx%8lx%8lx%8lx%8lx%8lx%8lx",
-	  &file_hdr->c_ino, &file_hdr->c_mode, &file_hdr->c_uid,
-	  &file_hdr->c_gid, &file_hdr->c_nlink, &file_hdr->c_mtime,
-	  &file_hdr->c_filesize, &file_hdr->c_dev_maj, &file_hdr->c_dev_min,
-	&file_hdr->c_rdev_maj, &file_hdr->c_rdev_min, &file_hdr->c_namesize,
-	  &file_hdr->c_chksum);
+  tape_buffered_read (ascii_header.c_ino, in_des,
+		      sizeof ascii_header - sizeof ascii_header.c_magic);
+
+  file_hdr->c_ino = FROM_HEX (ascii_header.c_ino);
+  file_hdr->c_mode = FROM_HEX (ascii_header.c_mode);
+  file_hdr->c_uid = FROM_HEX (ascii_header.c_uid);
+  file_hdr->c_gid = FROM_HEX (ascii_header.c_gid);
+  file_hdr->c_nlink = FROM_HEX (ascii_header.c_nlink);
+  file_hdr->c_mtime = FROM_HEX (ascii_header.c_mtime);
+  file_hdr->c_filesize = FROM_HEX (ascii_header.c_filesize);
+  file_hdr->c_dev_maj = FROM_HEX (ascii_header.c_dev_maj);
+  file_hdr->c_dev_min = FROM_HEX (ascii_header.c_dev_min);
+  file_hdr->c_rdev_maj = FROM_HEX (ascii_header.c_rdev_maj);
+  file_hdr->c_rdev_min = FROM_HEX (ascii_header.c_rdev_min);
+  file_hdr->c_namesize = FROM_HEX (ascii_header.c_namesize);
+  file_hdr->c_chksum = FROM_HEX (ascii_header.c_chksum);
+  
   /* Read file name from input.  */
   if (file_hdr->c_name != NULL)
     free (file_hdr->c_name);
@@ -1177,15 +1240,14 @@ read_in_new_ascii (struct new_cpio_header *file_hdr, int in_des)
    number, device, and inode number), which are already filled in.  */
 
 void
-read_in_binary (struct new_cpio_header *file_hdr, int in_des)
+read_in_binary (struct cpio_file_stat *file_hdr,
+		struct old_cpio_header *short_hdr,
+		int in_des)
 {
-  struct old_cpio_header short_hdr;
+  file_hdr->c_magic = short_hdr->c_magic;
 
-  /* Copy the data into the short header, then later transfer
-     it into the argument long header.  */
-  short_hdr.c_dev = ((struct old_cpio_header *) file_hdr)->c_dev;
-  short_hdr.c_ino = ((struct old_cpio_header *) file_hdr)->c_ino;
-  tape_buffered_read (((char *) &short_hdr) + 6, in_des, 20L);
+  tape_buffered_read (((char *) short_hdr) + 6, in_des,
+		      sizeof *short_hdr - 6 /* = 20 */);
 
   /* If the magic number is byte swapped, fix the header.  */
   if (file_hdr->c_magic == swab_short ((unsigned short) 070707))
@@ -1202,21 +1264,21 @@ read_in_binary (struct new_cpio_header *file_hdr, int in_des)
       swab_array ((char *) &short_hdr, 13);
     }
 
-  file_hdr->c_dev_maj = major (short_hdr.c_dev);
-  file_hdr->c_dev_min = minor (short_hdr.c_dev);
-  file_hdr->c_ino = short_hdr.c_ino;
-  file_hdr->c_mode = short_hdr.c_mode;
-  file_hdr->c_uid = short_hdr.c_uid;
-  file_hdr->c_gid = short_hdr.c_gid;
-  file_hdr->c_nlink = short_hdr.c_nlink;
-  file_hdr->c_rdev_maj = major (short_hdr.c_rdev);
-  file_hdr->c_rdev_min = minor (short_hdr.c_rdev);
-  file_hdr->c_mtime = (unsigned long) short_hdr.c_mtimes[0] << 16
-    | short_hdr.c_mtimes[1];
+  file_hdr->c_dev_maj = major (short_hdr->c_dev);
+  file_hdr->c_dev_min = minor (short_hdr->c_dev);
+  file_hdr->c_ino = short_hdr->c_ino;
+  file_hdr->c_mode = short_hdr->c_mode;
+  file_hdr->c_uid = short_hdr->c_uid;
+  file_hdr->c_gid = short_hdr->c_gid;
+  file_hdr->c_nlink = short_hdr->c_nlink;
+  file_hdr->c_rdev_maj = major (short_hdr->c_rdev);
+  file_hdr->c_rdev_min = minor (short_hdr->c_rdev);
+  file_hdr->c_mtime = (unsigned long) short_hdr->c_mtimes[0] << 16
+                      | short_hdr->c_mtimes[1];
 
-  file_hdr->c_namesize = short_hdr.c_namesize;
-  file_hdr->c_filesize = (unsigned long) short_hdr.c_filesizes[0] << 16
-    | short_hdr.c_filesizes[1];
+  file_hdr->c_namesize = short_hdr->c_namesize;
+  file_hdr->c_filesize = (unsigned long) short_hdr->c_filesizes[0] << 16
+                      | short_hdr->c_filesizes[1];
 
   /* Read file name from input.  */
   if (file_hdr->c_name != NULL)
@@ -1289,7 +1351,7 @@ process_copy_in ()
   FILE *tty_out = NULL;		/* Interactive file for rename option.  */
   FILE *rename_in = NULL;	/* Batch file for rename option.  */
   struct stat file_stat;	/* Output file stat record.  */
-  struct new_cpio_header file_hdr;	/* Output header information.  */
+  struct cpio_file_stat file_hdr;	/* Output header information.  */
   int in_file_des;		/* Input file descriptor.  */
   char skip_file;		/* Flag for use with patterns.  */
   int i;			/* Loop index variable.  */
@@ -1364,7 +1426,7 @@ process_copy_in ()
 #ifdef DEBUG_CPIO
       if (debug_flag)
 	{
-	  struct new_cpio_header *h;
+	  struct cpio_file_stat *h;
 	  h = &file_hdr;
 	  fprintf (stderr, 
 		"magic = 0%o, ino = %d, mode = 0%o, uid = %d, gid = %d\n",
