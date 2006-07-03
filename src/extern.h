@@ -98,17 +98,19 @@ extern void (*copy_function) ();
 
 /* copyin.c */
 void warn_junk_bytes (long bytes_skipped);
-void read_in_header (struct new_cpio_header *file_hdr, int in_des);
-void read_in_old_ascii (struct new_cpio_header *file_hdr, int in_des);
-void read_in_new_ascii (struct new_cpio_header *file_hdr, int in_des);
-void read_in_binary (struct new_cpio_header *file_hdr, int in_des);
+/* FIXME: make read_* static in copyin.c */
+void read_in_header (struct cpio_file_stat *file_hdr, int in_des);
+void read_in_old_ascii (struct cpio_file_stat *file_hdr, int in_des);
+void read_in_new_ascii (struct cpio_file_stat *file_hdr, int in_des);
+void read_in_binary (struct cpio_file_stat *file_hdr,
+		     struct old_cpio_header *short_hdr, int in_des);
 void swab_array (char *arg, int count);
 void process_copy_in (void);
-void long_format (struct new_cpio_header *file_hdr, char *link_name);
+void long_format (struct cpio_file_stat *file_hdr, char *link_name);
 void print_name_with_quoting (char *p);
 
 /* copyout.c */
-int write_out_header (struct new_cpio_header *file_hdr, int out_des);
+int write_out_header (struct cpio_file_stat *file_hdr, int out_des);
 void process_copy_out (void);
 
 /* copypass.c */
@@ -140,9 +142,9 @@ int make_path (char *argpath, int mode, int parent_mode,
 	       uid_t owner, gid_t group, char *verbose_fmt_string);
 
 /* tar.c */
-void write_out_tar_header (struct new_cpio_header *file_hdr, int out_des);
+void write_out_tar_header (struct cpio_file_stat *file_hdr, int out_des);
 int null_block (long *block, int size);
-void read_in_tar_header (struct new_cpio_header *file_hdr, int in_des);
+void read_in_tar_header (struct cpio_file_stat *file_hdr, int in_des);
 int otoa (char *s, unsigned long *n);
 int is_tar_header (char *buf);
 int is_tar_filename_too_long (char *name);
@@ -197,8 +199,18 @@ void write_nuls_to_file (off_t num_bytes, int out_des,
 # define UMASKED_SYMLINK(name1,name2,mode)    umasked_symlink(name1,name2,mode)
 #endif /* SYMLINK_USES_UMASK */
 
-void set_perms (struct new_cpio_header *header);
+void set_perms (struct cpio_file_stat *header);
 void set_file_times (const char *name, unsigned long atime, unsigned long mtime);
-void stat_to_cpio (struct new_cpio_header *hdr, struct stat *st);
+void stat_to_cpio (struct cpio_file_stat *hdr, struct stat *st);
 void cpio_safer_name_suffix (char *name, bool link_target,
 			     bool absolute_names, bool strip_leading_dots);
+
+/* FIXME: These two defines should be defined in paxutils */
+#define LG_8  3
+#define LG_16 4
+
+uintmax_t from_ascii (char const *where, size_t digs, unsigned logbase);
+
+#define FROM_OCTAL(f) from_ascii (f, sizeof f, LG_8)
+#define FROM_HEX(f) from_ascii (f, sizeof f, LG_16)
+	    
