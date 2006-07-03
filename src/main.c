@@ -54,8 +54,9 @@ enum cpio_options {
   FORCE_LOCAL_OPTION,            
   DEBUG_OPTION,                  
   BLOCK_SIZE_OPTION,             
-  TO_STDOUT_OPTION,              
-
+  TO_STDOUT_OPTION,
+  
+  HANG_OPTION,
   USAGE_OPTION,               
   LICENSE_OPTION,             
   VERSION_OPTION
@@ -232,6 +233,8 @@ static struct argp_option options[] = {
   {"version", VERSION_OPTION, 0, 0,  N_("Print program version"), -1},
   /* FIXME -V (--dot) conflicts with the default short option for
      --version */
+  {"HANG",	  HANG_OPTION,    "SECS", OPTION_ARG_OPTIONAL | OPTION_HIDDEN,
+   N_("hang for SECS seconds (default 3600)"), 0},
 #undef GRID     
   {0, 0, 0, 0}
 };
@@ -300,6 +303,7 @@ warn_control (char *arg)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
+  static volatile int _argp_hang;
   switch (key)
     {
     case '0':		/* Read null-terminated filenames.  */
@@ -542,6 +546,12 @@ crc newc odc bin ustar tar (all-caps also recognized)"), arg);
 
     case TO_STDOUT_OPTION:
       to_stdout_option = true;
+      break;
+
+    case HANG_OPTION:
+      _argp_hang = atoi (arg ? arg : "3600");
+      while (_argp_hang-- > 0)
+	sleep (1);
       break;
       
     case '?':
