@@ -1188,7 +1188,7 @@ sparse_write (int fildes, char *buf, unsigned int nbyte)
 }
 
 void
-stat_to_cpio (struct new_cpio_header *hdr, struct stat *st)
+stat_to_cpio (struct cpio_file_stat *hdr, struct stat *st)
 {
   hdr->c_dev_maj = major (st->st_dev);
   hdr->c_dev_min = minor (st->st_dev);
@@ -1238,7 +1238,7 @@ stat_to_cpio (struct new_cpio_header *hdr, struct stat *st)
 }
 
 void
-set_perms (struct new_cpio_header *header)
+set_perms (struct cpio_file_stat *header)
 {
   if (!no_chown_flag)
     {

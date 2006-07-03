@@ -19,8 +19,8 @@
 struct deferment
   {
     struct deferment *next;
-    struct new_cpio_header header;
+    struct cpio_file_stat header;
   };
 
-struct deferment *create_deferment (struct new_cpio_header *file_hdr);
+struct deferment *create_deferment (struct cpio_file_stat *file_hdr);
 void free_deferment (struct deferment *d);

@@ -137,7 +137,7 @@ tar_checksum (struct tar_header *tar_hdr)
    descriptor OUT_DES.  */
 
 void
-write_out_tar_header (struct new_cpio_header *file_hdr, int out_des)
+write_out_tar_header (struct cpio_file_stat *file_hdr, int out_des)
 {
   int name_len;
   union tar_record tar_rec;
@@ -255,7 +255,7 @@ null_block (long *block, int size)
    into FILE_HDR.  */
 
 void
-read_in_tar_header (struct new_cpio_header *file_hdr, int in_des)
+read_in_tar_header (struct cpio_file_stat *file_hdr, int in_des)
 {
   long bytes_skipped = 0;
   int warned = false;
@@ -291,7 +291,7 @@ read_in_tar_header (struct new_cpio_header *file_hdr, int in_des)
 
   while (1)
     {
-      otoa (tar_hdr->chksum, &file_hdr->c_chksum);
+      file_hdr->c_chksum = FROM_OCTAL (tar_hdr->chksum);
 
       if (file_hdr->c_chksum != tar_checksum (tar_hdr))
 	{
@@ -319,7 +319,7 @@ read_in_tar_header (struct new_cpio_header *file_hdr, int in_des)
       else
 	file_hdr->c_name = stash_tar_filename (tar_hdr->prefix, tar_hdr->name);
       file_hdr->c_nlink = 1;
-      otoa (tar_hdr->mode, &file_hdr->c_mode);
+      file_hdr->c_mode = FROM_OCTAL (tar_hdr->mode);
       file_hdr->c_mode = file_hdr->c_mode & 07777;
   /* Debian hack: This version of cpio uses the -n flag also to extract
      tar archives using the numeric UID/GID instead of the user/group
@@ -328,17 +328,17 @@ read_in_tar_header (struct new_cpio_header *file_hdr, int in_des)
 	  && (uidp = getuidbyname (tar_hdr->uname)))
 	file_hdr->c_uid = *uidp;
       else
-	otoa (tar_hdr->uid, &file_hdr->c_uid);
+	file_hdr->c_uid = FROM_OCTAL (tar_hdr->uid);
 
       if (archive_format == arf_ustar && !numeric_uid
 	  && (gidp = getgidbyname (tar_hdr->gname)))
 	file_hdr->c_gid = *gidp;
       else
-	otoa (tar_hdr->gid, &file_hdr->c_gid);
-      otoa (tar_hdr->size, &file_hdr->c_filesize);
-      otoa (tar_hdr->mtime, &file_hdr->c_mtime);
-      otoa (tar_hdr->devmajor, (unsigned long *) &file_hdr->c_rdev_maj);
-      otoa (tar_hdr->devminor, (unsigned long *) &file_hdr->c_rdev_min);
+	file_hdr->c_gid = FROM_OCTAL (tar_hdr->gid);
+      file_hdr->c_filesize = FROM_OCTAL (tar_hdr->size);
+      file_hdr->c_mtime = FROM_OCTAL (tar_hdr->mtime);
+      file_hdr->c_rdev_maj = FROM_OCTAL (tar_hdr->devmajor);
+      file_hdr->c_rdev_min = FROM_OCTAL (tar_hdr->devminor);
       file_hdr->c_tar_linkname = NULL;
 
       switch (tar_hdr->typeflag)
@@ -409,26 +409,6 @@ read_in_tar_header (struct new_cpio_header *file_hdr, int in_des)
     warn_junk_bytes (bytes_skipped);
 }
 
-/* Convert the string of octal digits S into a number and store
-   it in *N.  Return nonzero if the whole string was converted,
-   zero if there was something after the number.
-   Skip leading and trailing spaces.  */
-
-int
-otoa (char *s, unsigned long *n)
-{
-  unsigned long val = 0;
-
-  while (*s == ' ')
-    ++s;
-  while (*s >= '0' && *s <= '7')
-    val = 8 * val + *s++ - '0';
-  while (*s == ' ')
-    ++s;
-  *n = val;
-  return *s == '\0';
-}
-
 /* Return
    2 if BUF is a valid POSIX tar header (the checksum is correct
    and it has the "ustar" magic string),
@@ -441,7 +421,7 @@ is_tar_header (char *buf)
   struct tar_header *tar_hdr = (struct tar_header *) buf;
   unsigned long chksum;
 
-  otoa (tar_hdr->chksum, &chksum);
+  chksum = FROM_OCTAL (tar_hdr->chksum);
 
   if (chksum != tar_checksum (tar_hdr))
     return 0;

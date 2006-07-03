@@ -25,7 +25,7 @@
 #include "defer.h"
 
 struct deferment *
-create_deferment (struct new_cpio_header *file_hdr)
+create_deferment (struct cpio_file_stat *file_hdr)
 {
   struct deferment *d;
   d = (struct deferment *) xmalloc (sizeof (struct deferment) );

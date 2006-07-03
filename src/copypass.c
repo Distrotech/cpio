@@ -35,7 +35,7 @@
 static void
 set_copypass_perms (const char *name, struct stat *st)
 {
-  struct new_cpio_header header;
+  struct cpio_file_stat header;
   header.c_name = name;
   stat_to_cpio (&header, st);
   set_perms (&header);
