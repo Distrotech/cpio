@@ -8,6 +8,7 @@
 	* doc/cpio.texi: Minor fixes
 	* po/Makevars: Remove automatically generated file
 	* po/.cvsignore: Add Makevars
+	* lib/.cvsignore: Update
 	* src/copyin.c, src/copyout.c, src/copypass.c, src/cpio.h,
 	src/cpiohdr.h, src/defer.c, src/defer.h, src/extern.h,
 	src/global.c, src/main.c, src/makepath.c, src/tar.c,

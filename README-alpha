@@ -1,15 +1,18 @@
 This is the GNU cpio package.
 
-This is a *pre-release* version, and not ready for production use yet. If
-you have dowloaded its sources from CVS, you will need to have the following
-software to build it:
+This is a *pre-release* version, and not ready for production use yet.
+Please send comments and problem reports to <bug-cpio@gnu.org>.
 
-Package		Version (>=)
----------	------------
-autoconf	2.54
-automake	1.8
-libtool		1.4.3
-gettext	        0.13
+If you have taken the sources from CVS you will need the following
+packages (or later) to build GNU tar.  We don't make any extra effort
+to accommodate older versions of these packages, so please make sure
+that you have the latest stable version.
+
+- Automake <http://www.gnu.org/software/automake/>
+- Autoconf <http://www.gnu.org/software/autoconf/>
+- Gettext <http://www.gnu.org/software/gettext/>
+- M4 <http://www.gnu.org/software/m4/>
+- Texinfo <http://www.gnu.org/software/texinfo>
 
 Before building the package, run "bootstrap".  It obtains various
 additional files from the CVS repository and the Translation Project
@@ -17,9 +20,9 @@ site and prepares the source directory for building.
 
 When run without arguments, bootstrap will try to obtain gnulib and
 paxutils files from their corresponding CVS repositories on Savannah
-using anonymous SSH access. Then, it will fetch the po files from tar
+using anonymous SSH access.  Then, it will fetch the po files from tar
 page at Translation Project, and, finally, it will start autoconfiguration
-process. Simply running it without arguments should do in most cases.
+process.  Simply running it without arguments should do in most cases.
 Several options allow to control the behavior of bootstrap:
 
  --gnulib-srcdir=DIRNAME      Specify the local directory where gnulib
@@ -54,7 +57,7 @@ Report bugs to <bug-cpio@gnu.org>
 
 
 
-Copyright (C) 2004 Free Software Foundation, Inc.
+Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU cpio.
 
