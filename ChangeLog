@@ -1,3 +1,18 @@
+2006-09-27  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* TODO: Update
+	* README-alpha: Update
+	* bootstrap: Imported from tar
+	* configure.ac: Require autoconf 2.59 and gettext 1.15
+	* gnulib.modules: add inttypes
+	* doc/cpio.texi: Minor fixes
+	* po/Makevars: Remove automatically generated file
+	* po/.cvsignore: Add Makevars
+	* src/copyin.c, src/copyout.c, src/copypass.c, src/cpio.h,
+	src/cpiohdr.h, src/defer.c, src/defer.h, src/extern.h,
+	src/global.c, src/main.c, src/makepath.c, src/tar.c,
+	src/util.c: Update copyright year. 
+
 2006-07-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap (update_po): Fix single translation update
