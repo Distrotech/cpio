@@ -12,6 +12,7 @@ full-write
 getopt
 gettext
 hash
+inttypes
 safe-read
 savedir
 stdbool
