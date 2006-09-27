@@ -22,7 +22,7 @@ AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS([config.h])
 
-AC_PREREQ(2.54)
+AC_PREREQ([2.59])
 
 dnl Check for programs
 gl_USE_SYSTEM_EXTENSIONS
@@ -104,8 +104,8 @@ AC_FUNC_VPRINTF
 AC_FUNC_ALLOCA
 
 # Gettext.
-AM_GNU_GETTEXT([external], [need-ngettext])
-AM_GNU_GETTEXT_VERSION(0.13)
+AM_GNU_GETTEXT([external], [need-formatstring-macros])
+AM_GNU_GETTEXT_VERSION(0.15)
 
 # Initialize the test suite.
 AC_CONFIG_TESTDIR(tests)
