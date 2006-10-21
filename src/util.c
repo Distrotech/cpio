@@ -485,8 +485,14 @@ copy_files_disk_to_tape (int in_des, int out_des, off_t num_bytes,
 					 num_bytes : DISK_IO_BLOCK_SIZE))
 	  {
 	    if (rc > 0)
-	      error (0, 0, _("File %s shrunk by %lld bytes, padding with zeros"),
-				filename, num_bytes);
+	      {
+		  char buf[UINTMAX_STRSIZE_BOUND];
+		  error (0, 0,
+			 ngettext ("File %s shrunk by %s byte, padding with zeros",
+				   "File %s shrunk by %s bytes, padding with zeros",
+				   num_bytes),
+			 filename,  STRINGIFY_BIGINT (num_bytes, buf));
+	      }
 	    else
 	      error (0, 0, _("Read error at byte %lld in file %s, padding with zeros"),
 			original_num_bytes - num_bytes, filename);
@@ -529,8 +535,14 @@ copy_files_disk_to_disk (int in_des, int out_des, off_t num_bytes,
 	if (rc = disk_fill_input_buffer (in_des, num_bytes))
 	  {
 	    if (rc > 0)
-	      error (0, 0, _("File %s shrunk by %lld bytes, padding with zeros"),
-				filename, num_bytes);
+	      {
+		char buf[UINTMAX_STRSIZE_BOUND];
+		error (0, 0,
+		       ngettext ("File %s shrunk by %s byte, padding with zeros",
+				 "File %s shrunk by %s bytes, padding with zeros",
+				 num_bytes),
+		       filename,  STRINGIFY_BIGINT (num_bytes, buf));
+	      }
 	    else
 	      error (0, 0, _("Read error at byte %lld in file %s, padding with zeros"),
 			original_num_bytes - num_bytes, filename);
