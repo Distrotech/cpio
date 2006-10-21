@@ -1,3 +1,9 @@
+2006-10-21  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* configure.ac, NEWS: Version 2.7
+	* gnulib.modules: Add stdint
+	* src/util.c: Use STRINGIFY_BIGINT to display num_bytes
+
 2006-09-27  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* TODO: Update
