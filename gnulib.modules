@@ -17,6 +17,7 @@ safe-read
 savedir
 stdbool
 stpcpy
+stdint
 unlocked-io
 utimens
 xalloc
