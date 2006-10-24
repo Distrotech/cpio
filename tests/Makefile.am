@@ -44,6 +44,7 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 TESTSUITE_AT = \
  testsuite.at\
  inout.at\
+ symlink.at\
  version.at
 
 TESTSUITE = $(srcdir)/testsuite
