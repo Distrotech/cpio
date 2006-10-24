@@ -806,6 +806,7 @@ process_copy_out ()
 		    free (link_name);
 		    continue;
 		  }
+		link_name[link_size] = 0;
 		cpio_safer_name_suffix (link_name, false,
 					!no_abs_paths_flag, true);
 		link_size = strlen (link_name);
