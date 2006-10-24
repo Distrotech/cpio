@@ -1,3 +1,14 @@
+2006-10-24  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/copyout.c (process_copy_out): Add terminating zero to the
+	link_name.
+
+	* tests/symlink.at: New testcase
+	* tests/Makefile.am: New test symlink.at
+	* tests/inout.at: Add keywords
+	* tests/testsuite.at (AT_SKIP_TEST): New macro
+	New test symlink.at
+
 2006-10-21  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* configure.ac, NEWS: Version 2.7
