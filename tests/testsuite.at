@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU cpio
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 # We need a recent Autotest.
 m4_version_prereq([2.52g])
 
+m4_define([AT_SKIP_TEST],[exit 77])
+
 AT_INIT
 
 AT_TESTED([cpio])
@@ -28,4 +30,4 @@ AT_TESTED([cpio])
 m4_include([version.at])
 
 m4_include([inout.at])
-
+m4_include([symlink.at])
