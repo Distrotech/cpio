@@ -691,8 +691,10 @@ process_args (int argc, char *argv[])
   else
     {
       /* Copy pass.  */
-      if (index != argc - 1)
+      if (index < argc - 1)
 	error (PAXEXIT_FAILURE, 0, _("Too many arguments"));
+      else if (index > argc - 1)
+	error (PAXEXIT_FAILURE, 0, _("Not enough arguments"));
 
       if (archive_format != arf_unknown)
 	error (PAXEXIT_FAILURE, 0, 
