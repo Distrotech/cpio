@@ -1,3 +1,11 @@
+2006-11-13  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/cpio.texi: Consistently use @option{} for displaying command
+	line options.
+	Fix formatting in "Invoking `cpio'" section
+	* src/main.c (process_args): Fix usage error diagnostics in
+	copy-pass mode.
+
 2006-10-24  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/copyout.c (process_copy_out): Add terminating zero to the
