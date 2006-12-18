@@ -1,5 +1,6 @@
 2006-12-18  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* README-cvs: New file
 	* lib/Makefile.tmpl, lib/bcopy.c, lib/mkdir.c, lib/strdup.c,
 	lib/strerror.c, lib/.cvsignore, po/.cvsignore,
 	po/Makevars: Removed
@@ -10,7 +11,8 @@
 	* gnulib.modules: Add lchown, strerror
 	* src/Makefile.am: Update
 	* src/main.c, src/mt.c: Include rmt-command.h instead of localedir.h
-
+	* .cvsignore, doc/.cvsignore: Sort
+	
 	* src/util.c (sparse_write): Static.  Provide a forward
 	declaration. Define enum sparse_write_states inside the function.
 
