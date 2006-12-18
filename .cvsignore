@@ -1,6 +1,6 @@
-.bootstrap
 *.tar.bz2
 *.tar.gz
+.bootstrap
 ABOUT-NLS
 INSTALL
 Makefile
