@@ -2,8 +2,8 @@
 # A module name per line. Empty lines and comments are ignored.
 
 alloca
-argp
 argmatch
+argp
 dirname
 error
 fileblocks
@@ -13,11 +13,13 @@ getopt
 gettext
 hash
 inttypes
+lchown
 safe-read
 savedir
 stdbool
-stpcpy
 stdint
+stpcpy
+strerror
 unlocked-io
 utimens
 xalloc
