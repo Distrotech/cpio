@@ -854,7 +854,7 @@ long_format (struct cpio_file_stat *file_hdr, char *link_name)
     printf ("%3lu, %3lu ", file_hdr->c_rdev_maj,
 	    file_hdr->c_rdev_min);
   else
-    printf ("%8lu ", file_hdr->c_filesize);
+    printf ("%8"PRIuMAX" ", (uintmax_t) file_hdr->c_filesize);
 
   printf ("%s ", tbuf + 4);
 
