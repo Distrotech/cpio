@@ -162,12 +162,12 @@ void swahw_array (char *ptr, int count);
 void tape_buffered_write (char *in_buf, int out_des, off_t num_bytes);
 void tape_buffered_read (char *in_buf, int in_des, off_t num_bytes);
 int tape_buffered_peek (char *peek_buf, int in_des, int num_bytes);
-void tape_toss_input (int in_des, long num_bytes);
+void tape_toss_input (int in_des, off_t num_bytes);
 void copy_files_tape_to_disk (int in_des, int out_des, off_t num_bytes);
 void copy_files_disk_to_tape (int in_des, int out_des, off_t num_bytes, char *filename);
 void copy_files_disk_to_disk (int in_des, int out_des, off_t num_bytes, char *filename);
 void warn_if_file_changed (char *file_name, unsigned long old_file_size,
-                           unsigned long old_file_mtime);
+                           off_t old_file_mtime);
 void create_all_directories (char *name);
 void prepare_append (int out_file_des);
 char *find_inode_file (unsigned long node_num,
