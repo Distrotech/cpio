@@ -98,6 +98,8 @@ tape_empty_output_buffer (int out_des)
   output_size = 0;
 }
 
+static int sparse_write (int fildes, char *buf, unsigned int nbyte);
+
 /* Write `output_size' bytes of `output_buffer' to file
    descriptor OUT_DES and reset `output_size' and `out_buff'.
    If `swapping_halfwords' or `swapping_bytes' is set,
@@ -1088,9 +1090,6 @@ islastparentcdf (char *path)
 
 #define DISKBLOCKSIZE	(512)
 
-enum sparse_write_states { begin, in_zeros, not_in_zeros };
-
-
 static int
 buf_all_zeros (char *buf, int bufsize)
 {
@@ -1108,7 +1107,7 @@ int delayed_seek_count = 0;
 /* Write NBYTE bytes from BUF to remote tape connection FILDES.
    Return the number of bytes written on success, -1 on error.  */
 
-int
+static int
 sparse_write (int fildes, char *buf, unsigned int nbyte)
 {
   int complete_block_count;
@@ -1119,7 +1118,7 @@ sparse_write (int fildes, char *buf, unsigned int nbyte)
   int lseek_rc;
   int write_rc;
   int i;
-  enum sparse_write_states state;
+  enum { begin, in_zeros, not_in_zeros } state;
 
   complete_block_count = nbyte / DISKBLOCKSIZE;
   leftover_bytes_count = nbyte % DISKBLOCKSIZE;
@@ -1149,6 +1148,7 @@ sparse_write (int fildes, char *buf, unsigned int nbyte)
 	      }
 	    buf += DISKBLOCKSIZE;
 	    break;
+	    
 	  case in_zeros :
 	    if (buf_all_zeros (buf, DISKBLOCKSIZE))
 	      {
@@ -1163,6 +1163,7 @@ sparse_write (int fildes, char *buf, unsigned int nbyte)
 	      }
 	    buf += DISKBLOCKSIZE;
 	    break;
+	    
 	  case not_in_zeros :
 	    if (buf_all_zeros (buf, DISKBLOCKSIZE))
 	      {
@@ -1185,6 +1186,7 @@ sparse_write (int fildes, char *buf, unsigned int nbyte)
       case in_zeros :
 	delayed_seek_count = seek_count;
 	break;
+	
       case not_in_zeros :
 	write_rc = write (fildes, cur_write_start, write_count);
 	delayed_seek_count = 0;
