@@ -384,10 +384,10 @@ tape_buffered_peek (char *peek_buf, int in_des, int num_bytes)
 /* Skip the next NUM_BYTES bytes of file descriptor IN_DES.  */
 
 void
-tape_toss_input (int in_des, long num_bytes)
+tape_toss_input (int in_des, off_t num_bytes)
 {
-  register long bytes_left = num_bytes;	/* Bytes needing to be copied.  */
-  register long space_left;	/* Bytes to copy from input buffer.  */
+  off_t bytes_left = num_bytes;	/* Bytes needing to be copied.  */
+  off_t space_left;	/* Bytes to copy from input buffer.  */
 
   while (bytes_left > 0)
     {
@@ -566,7 +566,7 @@ copy_files_disk_to_disk (int in_des, int out_des, off_t num_bytes,
 
 void
 warn_if_file_changed (char *file_name, unsigned long old_file_size,
-		      unsigned long old_file_mtime)
+		      off_t old_file_mtime)
 {
   struct stat new_file_stat;
   if ((*xstat) (file_name, &new_file_stat) < 0)
@@ -578,8 +578,11 @@ warn_if_file_changed (char *file_name, unsigned long old_file_size,
   /* Only check growth, shrinkage detected in copy_files_disk_to_{disk,tape}()
    */
   if (new_file_stat.st_size > old_file_size)
-    error (0, 0, _("File %s grew, %ld new bytes not copied"),
-	   file_name, (long)(new_file_stat.st_size - old_file_size));
+    error (0, 0,
+	   ngettext ("File %s grew, %"PRIuMAX" new byte not copied",
+		     "File %s grew, %"PRIuMAX" new bytes not copied",
+		     (long)(new_file_stat.st_size - old_file_size)),
+	   file_name, (uintmax_t) (new_file_stat.st_size - old_file_size));
 
   else if (new_file_stat.st_mtime != old_file_mtime)
     error (0, 0, _("File %s was modified while being copied"), file_name);
