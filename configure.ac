@@ -16,7 +16,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software Foundation,
 dnl Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-AC_INIT([GNU cpio], [2.7], [bug-cpio@gnu.org], [cpio])
+AC_INIT([GNU cpio], [2.7], [bug-cpio@gnu.org])
 AC_CONFIG_SRCDIR(src/cpio.h)
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
@@ -31,6 +31,8 @@ AC_PROG_CPP
 AC_PROG_GCC_TRADITIONAL
 AC_PROG_INSTALL
 AC_PROG_RANLIB
+AC_PROG_YACC
+gl_EARLY
 AC_C_PROTOTYPES
 
 AC_SYS_LARGEFILE
@@ -43,7 +45,9 @@ AC_CHECK_TYPE(gid_t, int)
 AC_HEADER_STDC
 AC_HEADER_DIRENT
 
-cpio_GNULIB
+# gnulib modules
+gl_INIT
+# paxutils modules
 cpio_PAXUTILS
 
 AC_SUBST(CPIO_MT_PROG)
@@ -56,7 +60,6 @@ AC_ARG_ENABLE(mt,
   esac])
 
 AC_CHECK_HEADERS(unistd.h stdlib.h string.h fcntl.h sys/io/trioctl.h utmp.h getopt.h locale.h libintl.h sys/wait.h utime.h locale.h)
-AC_REPLACE_FUNCS(bcopy mkdir strdup strerror)
 
 AC_MSG_CHECKING(for sys_errlist and sys_nerr)
 AC_TRY_RUN(
@@ -69,7 +72,7 @@ main() { char *s = sys_errlist[[0]]; return 0; },
         AC_MSG_RESULT(no),
         AC_MSG_RESULT(don't know))
 
-AC_CHECK_DECLS([errno, sys_nerr, sys_errlist, getpwnam, getgrnam, getgrgid, strdup, strerror, getenv, atoi, exit], , , [
+AC_CHECK_DECLS([errno, getpwnam, getgrnam, getgrgid, strdup, strerror, getenv, atoi, exit], , , [
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -81,31 +84,9 @@ AC_CHECK_DECLS([errno, sys_nerr, sys_errlist, getpwnam, getgrnam, getgrgid, strd
 #include <pwd.h>
 #include <grp.h>])
 
-dnl Checks for fnmatch
-have_fnmatch=no
-AC_MSG_CHECKING(for working fnmatch)
-dnl Some versions of Solaris have a fnmatch() function, but it doesn't work!
-dnl So we run a test program.  If we're cross-compiling, do it the old way.
-AC_TRY_RUN([
-main() {
-if (fnmatch ("a*", "abc", 0) == 0) return 0;
-else return 1; }],
-have_fnmatch=yes, have_fnmatch=no, have_fnmatch=no)
-if test $have_fnmatch = yes ; then
-  AC_MSG_RESULT(yes)
-else
-  AC_MSG_RESULT(no)
-  AC_LIBOBJ(fnmatch)
-  AC_CONFIG_LINKS(src/fnmatch.h:headers/fnmatch.h)
-fi
-
-AC_CHECK_FUNCS(lchown endpwent endgrent)
-AC_FUNC_VPRINTF
-AC_FUNC_ALLOCA
-
 # Gettext.
 AM_GNU_GETTEXT([external], [need-formatstring-macros])
-AM_GNU_GETTEXT_VERSION(0.15)
+AM_GNU_GETTEXT_VERSION(0.16)
 
 # Initialize the test suite.
 AC_CONFIG_TESTDIR(tests)

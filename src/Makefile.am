@@ -52,4 +52,4 @@ cpio_LDADD = ../lib/libcpio.a $(INTLLIBS)
 mt_SOURCES = mt.c 
 mt_LDADD = ../lib/lib$(PACKAGE).a $(INTLLIBS)
 
-mt.o main.o: ../lib/localedir.h
+mt.o main.o: ../lib/rmt-command.h
