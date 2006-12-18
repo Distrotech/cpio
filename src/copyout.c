@@ -508,7 +508,7 @@ write_out_binary_header (dev_t rdev,
   short_hdr.c_filesizes[0] = file_hdr->c_filesize >> 16;
   short_hdr.c_filesizes[1] = file_hdr->c_filesize & 0xFFFF;
 
-  if ((short_hdr.c_filesizes[0] << 16) + short_hdr.c_filesizes[1]
+  if (((off_t)short_hdr.c_filesizes[0] << 16) + short_hdr.c_filesizes[1]
        != file_hdr->c_filesize)
     {
       field_width_error (file_hdr->c_name, _("file size"));
