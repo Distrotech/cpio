@@ -32,7 +32,7 @@
 #include <sys/stat.h>
 
 #ifdef HAVE_LOCALE_H
-#  include <locale.h>
+# include <locale.h>
 #endif
 
 #include "filetypes.h"
@@ -40,7 +40,7 @@
 #include "dstring.h"
 #include "extern.h"
 #include <rmt.h>
-#include <localedir.h>
+#include <rmt-command.h>
 
 enum cpio_options {
   NO_ABSOLUTE_FILENAMES_OPTION=256,

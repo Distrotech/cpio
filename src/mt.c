@@ -75,7 +75,7 @@
 #ifdef HAVE_LOCALE_H
 #  include <locale.h>
 #endif
-#include <localedir.h>
+#include <rmt-command.h>
 
 #if defined(HAVE_UNISTD_H)
 #include <unistd.h>
