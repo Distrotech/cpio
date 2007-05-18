@@ -100,9 +100,6 @@ cleanup() {
 
 # Configuration.
 
-# List of gnulib.modules files
-gnulib_lists=gnulib.modules
-
 # List of gnulib modules needed.
 gnulib_modules=
 
@@ -295,10 +292,11 @@ case ${PAXUTILS_SRCDIR--} in
 esac
 
 if [ -r $PAXUTILS_SRCDIR/gnulib.modules ]; then
-  gnulib_lists="$gnulib_lists $PAXUTILS_SRCDIR/gnulib.modules"
+  gnulib_modules=`
+    (echo "$gnulib_modules"; grep '^[^#]' $PAXUTILS_SRCDIR/gnulib.modules) |
+    sort -u
+  `
 fi
-
-gnulib_modules=`grep -h '^[^#]' $gnulib_lists | sort -u`
 
 ignore_file_list=
 cleanup_ifl() {
@@ -480,7 +478,7 @@ slurp() {
       done
       if test $file = Makefile.am; then
         copied=$copied${sep}gnulib.mk; sep=$nl
-	remove_intl='/^[^#].*\/intl/s/^/#/'
+	remove_intl='/^[^#].*\/intl/s/^/#/;'"s,/$bt,,g"
         sed "$remove_intl" $1/$dir/$file | cmp -s - $dir/gnulib.mk || {
 	  echo "$0: Copying $1/$dir/$file to $dir/gnulib.mk ..." &&
 	  rm -f $dir/gnulib.mk &&
