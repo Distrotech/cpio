@@ -1,3 +1,14 @@
+2007-05-18  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* bootstrap: Update from tar repository
+	* doc/cpio.texi: Fix typo
+	* src/copyin.c (from_ascii): Bugfix: allow for empty fields
+	* src/copyout.c (process_copy_out): Fix memory leaks on
+	orig_file_name.
+	* src/copypass.c (process_copy_pass): symlink_error takes two
+	arguments.
+	* src/extern.h: Add missing includes.
+
 2006-12-18  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* README-cvs: New file
