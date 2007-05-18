@@ -579,6 +579,14 @@ write_out_header (struct cpio_file_stat *file_hdr, int out_des)
     }
 }
 
+static void
+assign_string (char **pvar, char *value)
+{
+  char *p = xrealloc (*pvar, strlen (value) + 1);
+  strcpy (p, value);
+  *pvar = p;
+}
+
 /* Read a list of file names from the standard input
    and write a cpio collection on the standard output.
    The format of the header depends on the compatibility (-c) flag.  */
@@ -592,6 +600,7 @@ process_copy_out ()
   struct cpio_file_stat file_hdr; /* Output header information.  */
   int in_file_des;		/* Source file descriptor.  */
   int out_file_des;		/* Output file descriptor.  */
+  char *orig_file_name = NULL;
 
   /* Initialize the copy out.  */
   ds_init (&input_name, 128);
@@ -637,8 +646,6 @@ process_copy_out ()
 	stat_error (input_name.ds_string);
       else
 	{
-	  char *orig_file_name;
-	  
 	  /* Set values in output header.  */
 	  stat_to_cpio (&file_hdr, &file_stat);
 	  
@@ -657,7 +664,7 @@ process_copy_out ()
 		}
 	    }
 	  
-	  orig_file_name = strdup (input_name.ds_string);
+	  assign_string (&orig_file_name, input_name.ds_string);
 	  cpio_safer_name_suffix (input_name.ds_string, false,
 				  !no_abs_paths_flag, true);
 #ifndef HPUX_CDF
@@ -846,10 +853,11 @@ process_copy_out ()
 	    fprintf (stderr, "%s\n", orig_file_name);
 	  if (dot_flag)
 	    fputc ('.', stderr);
-	  free (orig_file_name);
 	}
     }
 
+  free (orig_file_name);
+  
   writeout_final_defers(out_file_des);
   /* The collection is complete; append the trailer.  */
   file_hdr.c_ino = 0;
