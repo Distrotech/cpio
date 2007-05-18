@@ -16,6 +16,10 @@
    Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
    Boston, MA 02110-1301 USA.  */
 
+#include "paxlib.h"
+#include "quotearg.h"
+#include "quote.h"
+
 enum archive_format
 {
   arf_unknown, arf_binary, arf_oldascii, arf_newascii, arf_crcascii,
