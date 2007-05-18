@@ -26,6 +26,7 @@
 #include "cpiohdr.h"
 #include "dstring.h"
 #include "extern.h"
+#include "paxlib.h"
 
 #ifndef HAVE_LCHOWN
 # define lchown chown
@@ -327,7 +328,7 @@ process_copy_pass ()
 	    }
 	  if (res < 0)
 	    {
-	      symlink_error (output_name.ds_string);
+	      symlink_error (output_name.ds_string, link_name);
 	      free (link_name);
 	      continue;
 	    }
