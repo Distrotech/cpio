@@ -54,7 +54,7 @@ Boston, MA 02110-1301, USA @*
 GNU cpio is a tool for creating and extracting archives, or copying
 files from one place to another.  It handles a number of cpio formats as
 well as reading and writing tar files.  This is the first edition of the 
-GNU cpio documentation and is consistant with @value{VERSION}.
+GNU cpio documentation and is consistent with @value{VERSION}.
 
 @end ifinfo
 
