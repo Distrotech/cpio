@@ -978,7 +978,9 @@ from_ascii (char const *where, size_t digs, unsigned logbase)
       if (buf == end)
 	return 0;
     }
-  
+
+  if (buf == end || *buf == 0)
+    return 0;
   while (1)
     {
       unsigned d;
