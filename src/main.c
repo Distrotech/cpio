@@ -667,7 +667,6 @@ process_args (int argc, char *argv[])
       CHECK_USAGE(retain_time_flag, "--preserve-modification-time",
 		  "--create");
       CHECK_USAGE(no_chown_flag, "--no-preserve-owner", "--create");
-      CHECK_USAGE(set_owner_flag||set_group_flag, "--owner", "--create");
       CHECK_USAGE(swap_bytes_flag, "--swap-bytes (--swap)", "--create");
       CHECK_USAGE(swap_halfwords_flag, "--swap-halfwords (--swap)",
 		  "--create");
