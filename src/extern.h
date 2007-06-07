@@ -203,8 +203,9 @@ void write_nuls_to_file (off_t num_bytes, int out_des,
 # define UMASKED_SYMLINK(name1,name2,mode)    umasked_symlink(name1,name2,mode)
 #endif /* SYMLINK_USES_UMASK */
 
-void set_perms (struct cpio_file_stat *header);
-void set_file_times (const char *name, unsigned long atime, unsigned long mtime);
+void set_perms (int fd, struct cpio_file_stat *header);
+void set_file_times (int fd, const char *name, unsigned long atime,
+		     unsigned long mtime);
 void stat_to_cpio (struct cpio_file_stat *hdr, struct stat *st);
 void cpio_safer_name_suffix (char *name, bool link_target,
 			     bool absolute_names, bool strip_leading_dots);
