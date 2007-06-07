@@ -1258,18 +1258,41 @@ stat_to_cpio (struct cpio_file_stat *hdr, struct stat *st)
   hdr->c_tar_linkname = NULL;
 }
 
+#ifndef HAVE_FCHOWN
+# define fchown(fd, uid, gid) (-1)
+#endif
+
+int
+fchown_or_chown (int fd, const char *name, uid_t uid, uid_t gid)
+{
+  if (HAVE_FCHOWN && fd != -1)
+    return fchown (fd, uid, gid);
+  else
+    return chown (name, uid, gid);
+}
+
+int
+fchmod_or_chmod (int fd, const char *name, mode_t mode)
+{
+  if (HAVE_FCHMOD && fd != -1)
+    return fchmod (fd, mode);
+  else
+    return chmod(name, mode);
+}
+
 void
-set_perms (struct cpio_file_stat *header)
+set_perms (int fd, struct cpio_file_stat *header)
 {
   if (!no_chown_flag)
     {
       uid_t uid = CPIO_UID (header->c_uid);
       gid_t gid = CPIO_GID (header->c_gid); 
-      if ((chown (header->c_name, uid, gid) < 0) && errno != EPERM)
+      if ((fchown_or_chown (fd, header->c_name, uid, gid) < 0)
+	  && errno != EPERM)
 	chown_error_details (header->c_name, uid, gid);
     }
   /* chown may have turned off some permissions we wanted. */
-  if (chmod (header->c_name, header->c_mode) < 0)
+  if (fchmod_or_chmod (fd, header->c_name, header->c_mode) < 0)
     chmod_error_details (header->c_name, header->c_mode);
 #ifdef HPUX_CDF
   if ((header->c_mode & CP_IFMT) && cdf_flag)
@@ -1278,11 +1301,12 @@ set_perms (struct cpio_file_stat *header)
     file_hdr->c_name [cdf_char] = '+';
 #endif
   if (retain_time_flag)
-    set_file_times (header->c_name, header->c_mtime, header->c_mtime);
+    set_file_times (fd, header->c_name, header->c_mtime, header->c_mtime);
 }
 
 void
-set_file_times (const char *name, unsigned long atime, unsigned long mtime)
+set_file_times (int fd,
+		const char *name, unsigned long atime, unsigned long mtime)
 {
   struct timespec ts[2];
   
@@ -1291,9 +1315,9 @@ set_file_times (const char *name, unsigned long atime, unsigned long mtime)
   ts[0].tv_sec = atime;
   ts[1].tv_sec = mtime;
 
-  /* Silently ignore EROFS because reading the file won't have upset its timestamp
-     if it's on a read-only filesystem. */
-  if (utimens (name, ts) < 0 && errno != EROFS)
+  /* Silently ignore EROFS because reading the file won't have upset its 
+     timestamp if it's on a read-only filesystem. */
+  if (gl_futimens (fd, name, ts) < 0 && errno != EROFS)
     utime_error (name);
 }
 
