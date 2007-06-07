@@ -1205,6 +1205,9 @@ sparse_write (int fildes, char *buf, unsigned int nbyte)
   return nbyte;
 }
 
+#define CPIO_UID(uid) (set_owner_flag ? set_owner : (uid))
+#define CPIO_GID(gid) (set_group_flag ? set_group : (gid));
+
 void
 stat_to_cpio (struct cpio_file_stat *hdr, struct stat *st)
 {
@@ -1244,8 +1247,8 @@ stat_to_cpio (struct cpio_file_stat *hdr, struct stat *st)
   else if (S_ISNWK (st->st_mode))
     hdr->c_mode |= CP_IFNWK;
 #endif
-  hdr->c_uid = st->st_uid;
-  hdr->c_gid = st->st_gid;
+  hdr->c_uid = CPIO_UID (st->st_uid);
+  hdr->c_gid = CPIO_GID (st->st_gid);
   hdr->c_nlink = st->st_nlink;
   hdr->c_rdev_maj = major (st->st_rdev);
   hdr->c_rdev_min = minor (st->st_rdev);
@@ -1260,8 +1263,8 @@ set_perms (struct cpio_file_stat *header)
 {
   if (!no_chown_flag)
     {
-      uid_t uid = set_owner_flag ? set_owner : header->c_uid;
-      gid_t gid = set_group_flag ? set_group : header->c_gid; 
+      uid_t uid = CPIO_UID (header->c_uid);
+      gid_t gid = CPIO_GID (header->c_gid); 
       if ((chown (header->c_name, uid, gid) < 0) && errno != EPERM)
 	chown_error_details (header->c_name, uid, gid);
     }
