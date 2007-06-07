@@ -1,5 +1,17 @@
 2007-06-07  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* NEWS: Update
+	* configure.ac: Raise version to 2.7.90
+	* doc/cpio.texi: Update
+	* src/extern.h (set_perms, set_file_times): Take file descriptor
+	as the first argument.
+	* src/util.c (set_perms): Take file descriptor
+	as the first argument and use fchmod/fchown if available.  Fixes
+	CAN-2005-1111.
+	* src/copyin.c, src/copyout.c, src/copypass.c: Update calls to
+	set_perms.
+	* src/makepath.c: Remove useless includes.
+	
 	* src/util.c (set_perms, stat_to_cpio): Use CPIO_UID and CPIO_GID
 	macros to set uid and gid
 	* src/main.c (process_args): Allow to use --owner in copy-out mode.
