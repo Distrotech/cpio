@@ -1,3 +1,10 @@
+2007-06-07  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/util.c (set_perms, stat_to_cpio): Use CPIO_UID and CPIO_GID
+	macros to set uid and gid
+	* src/main.c (process_args): Allow to use --owner in copy-out mode.
+	* THANKS: Add Mike Frysinger
+	
 2007-05-18  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap: Update from tar repository
