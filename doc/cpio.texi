@@ -487,10 +487,12 @@ Interactively rename files.
 @item -R @var{owner}
 @itemx --owner @var{owner}
 
-[user][:.][group]
+In copy-in and copy-pass mode, set the ownership of all files created
+to the specified @var{owner} (this operation is allowed only for the
+super-user). In copy-out mode, store the supplied owner information in
+the archive. 
 
-Set the ownership of all files created to the specified
-@var{owner}. The argument can be either the user name or the user name
+The argument can be either the user name or the user name
 and group name, separated by a dot or a colon, or the group name,
 preceeded by a dot or a colon, as shown in the examples below:
 
@@ -505,8 +507,8 @@ cpio --owner :users
 
 @noindent
 If the group is omitted but the @samp{:} or @samp{.} separator is
-given, as in the second example. the given user's login group will be used.  Only the
-super-user can change files' ownership.
+given, as in the second example. the given user's login group will be
+used.  
 
 @item --rsh-command=@var{command}
 Notifies cpio that is should use @var{command} to communicate with remote
