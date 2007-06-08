@@ -1206,7 +1206,7 @@ sparse_write (int fildes, char *buf, unsigned int nbyte)
 }
 
 #define CPIO_UID(uid) (set_owner_flag ? set_owner : (uid))
-#define CPIO_GID(gid) (set_group_flag ? set_group : (gid));
+#define CPIO_GID(gid) (set_group_flag ? set_group : (gid))
 
 void
 stat_to_cpio (struct cpio_file_stat *hdr, struct stat *st)

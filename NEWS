@@ -1,10 +1,10 @@
-GNU cpio NEWS -- history of user-visible changes. 2007-06-07
+GNU cpio NEWS -- history of user-visible changes. 2007-06-08
 Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 Please send cpio bug reports to <bug-cpio@gnu.org>.
 
-Version 2.7.90:
+Version 2.8 - Sergey Poznyakoff, 2007-06-08
 
 * Option --owner can be used in copy-out mode, allowing to uniformly override
 ownership of the files being added to the archive.
@@ -17,7 +17,7 @@ ownership of the files being added to the archive.
 ** Fix CAN-2005-1111
 
 
-Version 2.7:
+Version 2.7 - Sergey Poznyakoff, 2006-10-21
 
 * Improved error checking and diagnostics
 
@@ -30,7 +30,7 @@ file several times to archive.
 ** Fix Debian bug 335580.
 
 
-Version 2.6
+Version 2.6 - Sergey Poznyakoff, 2004-12-20
 
 * Added NLS support
 
