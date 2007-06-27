@@ -1,10 +1,10 @@
 /* main.c - main program and argument processing for cpio.
-   Copyright (C) 1990, 1991, 1992, 2001, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001, 2003, 2004, 2005, 2006,
+   2007 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -249,7 +249,7 @@ license ()
 	  "Copyright (C) 2004 Free Software Foundation, Inc.\n");
   printf (_("   GNU cpio is free software; you can redistribute it and/or modify\n"
     "   it under the terms of the GNU General Public License as published by\n"
-    "   the Free Software Foundation; either version 2 of the License, or\n"
+    "   the Free Software Foundation; either version 3 of the License, or\n"
     "   (at your option) any later version.\n"
     "\n"
     "   GNU cpio is distributed in the hope that it will be useful,\n"
