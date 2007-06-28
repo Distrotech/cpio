@@ -4,9 +4,16 @@ See the end of file for copying conditions.
 
 Please send cpio bug reports to <bug-cpio@gnu.org>.
 
-Version 2.8 - Sergey Poznyakoff, 2007-06-08
+Version 2.9 (CVS)
 
 * Relicensed under GPLv3.
+
+* Bugfixes:
+** Honor umask when creating intermediate directories, not specified
+in the archive (debian bug #430053)
+
+
+Version 2.8 - Sergey Poznyakoff, 2007-06-08
 
 * Option --owner can be used in copy-out mode, allowing to uniformly override
 ownership of the files being added to the archive.
@@ -17,8 +24,6 @@ ownership of the files being added to the archive.
 ** Fix handling of large files.
 ** Fix setting the file permissions in copy-out mode.
 ** Fix CAN-2005-1111
-** Honor umask when creating intermediate directories, not specified
-in the archive (debian bug #430053)
 
 
 Version 2.7 - Sergey Poznyakoff, 2006-10-21
