@@ -140,8 +140,7 @@ void process_args (int argc, char *argv[]);
 void initialize_buffers (void);
 
 /* makepath.c */
-int make_path (char *argpath, mode_t mode, 
-	       uid_t owner, gid_t group,
+int make_path (char *argpath, uid_t owner, gid_t group,
 	       const char *verbose_fmt_string);
 
 /* tar.c */

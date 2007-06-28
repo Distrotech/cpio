@@ -36,10 +36,8 @@
 /* Ensure that the directory ARGPATH exists.
    Remove any trailing slashes from ARGPATH before calling this function.
 
-   Make any leading directories that don't already exist, with
+   Make all directory components that don't already exist with
    permissions 700.
-   If the last element of ARGPATH does not exist, create it as
-   a new directory with permissions MODE.
    If OWNER and GROUP are non-negative, make them the UID and GID of
    created directories.
    If VERBOSE_FMT_STRING is nonzero, use it as a printf format
@@ -51,7 +49,6 @@
 
 int
 make_path (char *argpath,
-	   mode_t mode,
 	   uid_t owner,
 	   gid_t group,
 	   const char *verbose_fmt_string)
@@ -112,7 +109,6 @@ make_path (char *argpath,
 			stats.st_uid = owner;
 		      if (group != -1)
 			stats.st_gid = group;
-		      stats.st_mode = tmpmode;
 		      
 		      delay_set_stat (dirpath, &stats, invert_permissions);
 		    }
@@ -147,8 +143,7 @@ make_path (char *argpath,
       /* We're done making leading directories.
 	 Make the final component of the path. */
 
-      invert_permissions = we_are_root ? 0 : MODE_WXUSR & ~ mode;
-      if (mkdir (dirpath, mode ^ invert_permissions))
+      if (mkdir (dirpath, tmpmode ^ invert_permissions))
 	{
 	  /* In some cases, if the final component in dirpath was `.' then we 
 	     just got an EEXIST error from that last mkdir().  If that's
@@ -169,7 +164,6 @@ make_path (char *argpath,
 	    stats.st_uid = owner;
 	  if (group != -1)
 	    stats.st_gid = group;
-	  stats.st_mode = mode;
 	  
 	  delay_set_stat (dirpath, &stats, invert_permissions);
 	}
@@ -188,27 +182,6 @@ make_path (char *argpath,
 	  return 1;
 	}
 
-      /* chown must precede chmod because on some systems,
-	 chown clears the set[ug]id bits for non-superusers,
-	 resulting in incorrect permissions.
-	 On System V, users can give away files with chown and then not
-	 be able to chmod them.  So don't give files away.  */
-
-      if (owner != (uid_t) -1 && group != (gid_t) -1
-	  && chown (dirpath, owner, group)
-#ifdef AFS
-	  && errno != EPERM
-#endif
-	  )
-	{
-	  chown_error_details (dirpath, owner, group);
-	  retval = 1;
-	}
-      if (chmod (dirpath, mode))
-	{
-	  chmod_error_details (dirpath, mode);
-	  retval = 1;
-	}
     }
 
   return retval;
