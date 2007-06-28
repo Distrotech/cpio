@@ -1,5 +1,19 @@
 2007-06-28  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* src/copyin.c, src/copypass.c: Save current umask before
+	processing and call apply_delayed_set_stat afterwards
+	* src/extern.h (newdir_umask): New global
+	(delay_set_stat,repair_delayed_set_stat)
+	(apply_delayed_set_stat): New functions
+	
+	* src/global.c (newdir_umask): New global
+	* src/idcache.c: Include xalloc.h
+	* src/main.c: New warning control option -W interdir
+	* src/makepath.c: Rewrite using delayed set_stat functions
+	* src/util.c (create_all_directories): Update call to make_path
+	(delay_set_stat,repair_delayed_set_stat)
+	(apply_delayed_set_stat): New functions
+
 	* NEWS, doc/cpio.1, doc/cpio.texi: Update
 	* src/copyin.c, src/copyout.c, src/copypass.c: Number of blocks is
 	size_t.
