@@ -17,6 +17,8 @@ ownership of the files being added to the archive.
 ** Fix handling of large files.
 ** Fix setting the file permissions in copy-out mode.
 ** Fix CAN-2005-1111
+** Honor umask when creating intermediate directories, not specified
+in the archive (debian bug #430053)
 
 
 Version 2.7 - Sergey Poznyakoff, 2006-10-21
