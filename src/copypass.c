@@ -64,7 +64,7 @@ process_copy_pass ()
   int cdf_char;
 #endif
 
-  umask (0);                    /* Reset umask to preserve modes of
+  newdir_umask = umask (0);     /* Reset umask to preserve modes of
 				   created files  */
 
   /* Initialize the copy pass.  */
@@ -364,6 +364,9 @@ process_copy_pass ()
 
   if (dot_flag)
     fputc ('\n', stderr);
+
+  apply_delayed_set_stat ();
+  
   if (!quiet_flag)
     {
       size_t blocks = (output_bytes + io_block_size - 1) / io_block_size;

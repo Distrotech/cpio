@@ -1361,7 +1361,7 @@ process_copy_in ()
   char skip_file;		/* Flag for use with patterns.  */
   int i;			/* Loop index variable.  */
 
-  umask (0);                    /* Reset umask to preserve modes of
+  newdir_umask = umask (0);     /* Reset umask to preserve modes of
 				   created files  */
   
   /* Initialize the copy in.  */
@@ -1562,6 +1562,8 @@ process_copy_in ()
   if (dot_flag)
     fputc ('\n', stderr);
 
+  apply_delayed_set_stat ();
+  
   if (append_flag)
     return;
 
