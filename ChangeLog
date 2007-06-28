@@ -1,5 +1,13 @@
 2007-06-28  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* NEWS: Update
+	* src/extern.h, src/makepath.c (make_path): Remove mode
+	argument. All callers updated.
+	* src/util.c (apply_delayed_set_stat): Use inverted permissions
+	from data->stat.
+	* tests/interdir.at: New test case.
+	* tests/Makefile.am, tests/testsuite.at: Add interdir.at
+
 	* src/copyin.c, src/copypass.c: Save current umask before
 	processing and call apply_delayed_set_stat afterwards
 	* src/extern.h (newdir_umask): New global
