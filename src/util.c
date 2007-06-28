@@ -624,7 +624,7 @@ create_all_directories (char *name)
 	fmt = _("Creating intermediate directory `%s'");
       else
 	fmt = NULL;
-      make_path (dir, mode, -1, -1, fmt);
+      make_path (dir, -1, -1, fmt);
     }
 
   free (dir);
@@ -1426,13 +1426,7 @@ apply_delayed_set_stat ()
       struct delayed_set_stat *data = delayed_set_stat_head;
       if (data->invert_permissions)
 	{
-	  struct stat st;
-	  if (stat (data->stat.c_name, &st) != 0)
-	    {
-	      stat_error (data->stat.c_name);
-	      return;
-	    }
-	  data->stat.c_mode = st.st_mode ^ data->invert_permissions;
+	  data->stat.c_mode ^= data->invert_permissions;
 	}
       set_perms (-1, &data->stat);
       delayed_set_stat_head = data->next;
