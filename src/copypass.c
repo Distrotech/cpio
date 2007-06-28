@@ -38,7 +38,7 @@ static void
 set_copypass_perms (int fd, const char *name, struct stat *st)
 {
   struct cpio_file_stat header;
-  header.c_name = name;
+  header.c_name = (char*)name;
   stat_to_cpio (&header, st);
   set_perms (fd, &header);
 }
@@ -366,8 +366,11 @@ process_copy_pass ()
     fputc ('\n', stderr);
   if (!quiet_flag)
     {
-      res = (output_bytes + io_block_size - 1) / io_block_size;
-      fprintf (stderr, ngettext ("%d block\n", "%d blocks\n", res), res);
+      size_t blocks = (output_bytes + io_block_size - 1) / io_block_size;
+      fprintf (stderr,
+	       ngettext ("%lu block\n", "%lu blocks\n",
+			 (unsigned long) blocks),
+	       (unsigned long) blocks);
     }
 }
 

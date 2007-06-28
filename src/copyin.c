@@ -1571,9 +1571,12 @@ process_copy_in ()
     }
   if (!quiet_flag)
     {
-      int blocks;
+      size_t blocks;
       blocks = (input_bytes + io_block_size - 1) / io_block_size;
-      fprintf (stderr, ngettext ("%d block\n", "%d blocks\n", blocks), blocks);
+      fprintf (stderr,
+	       ngettext ("%lu block\n", "%lu blocks\n",
+			 (unsigned long) blocks),
+	       (unsigned long) blocks);
     }
 }
 
