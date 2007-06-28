@@ -80,6 +80,9 @@ int swapping_halfwords = false;
 /* If true, we are swapping bytes on the current file.  */
 int swapping_bytes = false;
 
+/* Umask for creating new directories */
+mode_t newdir_umask;
+
 /* If true, set ownership of all files to UID `set_owner'.  */
 int set_owner_flag = false;
 uid_t set_owner;
