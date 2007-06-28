@@ -264,8 +264,8 @@ cpio @{-i|--extract@} [-bcdfmnrtsuvBSV] [-C bytes] [-E file]
 [--swap-halfwords] [--io-size=bytes] [--pattern-file=file]
 [--format=format] [--owner=[user][:.][group]]
 [--no-preserve-owner] [--message=message] [--help] [--version]
-[--no-absolute-filenames] [--sparse] [-only-verify-crc] [-quiet]
-[--rsh-command=command] [pattern...] [< archive]
+[--no-absolute-filenames] [--sparse] [-only-verify-crc] [--to-stdout]
+[-quiet] [--rsh-command=command] [pattern...] [< archive]
 @end example
 
 @node Copy-pass mode, Options, Copy-in mode, Invoking cpio
@@ -531,6 +531,9 @@ used in copy-in and copy-pass modes.
 @item -t
 @itemx --list
 Print a table of contents of the input.
+
+@item --to-stdout
+Extract files to standard output.  This option may be used in copy-in mode.
 
 @item -u
 @itemx --unconditional
