@@ -273,6 +273,7 @@ warn_control (char *arg)
     { "none",       CPIO_WARN_ALL       },
     { "truncate",   CPIO_WARN_TRUNCATE  },
     { "all",        CPIO_WARN_ALL       },
+    { "interdir",   CPIO_WARN_INTERDIR  },
     { NULL }
   };
   struct warn_tab *wt;
