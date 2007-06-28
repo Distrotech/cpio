@@ -29,12 +29,15 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include "cpiohdr.h"
+#include "dstring.h"
+#include "extern.h"
 
 /* Ensure that the directory ARGPATH exists.
    Remove any trailing slashes from ARGPATH before calling this function.
 
    Make any leading directories that don't already exist, with
-   permissions PARENT_MODE.
+   permissions 700.
    If the last element of ARGPATH does not exist, create it as
    a new directory with permissions MODE.
    If OWNER and GROUP are non-negative, make them the UID and GID of
@@ -48,48 +51,27 @@
 
 int
 make_path (char *argpath,
-	   int mode,
-	   int parent_mode,
+	   mode_t mode,
 	   uid_t owner,
 	   gid_t group,
-	   char *verbose_fmt_string)
+	   const char *verbose_fmt_string)
 {
   char *dirpath;		/* A copy we can scribble NULs on.  */
   struct stat stats;
   int retval = 0;
-  int oldmask = umask (0);
+  mode_t tmpmode;
+  mode_t invert_permissions;
+  int we_are_root = getuid () == 0;
   dirpath = alloca (strlen (argpath) + 1);
+
   strcpy (dirpath, argpath);
 
   if (stat (dirpath, &stats))
     {
-      char *slash;
-      int tmp_mode;		/* Initial perms for leading dirs.  */
-      int re_protect;		/* Should leading dirs be unwritable? */
-      struct ptr_list
-      {
-	char *dirname_end;
-	struct ptr_list *next;
-      };
-      struct ptr_list *p, *leading_dirs = NULL;
+      tmpmode = MODE_RWX & ~ newdir_umask;
+      invert_permissions = we_are_root ? 0 : MODE_WXUSR & ~ tmpmode;
 
-      /* If leading directories shouldn't be writable or executable,
-	 or should have set[ug]id or sticky bits set and we are setting
-	 their owners, we need to fix their permissions after making them.  */
-      if (((parent_mode & 0300) != 0300)
-	  || (owner != (uid_t) -1 && group != (gid_t) -1
-	      && (parent_mode & 07000) != 0))
-	{
-	  tmp_mode = 0700;
-	  re_protect = 1;
-	}
-      else
-	{
-	  tmp_mode = parent_mode;
-	  re_protect = 0;
-	}
-
-      slash = dirpath;
+      char *slash = dirpath;
       while (*slash == '/')
 	slash++;
       while ((slash = strchr (slash, '/')))
@@ -112,10 +94,9 @@ make_path (char *argpath,
 		  *(slash -1) = '\0';
 		}
 #endif
-	      if (mkdir (dirpath, tmp_mode))
+	      if (mkdir (dirpath, tmpmode ^ invert_permissions))
 		{
 		  error (0, errno, _("cannot make directory `%s'"), dirpath);
-		  umask (oldmask);
 		  return 1;
 		}
 	      else
@@ -123,24 +104,19 @@ make_path (char *argpath,
 		  if (verbose_fmt_string != NULL)
 		    error (0, 0, verbose_fmt_string, dirpath);
 
-		  if (owner != (uid_t) -1 && group != (gid_t) -1
-		      && chown (dirpath, owner, group)
-#ifdef AFS
-		      && errno != EPERM
-#endif
-		      )
+		  if (stat (dirpath, &stats))
+		    stat_error (dirpath);
+		  else
 		    {
-		      chown_error_details (dirpath, owner, group);
-		      retval = 1;
+		      if (owner != -1)
+			stats.st_uid = owner;
+		      if (group != -1)
+			stats.st_gid = group;
+		      stats.st_mode = tmpmode;
+		      
+		      delay_set_stat (dirpath, &stats, invert_permissions);
 		    }
-		  if (re_protect)
-		    {
-		      struct ptr_list *new = (struct ptr_list *)
-			alloca (sizeof (struct ptr_list));
-		      new->dirname_end = slash;
-		      new->next = leading_dirs;
-		      leading_dirs = new;
-		    }
+		  
 #ifdef HPUX_CDF
 		  if (iscdf)
 		    {
@@ -157,7 +133,6 @@ make_path (char *argpath,
 	  else if (!S_ISDIR (stats.st_mode))
 	    {
 	      error (0, 0, _("`%s' exists but is not a directory"), dirpath);
-	      umask (oldmask);
 	      return 1;
 	    }
 
@@ -172,7 +147,8 @@ make_path (char *argpath,
       /* We're done making leading directories.
 	 Make the final component of the path. */
 
-      if (mkdir (dirpath, mode))
+      invert_permissions = we_are_root ? 0 : MODE_WXUSR & ~ mode;
+      if (mkdir (dirpath, mode ^ invert_permissions))
 	{
 	  /* In some cases, if the final component in dirpath was `.' then we 
 	     just got an EEXIST error from that last mkdir().  If that's
@@ -182,51 +158,25 @@ make_path (char *argpath,
 	       (!S_ISDIR (stats.st_mode) ) )
 	    {
 	      error (0, errno, _("cannot make directory `%s'"), dirpath);
-	      umask (oldmask);
 	      return 1;
 	    }
 	}
+      else if (stat (dirpath, &stats))
+	stat_error (dirpath);
+      else
+	{
+	  if (owner != -1)
+	    stats.st_uid = owner;
+	  if (group != -1)
+	    stats.st_gid = group;
+	  stats.st_mode = mode;
+	  
+	  delay_set_stat (dirpath, &stats, invert_permissions);
+	}
+	
       if (verbose_fmt_string != NULL)
 	error (0, 0, verbose_fmt_string, dirpath);
 
-      if (owner != (uid_t) -1 && group != (gid_t) -1)
-	{
-	  if (chown (dirpath, owner, group)
-#ifdef AFS
-	      && errno != EPERM
-#endif
-	      )
-	    {
-	      chown_error_details (dirpath, owner, group);
-	      retval = 1;
-	    }
-	}
-      /* chown may have turned off some permission bits we wanted.  */
-      if ((mode & 07000) != 0 && chmod (dirpath, mode))
-	{
-	  chmod_error_details (dirpath, mode);
-	  retval = 1;
-	}
-
-      /* If the mode for leading directories didn't include owner "wx"
-	 privileges, we have to reset their protections to the correct
-	 value.  */
-      for (p = leading_dirs; p != NULL; p = p->next)
-	{
-	  *p->dirname_end = '\0';
-#if 0
-	  /* cpio always calls make_path with parent mode 0700, so
-	     we don't have to do this.  If we ever do have to do this,
-	     we have to stat the directory first to get the setuid
-	     bit so we don't break HP CDF's.  */
-	  if (chmod (dirpath, parent_mode))
-	    {
-	      chmod_error_details (dirpath, parent_mode);
-	      retval = 1;
-	    }
-#endif
-
-	}
     }
   else
     {
@@ -235,7 +185,6 @@ make_path (char *argpath,
       if (!S_ISDIR (stats.st_mode))
 	{
 	  error (0, 0, _("`%s' exists but is not a directory"), dirpath);
-	  umask (oldmask);
 	  return 1;
 	}
 
@@ -262,6 +211,5 @@ make_path (char *argpath,
 	}
     }
 
-  umask (oldmask);
   return retval;
 }
