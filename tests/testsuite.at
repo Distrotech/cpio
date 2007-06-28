@@ -31,3 +31,4 @@ m4_include([version.at])
 
 m4_include([inout.at])
 m4_include([symlink.at])
+m4_include([interdir.at])
