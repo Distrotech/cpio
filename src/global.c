@@ -147,25 +147,15 @@ unsigned int crc;
 char *input_buffer, *output_buffer;
 
 /* The size of the input buffer.  */
-long input_buffer_size;
+size_t input_buffer_size;
 
 /* Current locations in `input_buffer' and `output_buffer'.  */
 char *in_buff, *out_buff;
 
 /* Current number of bytes stored at `input_buff' and `output_buff'.  */
-long input_size, output_size;
+size_t input_size, output_size;
 
-/* Total number of bytes read and written for all files.  
-   Now that many tape drives hold more than 4Gb we need more than 32
-   bits to hold input_bytes and output_bytes.  But it's not worth
-   the trouble of adding special multi-precision arithmetic if the 
-   compiler doesn't support 64 bit ints since input_bytes and
-   output_bytes are only used to print the number of blocks copied.  */
-#ifdef __GNUC__
-long long input_bytes, output_bytes;
-#else
-long input_bytes, output_bytes;
-#endif
+off_t input_bytes, output_bytes;
 
 /* Saving of argument values for later reference.  */
 char *directory_name = NULL;

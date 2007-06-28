@@ -81,13 +81,10 @@ extern int debug_flag;
 
 extern char *input_buffer, *output_buffer;
 extern char *in_buff, *out_buff;
-extern long input_buffer_size;
-extern long input_size, output_size;
-#ifdef __GNUC__
-extern long long input_bytes, output_bytes;
-#else
-extern long input_bytes, output_bytes;
-#endif
+extern size_t input_buffer_size;
+extern size_t input_size, output_size;
+extern off_t input_bytes, output_bytes;
+
 extern char *directory_name;
 extern char **save_patterns;
 extern int num_patterns;
