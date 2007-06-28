@@ -1,5 +1,7 @@
 2007-06-28  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* bootstrap: Update for the change of the TP URL
+	
 	* NEWS: Update
 	* src/extern.h, src/makepath.c (make_path): Remove mode
 	argument. All callers updated.
