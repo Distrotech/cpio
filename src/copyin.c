@@ -108,9 +108,9 @@ query_rename(struct cpio_file_stat* file_hdr, FILE *tty_in, FILE *tty_out,
    header type.  */
 
 static void
-tape_skip_padding (int in_file_des, int offset)
+tape_skip_padding (int in_file_des, off_t offset)
 {
-  int pad;
+  off_t pad;
 
   if (archive_format == arf_crcascii || archive_format == arf_newascii)
     pad = (4 - (offset % 4)) % 4;
@@ -1266,7 +1266,7 @@ read_in_binary (struct cpio_file_stat *file_hdr,
 	  error (0, 0, _("warning: archive header has reverse byte-order"));
 	  warned = 1;
 	}
-      swab_array ((char *) &short_hdr, 13);
+      swab_array ((char *) short_hdr, 13);
     }
 
   file_hdr->c_dev_maj = major (short_hdr->c_dev);
