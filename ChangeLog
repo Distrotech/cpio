@@ -1,3 +1,8 @@
+2007-09-28  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/copyin.c (read_in_binary): Fix passing improper argument
+	to swab_array. Reported by Dr. David Alan Gilbert.
+
 2007-06-28  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap: Update for the change of the TP URL
