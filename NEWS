@@ -1,13 +1,12 @@
-GNU cpio NEWS -- history of user-visible changes. 2007-12-05
+GNU cpio NEWS -- history of user-visible changes. 2008-02-08
 Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 Please send cpio bug reports to <bug-cpio@gnu.org>.
 
-Version 2.9.90
+Version 2.9.90 (CVS)
 
 * Support MinGW builds (thanks to Robert Millan)
-
 
 
 Version 2.9 - Sergey Poznyakoff, 2007-06-28

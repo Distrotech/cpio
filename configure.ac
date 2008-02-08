@@ -44,7 +44,9 @@ AC_CHECK_TYPE(gid_t, int)
 AC_HEADER_STDC
 AC_HEADER_DIRENT
 
-AC_CHECK_FUNCS([fchmod fchown setmode])
+AC_CHECK_FUNCS([fchmod fchown])
+# This is needed for mingw build
+AC_CHECK_FUNCS([setmode getpwuid getpwnam getgrgid getgrnam pipe fork getuid geteuid])
 
 # gnulib modules
 gl_INIT
@@ -62,18 +64,7 @@ AC_ARG_ENABLE(mt,
   no)  ;;
   esac])
 
-AC_CHECK_HEADERS(unistd.h stdlib.h string.h fcntl.h sys/io/trioctl.h utmp.h getopt.h locale.h libintl.h sys/wait.h utime.h locale.h process.h sys/ioctl.h)
-
-AC_MSG_CHECKING(for sys_errlist and sys_nerr)
-AC_TRY_RUN(
-extern char *sys_errlist[[]];
-extern int sys_nerr;
-main() { char *s = sys_errlist[[0]]; return 0; },
-        AC_DEFINE(HAVE_SYS_ERRLIST,1,
-                  [Define if your system has sys_errlist global variable])
-        AC_MSG_RESULT(yes),
-        AC_MSG_RESULT(no),
-        AC_MSG_RESULT(don't know))
+AC_CHECK_HEADERS([unistd.h stdlib.h string.h fcntl.h pwd.h grp.h sys/io/trioctl.h utmp.h getopt.h locale.h libintl.h sys/wait.h utime.h locale.h process.h sys/ioctl.h])
 
 AC_CHECK_DECLS([errno, getpwnam, getgrnam, getgrgid, strdup, strerror, getenv, atoi, exit], , , [
 #include <stdio.h>
