@@ -20,36 +20,10 @@
 /* Written by David MacKenzie <djm@gnu.ai.mit.edu>.  */
 
 #include <system.h>
-
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#else
-#ifdef HAVE_ALLOCA_H
 #include <alloca.h>
-#else
-#ifdef _AIX
- #pragma alloca
-#else
-char *alloca ();
-#endif
-#endif
-#endif
-
 #include <stdio.h>
 #include <ctype.h>
 #include <sys/types.h>
-#include <pwd.h>
-#include <grp.h>
-
-#if !HAVE_DECL_GETPWNAM
-extern struct passwd *getpwnam (const char *name);
-#endif
-#if !HAVE_DECL_GETGRNAM
-extern struct group *getgrnam (const char *name);
-#endif
-#if !HAVE_DECL_GETGRGID
-extern struct group *getgrgid (gid_t gid);
-#endif
 
 #ifndef HAVE_ENDPWENT
 # define endpwent()

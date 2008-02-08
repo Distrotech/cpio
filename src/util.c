@@ -33,7 +33,9 @@
 #include <hash.h>
 #include <utimens.h>
 
-#include <sys/ioctl.h>
+#ifdef HAVE_SYS_IOCTL_H
+# include <sys/ioctl.h>
+#endif
 
 #ifdef HAVE_SYS_MTIO_H
 # ifdef HAVE_SYS_IO_TRIOCTL_H
@@ -1266,7 +1268,10 @@ stat_to_cpio (struct cpio_file_stat *hdr, struct stat *st)
 }
 
 #ifndef HAVE_FCHOWN
-# define fchown(fd, uid, gid) (-1)
+# define HAVE_FCHOWN 0
+#endif
+#ifndef HAVE_FCHMOD
+# define HAVE_FCHMOD 0
 #endif
 
 int

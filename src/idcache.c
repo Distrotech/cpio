@@ -23,9 +23,9 @@
 
 #include <stdio.h>
 #include <sys/types.h>
-#include <pwd.h>
-#include <grp.h>
 #include <xalloc.h>
+
+#include <system.h>
 
 #if defined(STDC_HEADERS) || defined(HAVE_STRING_H)
 #include <string.h>

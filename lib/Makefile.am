@@ -32,7 +32,8 @@ libcpio_a_SOURCES += \
  paxexit.c\
  paxlib.h\
  paxnames.c\
- rtapelib.c
+ rtapelib.c\
+ system.c
 
 DISTCLEANFILES += rmt-command.h
 rmt-command.h: Makefile

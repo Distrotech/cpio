@@ -16,7 +16,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software Foundation,
 dnl Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-AC_INIT([GNU cpio], [2.9], [bug-cpio@gnu.org])
+AC_INIT([GNU cpio], [2.9.90], [bug-cpio@gnu.org])
 AC_CONFIG_SRCDIR(src/cpio.h)
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE
@@ -25,7 +25,6 @@ AC_CONFIG_HEADERS([config.h])
 AC_PREREQ([2.59])
 
 dnl Check for programs
-gl_USE_SYSTEM_EXTENSIONS
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_GCC_TRADITIONAL
@@ -45,12 +44,14 @@ AC_CHECK_TYPE(gid_t, int)
 AC_HEADER_STDC
 AC_HEADER_DIRENT
 
-AC_CHECK_FUNCS([fchmod fchown])
+AC_CHECK_FUNCS([fchmod fchown setmode])
 
 # gnulib modules
 gl_INIT
 # paxutils modules
 cpio_PAXUTILS
+# Additional system dependencies (for mingw)
+CPIO_SYSDEP
 
 AC_SUBST(CPIO_MT_PROG)
 
@@ -61,7 +62,7 @@ AC_ARG_ENABLE(mt,
   no)  ;;
   esac])
 
-AC_CHECK_HEADERS(unistd.h stdlib.h string.h fcntl.h sys/io/trioctl.h utmp.h getopt.h locale.h libintl.h sys/wait.h utime.h locale.h)
+AC_CHECK_HEADERS(unistd.h stdlib.h string.h fcntl.h sys/io/trioctl.h utmp.h getopt.h locale.h libintl.h sys/wait.h utime.h locale.h process.h sys/ioctl.h)
 
 AC_MSG_CHECKING(for sys_errlist and sys_nerr)
 AC_TRY_RUN(

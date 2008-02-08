@@ -595,6 +595,13 @@ rm -fr $bt $bt2 || exit
 
 # Reconfigure, getting other files.
 
+echo "$0: Creating lib/system.c"
+m4 -DMODE=C sysdep.m4 mingw.m4 > lib/system.c
+echo "$0: Updating lib/system.h"
+m4 -DMODE=H sysdep.m4 mingw.m4 >> lib/system.h
+echo "$0: Creating m4/sysdep.m4"
+m4 -DMODE=AC sysdep.m4 mingw.m4 > m4/sysdep.m4
+
 for command in \
   'aclocal --force -I m4' \
   'autoconf --force' \
@@ -648,4 +655,5 @@ if test -d runtime-po; then
   (cd po && cp -p Makefile.in.in *-quot *.header *.sed *.sin ../runtime-po)
 fi
 cleanup_ifl
+
 echo "$0: done.  Now you can run './configure'."

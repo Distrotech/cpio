@@ -1,3 +1,20 @@
+2007-12-05  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	Fix mingw build. Thanks to Robert Millan.
+	
+	* NEWS, THANKS: Update.
+	* bootstrap: Create lib/system.c, m4/sysdep.m4, update lib/system.h.
+	* mingw.m4, sysdep.m4: New files.
+	* configure.ac: Raise version number to 2.9.90.
+	Call CPIO_SYSDEP. Remove the call to gl_USE_SYSTEM_EXTENSIONS.
+	(AC_CHECK_HEADERS): Add process.h sys/ioctl.h
+	* lib/Makefile.am (libcpio_a_SOURCES): Add system.c
+	* src/idcache.c: Include system.h
+	* src/userspec.c: Remove alloca stuff (already handled by
+	gnulib). Include alloca.h.
+	Remove useless declarations of get.* functions.
+	* src/util.c: Include sys/ioctl.h conditionally.
+
 2007-09-28  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/copyin.c (read_in_binary): Fix passing improper argument
