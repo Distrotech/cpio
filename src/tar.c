@@ -217,7 +217,7 @@ write_out_tar_header (struct cpio_file_stat *file_hdr, int out_des)
       char *name;
 
       strncpy (tar_hdr->magic, TMAGIC, TMAGLEN);
-      strncpy (tar_hdr->magic + TMAGLEN, TVERSION, TVERSLEN);
+      strncpy (tar_hdr->version, TVERSION, TVERSLEN);
 
       name = getuser (file_hdr->c_uid);
       if (name)

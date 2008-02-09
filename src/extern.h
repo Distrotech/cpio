@@ -166,7 +166,7 @@ void tape_toss_input (int in_des, off_t num_bytes);
 void copy_files_tape_to_disk (int in_des, int out_des, off_t num_bytes);
 void copy_files_disk_to_tape (int in_des, int out_des, off_t num_bytes, char *filename);
 void copy_files_disk_to_disk (int in_des, int out_des, off_t num_bytes, char *filename);
-void warn_if_file_changed (char *file_name, unsigned long old_file_size,
+void warn_if_file_changed (char *file_name, off_t old_file_size,
                            time_t old_file_mtime);
 void create_all_directories (char *name);
 void prepare_append (int out_file_des);

@@ -234,7 +234,7 @@ unreadable.
 cpio @{-o|--create@} [-0acvABLV] [-C bytes] [-H format]
 [-M message] [-O [[user@@]host:]archive] [-F [[user@@]host:]archive]
 [--file=[[user@@]host:]archive] [--format=format]
-[--message=message][--null] [--reset-access-time] [--verbose]
+[--message=message] [--null] [--reset-access-time] [--verbose]
 [--dot] [--append] [--block-size=blocks] [--dereference]
 [--io-size=bytes] [--rsh-command=command] [--help] [--version]
 < name-list [> archive]

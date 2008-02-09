@@ -527,8 +527,8 @@ void
 copy_files_disk_to_disk (int in_des, int out_des, off_t num_bytes,
 			 char *filename)
 {
-  long size;
-  long k;
+  off_t size;
+  off_t k;
   off_t original_num_bytes;
   int rc;
 
@@ -569,7 +569,7 @@ copy_files_disk_to_disk (int in_des, int out_des, off_t num_bytes,
 /* Warn if file changed while it was being copied.  */
 
 void
-warn_if_file_changed (char *file_name, unsigned long old_file_size,
+warn_if_file_changed (char *file_name, off_t old_file_size,
 		      time_t old_file_mtime)
 {
   struct stat new_file_stat;

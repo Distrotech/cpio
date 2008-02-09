@@ -4,7 +4,7 @@ See the end of file for copying conditions.
 
 Please send cpio bug reports to <bug-cpio@gnu.org>.
 
-Version 2.9.90 (CVS)
+Version 2.9.91 (CVS)
 
 * Support MinGW builds (thanks to Robert Millan)
 

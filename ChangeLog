@@ -1,3 +1,18 @@
+2008-02-09  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* NEWS, configure.ac: Raise the patchlevel number.
+	* THANKS: Update
+	
+	* doc/cpio.texi: Fix a typo.
+	* src/extern.h (warn_if_file_changed): Fix type of the 2nd
+	argument.
+	* src/tar.c (write_out_tar_header): Stylistic change.
+	* src/util.c (copy_files_disk_to_disk): Fix types of automatic
+	variables. 
+	(warn_if_file_changed): Fix type of the 2nd argument.
+	
+	Patches supplied by Ladislav Michnovic.
+	
 2008-02-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* po/POTFILES.in: Add missing files.
