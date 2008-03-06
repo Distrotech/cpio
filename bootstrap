@@ -49,9 +49,9 @@ Options:
  --force                  Attempt to bootstrap even if the sources seem
                           not to have been checked out.
  --skip-po                Do not download po files.
- --update-po[=LANG]       Update po file(s) and exit.
+ --update-po              Update po files and exit.
  --cvs-user=USERNAME      Set the CVS username to be used when accessing
-                          the gnulib repository.
+                          the paxutils repository.
 
 If the file bootstrap.conf exists in the current working directory, its
 contents are read as shell variables to configure the bootstrap.
@@ -69,24 +69,34 @@ checkout() {
   if [ ! -d $1 ]; then
     echo "$0: getting $1 files..."
 
-    case ${CVS_AUTH-pserver} in
-    pserver)
-      CVS_PREFIX=':pserver:anonymous@';;
-    ssh)
-      CVS_PREFIX="$CVS_USER${CVS_USER+@}";;
-    *)
-      echo "$0: $CVS_AUTH: Unknown CVS access method" >&2
-      exit 1;;
-    esac
+    case $1 in
+    paxutils)
+      case ${CVS_AUTH-pserver} in
+      pserver)
+        CVS_PREFIX=':pserver:anonymous@';;
+      ssh)
+        CVS_PREFIX="$CVS_USER${CVS_USER+@}";;
+      *)
+        echo "$0: $CVS_AUTH: Unknown CVS access method" >&2
+        exit 1;;
+      esac
 
-    case $CVS_RSH in
-    '') CVS_RSH=ssh; export CVS_RSH;;
+      case $CVS_RSH in
+      '') CVS_RSH=ssh; export CVS_RSH;;
+      esac
+
+      CVSURL=${CVS_PREFIX}cvs.savannah.gnu.org:/cvsroot/"$1"
+      ;;
+      
+    gnulib)
+      CVSURL=:pserver:anonymous@pserver.git.sv.gnu.org:/gnulib.git
+      ;;
+      
     esac
 
     trap "cleanup $1" 1 2 13 15
 
-    cvs -z3 -q -d ${CVS_PREFIX}cvs.savannah.gnu.org:/cvsroot/"$1" co $1 ||
-      cleanup $1
+    cvs -z3 -q -d $CVSURL co $1 || cleanup $1
 
     trap - 1 2 13 15
   fi
@@ -106,11 +116,13 @@ gnulib_modules=
 # Any gnulib files needed that are not in modules.
 gnulib_files=
 
-# Translation Project URL, for the registry of all projects
-# and for the translation-team master directory.
-tp_url() {
-	echo "http://translationproject.org/domain/$1.html"
-}
+# The command to download all .po files for a specified domain into
+# a specified directory.  Fill in the first %s is the domain name, and
+# the second with the destination directory.  Use rsync's -L and -r
+# options because the latest/%s directory and the .po files within are
+# all symlinks.
+po_download_command_format=\
+"rsync -Lrtvz 'translationproject.org::tp/latest/%s/' '%s'"
 
 extract_package_name='
   /^AC_INIT(/{
@@ -213,78 +225,60 @@ echo "$0: Bootstrapping CVS $package..."
 
 # Get translations.
 
-get_translations() {
+download_po_files() {
   subdir=$1
   domain=$2
-  po_file=$3
-
-  case $WGET_COMMAND in
-  '')
-    echo "$0: wget not available; skipping translations";;
-  ?*)
-    url=`tp_url $domain`
-    baseurl=`expr "$url" : '\(.*\)/.*'`
-    echo "$0: getting translations into $subdir for $domain..." &&
-    case $po_file in
-    '') (cd $subdir && rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'`);;
-    esac &&
-
-    $WGET_COMMAND -O "$subdir/$domain.html" "$url" &&
-
-    sed -n 's|.*href="\(.*\)/\([^/][^/]*\)/'"$domain"'-\([^/"]*\)\.[^."]*\.po".*|\2:\3:\1|p' <"$subdir/$domain.html" |
-    sort -t: -k 1,1 -k 2,2n -k2,2 -k3,3n -k3,3 -k4,4n -k4,4 -k5,5n -k5.5 |
-    awk -F: '
-      { if (lang && $1 != lang) print lang, ver, $3 }
-      { lang = $1; ver = $2 }
-      END { if (lang) print lang, ver, $3 }
-    ' | awk -v domain="$domain" -v baseurl="$baseurl" -v subdir="$subdir" \
-            -v po_file="$po_file" '
-      {
-	lang = $1
-        if (po_file && po_file != (lang ".po")) next
-	ver = $2
-	printf "{ $WGET_COMMAND -O %s/%s.po %s/%s/%s/%s-%s.%s.po &&\n", subdir, lang, baseurl, $3, lang, domain, ver, lang
-	printf "  msgfmt -c -o /dev/null %s/%s.po || {\n", subdir, lang
-	printf "    echo >&2 '\'"$0"': omitting translation for %s'\''\n", lang
-	printf "    rm -f %s/%s.po; }; } &&\n", subdir, lang
-      }
-      END { print ":" }
-    ' | WGET_COMMAND="$WGET_COMMAND" sh 
-    ;;
-  esac &&
-  ls "$subdir"/*.po 2>/dev/null |
-    sed 's|.*/||; s|\.po$||' >"$subdir/LINGUAS" &&
-  rm -f "$subdir/$domain.html"
+  echo "$0: getting translations into $subdir for $domain..."
+  cmd=`printf "$po_download_command_format" "$domain" "$subdir"`
+  eval "$cmd"
 }
 
-case `wget --help` in
-*'--no-cache'*)
-    WGET_COMMAND='wget -nv --no-cache';;
-*'--cache=on/off'*)
-    WGET_COMMAND='wget -nv --cache=off';;
-*'--non-verbose'*)
-    WGET_COMMAND='wget -nv';;
-*)
-    WGET_COMMAND='';;
-esac
+# Download .po files to $po_dir/.reference and copy only the new
+# or modified ones into $po_dir.  Also update $po_dir/LINGUAS.
+update_po_files() {
+  # Directory containing primary .po files.
+  # Overwrite them only when we're sure a .po file is new.
+  po_dir=$1
+  domain=$2
+
+  # Download *.po files into this dir.
+  # Usually contains *.s1 checksum files.
+  ref_po_dir="$po_dir/.reference"
+
+  test -d $ref_po_dir || mkdir $ref_po_dir || return
+  download_po_files $ref_po_dir $domain \
+    && ls "$ref_po_dir"/*.po 2>/dev/null |
+      sed 's|.*/||; s|\.po$||' > "$po_dir/LINGUAS"
+
+  langs=`cd $ref_po_dir && echo *.po|sed 's/\.po//g'`
+  test "$langs" = '*' && langs=x
+  for po in `cd $ref_po_dir && echo *.po|sed 's/\.po//g'`; do
+    case $po in x) continue;; esac
+    new_po="$ref_po_dir/$po.po"
+    cksum_file="$ref_po_dir/$po.s1"
+    if ! test -f "$cksum_file" ||
+	! test -f "$po_dir/$po.po" ||
+	! sha1sum -c --status "$cksum_file" < "$new_po" > /dev/null; then
+      echo "updated $po_dir/$po.po..."
+      cp "$new_po" "$po_dir/$po.po" && sha1sum < "$new_po" > "$cksum_file"
+    fi
+  done
+}
 
 case $DOWNLOAD_PO in
 'skip')
   ;;
 '')
-  get_translations po $package || exit
+  if test -d po; then
+    update_po_files po $package || exit
+  fi
   ;;
 'only')
-  get_translations po $package
+  if test -d po; then
+    update_po_files po $package || exit
+  fi
   exit
   ;;
-*.po)
-  get_translations po $package "$DOWNLOAD_PO"
-  exit
-  ;;
-*)
-  get_translations po $package "${DOWNLOAD_PO}.po"
-  exit
 esac
 
 # Get paxutils files.
@@ -339,28 +333,6 @@ copy_files() {
   done
 }
 
-copy_files ${PAXUTILS_SRCDIR}/m4 m4
-echo "$0: Creating m4/paxutils.m4"
-(echo "# This file is generated automatically. Please, do not edit."
- echo "#"
- echo "AC_DEFUN([${package}_PAXUTILS],["
- cat ${PAXUTILS_SRCDIR}/m4/DISTFILES | sed '/^#/d;s/\(.*\)\.m4/pu_\1/' | tr a-z A-Z
- echo "])") > ./m4/paxutils.m4
-ignorefile m4 paxutils.m4
-
-if [ -d rmt ]; then
-   :
-else
-   mkdir rmt
-fi
-
-for dir in doc rmt lib tests
-do
-	copy_files ${PAXUTILS_SRCDIR}/$dir $dir
-done
-
-copy_files ${PAXUTILS_SRCDIR}/paxlib lib pax
-
 # Get gnulib files.
 
 case ${GNULIB_SRCDIR--} in
@@ -371,6 +343,12 @@ esac
 
 gnulib_tool=$GNULIB_SRCDIR/gnulib-tool
 <$gnulib_tool || exit
+
+ensure_dir_exists()
+{
+  d=`dirname $dst`
+  test -d "$d" || mkdir -p -- "$d"
+}
 
 symlink_to_gnulib()
 {
@@ -388,6 +366,7 @@ symlink_to_gnulib()
       test -f "$dst" &&
       cmp -s "$src" "$dst" || {
 	echo "$0: cp -fp $src $dst" &&
+	ensure_dir_exists $dst &&
 	cp -fp "$src" "$dst"
       }
     else
@@ -410,6 +389,7 @@ symlink_to_gnulib()
 	esac
 
 	echo "$0: ln -fs $dot_dots$src $dst" &&
+	ensure_dir_exists $dst &&
 	ln -fs "$dot_dots$src" "$dst"
       }
     fi
@@ -592,8 +572,28 @@ slurp $bt2 $bt || exit
 
 rm -fr $bt $bt2 || exit
 
+# Import from paxutils
+copy_files ${PAXUTILS_SRCDIR}/m4 m4
+echo "$0: Creating m4/paxutils.m4"
+(echo "# This file is generated automatically. Please, do not edit."
+ echo "#"
+ echo "AC_DEFUN([${package}_PAXUTILS],["
+ cat ${PAXUTILS_SRCDIR}/m4/DISTFILES | sed '/^#/d;s/\(.*\)\.m4/pu_\1/' | tr a-z A-Z
+ echo "])") > ./m4/paxutils.m4
+ignorefile m4 paxutils.m4
 
-# Reconfigure, getting other files.
+if [ -d rmt ]; then
+   :
+else
+   mkdir rmt
+fi
+
+for dir in doc rmt lib tests
+do
+	copy_files ${PAXUTILS_SRCDIR}/$dir $dir
+done
+
+copy_files ${PAXUTILS_SRCDIR}/paxlib lib pax
 
 echo "$0: Creating lib/system.c"
 m4 -DMODE=C sysdep.m4 mingw.m4 > lib/system.c
@@ -601,6 +601,8 @@ echo "$0: Updating lib/system.h"
 m4 -DMODE=H sysdep.m4 mingw.m4 >> lib/system.h
 echo "$0: Creating m4/sysdep.m4"
 m4 -DMODE=AC sysdep.m4 mingw.m4 > m4/sysdep.m4
+
+# Reconfigure, getting other files.
 
 for command in \
   'aclocal --force -I m4' \
@@ -655,5 +657,4 @@ if test -d runtime-po; then
   (cd po && cp -p Makefile.in.in *-quot *.header *.sed *.sin ../runtime-po)
 fi
 cleanup_ifl
-
 echo "$0: done.  Now you can run './configure'."
