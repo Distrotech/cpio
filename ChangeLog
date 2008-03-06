@@ -1,6 +1,9 @@
 2008-03-06  Sergey Poznyakoff  <gray@gnu.org.ua>
 
-	* bootstrap: Sync with tar
+	* bootstrap: Update .cvsignore files.
+	* po/.cvsignore: Update.
+
+	* bootstrap: Sync with tar.
 	* po/.cvsignore: New file.
 
 2008-02-09  Sergey Poznyakoff  <gray@gnu.org.ua>
