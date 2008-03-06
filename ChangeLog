@@ -1,3 +1,8 @@
+2008-03-06  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* bootstrap: Sync with tar
+	* po/.cvsignore: New file.
+
 2008-02-09  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS, configure.ac: Raise the patchlevel number.
