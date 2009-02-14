@@ -606,7 +606,7 @@ process_args (int argc, char *argv[])
   xstat = lstat;
 
   if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER|ARGP_NO_HELP, &index, NULL))
-    exit (1); 
+    exit (PAXEXIT_FAILURE); 
 
   /* Do error checking and look at other args.  */
 
@@ -795,7 +795,7 @@ main (int argc, char *argv[])
   (*copy_function) ();
 
   if (archive_des >= 0 && rmtclose (archive_des) == -1)
-    error (1, errno, _("error closing archive"));
+    error (PAXEXIT_FAILURE, errno, _("error closing archive"));
 
-  exit (0);
+  pax_exit ();
 }
