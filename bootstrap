@@ -265,7 +265,7 @@ case ${PAXUTILS_SRCDIR--} in
 
     trap - 1 2 13 15
   fi
-  PAXUTILS_SRCDIR=paxutils
+  PAXUTILS_SRCDIR=`cd .; pwd`/paxutils
 esac
 
 # Get translations.
