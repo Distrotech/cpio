@@ -10,7 +10,8 @@ fileblocks
 fnmatch-gnu
 full-write
 getopt
-gettext
+gettext-h
+gitlog-to-changelog
 hash
 inttypes
 lchown

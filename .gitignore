@@ -1,7 +1,13 @@
-*.tar.bz2
-*.tar.gz
+*.a
+*.o
+*.tar.*
+*~
 .bootstrap
+.deps
+.emacs.desktop
+.emacsrc
 ABOUT-NLS
+ChangeLog
 INSTALL
 Makefile
 Makefile.in
@@ -13,8 +19,8 @@ config.h.in
 config.log
 config.status
 configure
+core
+gnu
 m4
-nonexistent
 rmt
-scripts
 stamp-h1

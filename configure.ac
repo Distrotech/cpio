@@ -79,8 +79,9 @@ AC_CHECK_DECLS([errno, getpwnam, getgrnam, getgrgid, strdup, strerror, getenv, a
 #include <grp.h>])
 
 # Gettext.
+AM_ICONV
 AM_GNU_GETTEXT([external], [need-formatstring-macros])
-AM_GNU_GETTEXT_VERSION(0.16)
+AM_GNU_GETTEXT_VERSION(0.17)
 
 # Initialize the test suite.
 AC_CONFIG_TESTDIR(tests)
@@ -90,7 +91,8 @@ AM_MISSING_PROG([AUTOM4TE], [autom4te])
 AC_CONFIG_FILES([Makefile
  doc/Makefile
  headers/Makefile
- lib/Makefile
+ gnu/Makefile
+ paxlib/Makefile
  rmt/Makefile
  src/Makefile
  po/Makefile.in])

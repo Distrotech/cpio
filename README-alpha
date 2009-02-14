@@ -1,63 +1,47 @@
 This is the GNU cpio package.
+This document describes the actions needed to build the pre-release
+or Git version of the package. See end of file for copying conditions.
 
-This is a *pre-release* version, and not ready for production use yet.
-Please send comments and problem reports to <bug-cpio@gnu.org>.
+* Introduction
 
-If you have taken the sources from CVS you will need the following
-packages (or later) to build GNU tar.  We don't make any extra effort
-to accommodate older versions of these packages, so please make sure
-that you have the latest stable version.
+This is a *pre-release* version, and not ready for production use
+yet. If you are taking source from Git, you will need to have several
+special tools to help contribute. See the file README-hacking for more
+information, See chapter `Building' for the detailed instructions on
+how to build the package.
 
-- Automake <http://www.gnu.org/software/automake/>
-- Autoconf <http://www.gnu.org/software/autoconf/>
-- Gettext <http://www.gnu.org/software/gettext/>
-- M4 <http://www.gnu.org/software/m4/>
-- Texinfo <http://www.gnu.org/software/texinfo>
-
-Before building the package, run "bootstrap".  It obtains various
-additional files from the CVS repository and the Translation Project
-site and prepares the source directory for building.
-
-When run without arguments, bootstrap will try to obtain gnulib and
-paxutils files from their corresponding CVS repositories on Savannah
-using anonymous SSH access.  Then, it will fetch the po files from tar
-page at Translation Project, and, finally, it will start autoconfiguration
-process.  Simply running it without arguments should do in most cases.
-Several options allow to control the behavior of bootstrap:
-
- --gnulib-srcdir=DIRNAME      Specify the local directory where gnulib
-                              sources reside. Use this if you already
-                              have gnulib sources on your machine, and
-                              do not want to waste your bandwidth dowloading
-                              them again.
-
- --paxutils-srcdir=DIRNAME    Specify the local directory where paxutils
-                              sources reside. Use this if you already
-                              have paxutils sources on your machine, and
-                              do not want to waste your bandwidth dowloading
-                              them again.
-
- --cvs-auth=METHOD            Set the CVS access method used for downloading
-                              gnulib files. METHOD is one of the keywords
-                              accepted by cvs -d option (see info cvs
-                              repository).
-
- --cvs-user=USERNAME          Set the CVS username to be used when accessing
-                              the gnulib repository.
-
- --no-po                      Do not download po files.
-
-Notice also that when using CVS authentication method "ext", bootstrap
-will set the variable CVS_RSH to "ssh", unless it is already set to
-some other value.
-
-Then, configure and build the package as usual.
+Please, note that the accompanying documentation may be inaccurate
+or incomplete. The Git logs are the authoritative documentation of
+all recent changes. You may convert them to the traditional ChangeLog
+format by running `make ChangeLog'.
 
 Report bugs to <bug-cpio@gnu.org>
 
-
+* Checking Out the Sources
 
-Copyright (C) 2004, 2006, 2007 Free Software Foundation, Inc.
+The following instructions apply if you wish to obtain sources from
+the Git repository:
+
+To clone the source tree from the repository, issue the following command:
+
+  git clone git://git.savannah.gnu.org/cpio.git
+
+This will give you read-only access.  If you think you need write access,
+contact the mailing list.
+
+* Building
+
+Usual procedures apply:
+
+ ./configure
+ make
+ make install
+
+See INSTALL and README for the detailed instructions.
+
+* Copyright information:
+
+Copyright (C) 2004, 2006, 2007, 2009 Free Software Foundation, Inc.
 
 This file is part of GNU cpio.
 
@@ -76,6 +60,12 @@ along with GNU cpio; see the file COPYING.  If not, write to
 the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 
+
+Local Variables:
+mode: outline
+paragraph-separate: "[ 	]*$"
+version-control: never
+End:
 
 
 

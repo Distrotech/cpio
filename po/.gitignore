@@ -1,11 +1,8 @@
 *.gmo
 *.mo
 *.po
-.cvsignore
 .reference
 LINGUAS
-Makefile
-Makefile.in
 Makefile.in.in
 Makevars
 Makevars.template
@@ -15,6 +12,7 @@ boldquot.sed
 cpio.pot
 en@boldquot.header
 en@quot.header
+insert-header.sed
 insert-header.sin
 quot.sed
 remove-potcdate.sed

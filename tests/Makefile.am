@@ -78,8 +78,8 @@ check_PROGRAMS = genfile
 genfile_SOURCES = genfile.c argcv.c argcv.h
 
 localedir = $(datadir)/locale
-INCLUDES = -I$(top_srcdir)/lib -I../lib -I$(top_srcdir)/src
+INCLUDES = -I$(top_srcdir)/gnu -I../gnu -I$(top_srcdir)/paxlib
 AM_CPPFLAGS = -DLOCALEDIR=\"$(localedir)\"
 
-LDADD = ../lib/libcpio.a $(LIBINTL) $(LIB_CLOCK_GETTIME)
+LDADD=../gnu/libgnu.a @LIB_CLOCK_GETTIME@ @INTLLIBS@
 

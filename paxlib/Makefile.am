@@ -1,6 +1,6 @@
-# Makefile for GNU cpio library.
+# Makefile for GNU libpax library.
 
-# Copyright (C) 2004, 2005, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -17,33 +17,30 @@
 ## Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 ## 02110-1301, USA.
 
-include gnulib.mk
-
-noinst_HEADERS += \
+noinst_LIBRARIES=libpax.a
+noinst_HEADERS = \
  paxlib.h\
  rmt.h\
  rmt-command.h\
  system-ioctl.h\
  system.h
 
-libcpio_a_SOURCES += \
+libpax_a_SOURCES = \
  fatal.c\
- paxerror.c\
- paxexit.c\
+ error.c\
+ exit.c\
  paxlib.h\
- paxnames.c\
- rtapelib.c\
- system.c
+ names.c\
+ rtapelib.c
 
-DISTCLEANFILES += rmt-command.h
+DISTCLEANFILES = rmt-command.h
 rmt-command.h: Makefile
 	echo '#define LOCALEDIR "$(localedir)"' >$@
 	echo "#ifndef DEFAULT_RMT_COMMAND" >> $@
 	echo "# define DEFAULT_RMT_COMMAND \"$(DEFAULT_RMT_DIR)/`echo \"rmt\" | sed 's,^.*/,,;$(transform)'`$(EXEEXT)\"" >> $@
 	echo "#endif" >> $@
 
-BUILT_SOURCES += rmt-command.h
-CLEANFILES += rmt-command.h
+BUILT_SOURCES = rmt-command.h
+CLEANFILES = rmt-command.h
+INCLUDES=-I. -I.. -I$(top_srcdir)/gnu -I$(top_builddir)/gnu
 
-libcpio_a_LIBADD += $(LIBOBJS)
-libcpio_a_DEPENDENCIES += $(LIBOBJS)
