@@ -2,22 +2,22 @@
 
 # Bootstrap this package from checked-out sources.
 
-# Copyright (C) 2003-2008 Free Software Foundation, Inc.
+# Copyright (C) 2003-2008, 2009 Free Software Foundation, Inc.
 
-# Dico is free software: you can redistribute it and/or modify
+# This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-# Dico is distributed in the hope that it will be useful,
+# This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with Dico.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Written by Paul Eggert.
+# Written by Paul Eggert and Sergey Poznyakoff.
 
 nl='
 '
@@ -39,22 +39,22 @@ Usage: $0 [OPTION]...
 Bootstrap this package from the checked-out sources.
 
 Options:
- --gnulib-srcdir=DIRNAME  Specify the local directory where gnulib
-                          sources reside.  Use this if you already
-                          have gnulib sources on your machine, and
-                          do not want to waste your bandwidth downloading
-                          them again.
  --paxutils-srcdir=DIRNAME  Specify the local directory where paxutils
                           sources reside. Use this if you already
                           have paxutils sources on your machine, and
                           do not want to waste your bandwidth dowloading
+                          them again.
+ --gnulib-srcdir=DIRNAME  Specify the local directory where gnulib
+                          sources reside.  Use this if you already
+                          have gnulib sources on your machine, and
+                          do not want to waste your bandwidth downloading
                           them again.
  --copy                   Copy files instead of creating symbolic links.
  --force                  Attempt to bootstrap even if the sources seem
                           not to have been checked out.
  --skip-po                Do not download po files.
 
-If the file bootstrap.conf exists in the current working directory, its
+If the file $0.conf exists in the same directory as this script, its
 contents are read as shell variables to configure the bootstrap.
 
 Running without arguments will suffice in most cases.
@@ -151,7 +151,13 @@ copy=false
 vc_ignore=auto
 
 # Override the default configuration, if necessary.
-test -r bootstrap.conf && . ./bootstrap.conf
+# Make sure that bootstrap.conf is sourced from the current directory
+# if we were invoked as "sh bootstrap".
+case "$0" in
+  */*) test -r "$0.conf" && . "$0.conf" ;;
+  *) test -r "$0.conf" && . ./"$0.conf" ;;
+esac
+
 
 if test "$vc_ignore" = auto; then
   vc_ignore=
@@ -170,7 +176,7 @@ do
     usage
     exit;;
   --gnulib-srcdir=*)
-    GNULIB_SRCDIR=`expr "$option" : '--gnulib-srcdir=\(.*\)'`;;
+    GNULIB_SRCDIR=`expr "X$option" : 'X--gnulib-srcdir=\(.*\)'`;;
   --paxutils-srcdir=*)
     PAXUTILS_SRCDIR=`expr "$option" : '--paxutils-srcdir=\(.*\)'`;;
   --skip-po)
@@ -225,48 +231,90 @@ fi
 
 echo "$0: Bootstrapping from checked-out $package sources..."
 
-cleanup_dir() {
+# See if we can use gnulib's git-merge-changelog merge driver.
+if test -d .git && (git --version) >/dev/null 2>/dev/null ; then
+  if git config merge.merge-changelog.driver >/dev/null ; then
+    :
+  elif (git-merge-changelog --version) >/dev/null 2>/dev/null ; then
+    echo "initializing git-merge-changelog driver"
+    git config merge.merge-changelog.name 'GNU-style ChangeLog merge driver'
+    git config merge.merge-changelog.driver 'git-merge-changelog %O %A %B'
+  else
+    echo "consider installing git-merge-changelog from gnulib"
+  fi
+fi
+
+cleanup() {
   status=$?
-  rm -fr "$1"
+  rm -fr $1
   exit $status
 }
+
+git_modules_config () {
+  GIT_CONFIG_LOCAL=.gitmodules git config "$@"
+}
+
+# Get paxutils files.
+case ${PAXUTILS_SRCDIR--} in
+-) if [ ! -d paxutils ]; then
+     echo "$0: getting paxutils files..."
+
+     trap "cleanup paxutils" 1 2 13 15
+
+     git clone --depth 1 git://git.sv.gnu.org/paxutils || cleanup paxutils
+
+     trap - 1 2 13 15
+   fi
+   PAXUTILS_SRCDIR=paxutils
+   ;;
+esac
+
+if [ -r $PAXUTILS_SRCDIR/gnulib.modules ]; then
+  gnulib_modules=`
+    (echo "$gnulib_modules"; grep '^[^#]' $PAXUTILS_SRCDIR/gnulib.modules) |
+    sort -u
+  `
+fi
 
 # Get gnulib files.
 
 case ${GNULIB_SRCDIR--} in
 -)
-  if [ ! -d gnulib ]; then
+  if git_modules_config submodule.gnulib.url >/dev/null; then
+    echo "$0: getting gnulib files..."
+    git submodule init || exit $?
+    git submodule update || exit $?
+
+  elif [ ! -d gnulib ]; then
     echo "$0: getting gnulib files..."
 
-    trap "cleanup_dir gnulib" 1 2 13 15
+    trap cleanup_gnulib 1 2 13 15
 
-    git clone --depth 2 git://git.sv.gnu.org/gnulib ||
-      cleanup_dir gnulib
+    git clone --help|grep depth > /dev/null && shallow='--depth 2' || shallow=
+    git clone $shallow git://git.sv.gnu.org/gnulib ||
+      "cleanup $1"
 
     trap - 1 2 13 15
   fi
   GNULIB_SRCDIR=gnulib
+  ;;
+*)
+  # Redirect the gnulib submodule to the directory on the command line
+  # if possible.
+  if test -d "$GNULIB_SRCDIR"/.git && \
+	git_modules_config submodule.gnulib.url >/dev/null; then
+    git submodule init
+    GNULIB_SRCDIR=`cd $GNULIB_SRCDIR && pwd`
+    git config --replace-all submodule.gnulib.url $GNULIB_SRCDIR
+    echo "$0: getting gnulib files..."
+    git submodule update || exit $?
+    GNULIB_SRCDIR=gnulib
+  fi
+  ;;
 esac
 
 gnulib_tool=$GNULIB_SRCDIR/gnulib-tool
 <$gnulib_tool || exit
-
-# Get paxutils files.
-
-case ${PAXUTILS_SRCDIR--} in
--)
-  if [ ! -d paxutils ]; then
-    echo "$0: getting gnulib files..."
-
-    trap "cleanup_dir paxutils" 1 2 13 15
-
-    git clone --depth 2 git://git.sv.gnu.org/paxutils ||
-      cleanup_dir paxutils
-
-    trap - 1 2 13 15
-  fi
-  PAXUTILS_SRCDIR=`cd .; pwd`/paxutils
-esac
 
 # Get translations.
 
@@ -297,7 +345,7 @@ update_po_files() {
 
   langs=`cd $ref_po_dir && echo *.po|sed 's/\.po//g'`
   test "$langs" = '*' && langs=x
-  for po in `cd $ref_po_dir && echo *.po|sed 's/\.po//g'`; do
+  for po in $langs; do
     case $po in x) continue;; esac
     new_po="$ref_po_dir/$po.po"
     cksum_file="$ref_po_dir/$po.s1"
@@ -407,9 +455,13 @@ cp_mark_as_generated()
 
     if test -z "$c1"; then
       cmp -s "$cp_src" "$cp_dst" || {
+	# Copy the file first to get proper permissions if it
+	# doesn't already exist.  Then overwrite the copy.
 	echo "$0: cp -f $cp_src $cp_dst" &&
 	rm -f "$cp_dst" &&
-	sed "s!$bt_regex/!!g" "$cp_src" > "$cp_dst"
+	cp "$cp_src" "$cp_dst-t" &&
+	sed "s!$bt_regex/!!g" "$cp_src" > "$cp_dst-t" &&
+	mv -f "$cp_dst-t" "$cp_dst"
       }
     else
       # Copy the file first to get proper permissions if it
@@ -511,44 +563,6 @@ slurp() {
   done
 }
 
-# Import from paxutils
-echo "$0: Importing paxutils files"
-
-for dir in m4 doc rmt paxlib lib:paxlib tests; do
-  srcdir=${dir%:*}
-  dstdir=${dir##*:}
-  test -d $dstdir || mkdir $dstdir || exit
-  for file in `cat "${PAXUTILS_SRCDIR}/$srcdir/DISTFILES"`; do
-    if test "$srcdir/$file" = "rmt/Makefile.am"; then
-      cat ${PAXUTILS_SRCDIR}/$srcdir/$file | \
-        sed 's,/lib/configmake\.h,/gnu/configmake.h,g
-	     /^LDADD *=/c\
-LDADD = ../paxlib/libpax.a ../gnu/libgnu.a @INTLLIBS@
-	     
-             /^INCLUDES *=/{s,/lib,/gnu,g;s,$, -I$(top_srcdir)/paxlib,}' > $dstdir/$file
-      echo "$0: cp ${PAXUTILS_SRCDIR}/$srcdir/$file $dstdir/$file # with edits"
-    else
-      symlink_to_dir ${PAXUTILS_SRCDIR}/$srcdir $file $dstdir || exit
-    fi
-  done
-done
-
-echo "$0: Creating m4/paxutils.m4"
-(echo "# This file is generated automatically. Please, do not edit."
- echo "#"
- echo "AC_DEFUN([${package}_PAXUTILS],["
- cat ${PAXUTILS_SRCDIR}/m4/DISTFILES | sed '/^#/d;s/\(.*\)\.m4/pu_\1/' | tr a-z A-Z
- echo "])") > ./m4/paxutils.m4
-
-# Update gnulib_modules
-gnulib_modules=`(echo $gnulib_modules; grep '^[^#]' ${PAXUTILS_SRCDIR}/gnulib.modules)|sort|uniq`
-
-echo "$0: Creating paxlib/system.c"
-m4 -DMODE=C sysdep.m4 mingw.m4 > paxlib/system.c
-echo "$0: Updating paxlib/system.h"
-m4 -DMODE=H sysdep.m4 mingw.m4 >> paxlib/system.h
-echo "$0: Creating m4/sysdep.m4"
-m4 -DMODE=AC sysdep.m4 mingw.m4 > m4/sysdep.m4
 
 # Create boot temporary directories to import from gnulib and gettext.
 rm -fr $bt $bt2 &&
@@ -576,6 +590,7 @@ for file in $gnulib_files; do
   symlink_to_dir "$GNULIB_SRCDIR" $file || exit
 done
 
+
 # Import from gettext.
 with_gettext=yes
 grep '^[	 ]*AM_GNU_GETTEXT_VERSION(' configure.ac >/dev/null || \
@@ -586,28 +601,8 @@ if test $with_gettext = yes; then
   cp configure.ac $bt2 &&
   (cd $bt2 && autopoint && rm configure.ac) &&
   slurp $bt2 $bt || exit
-
-  rm -fr $bt $bt2 || exit
 fi
-
-# Coreutils is unusual in that it generates some of its test-related
-# Makefile.am files.  That must be done before invoking automake.
-mam_template=tests/Makefile.am.in
-if test -f $mam_template; then
-  PERL=perl
-  for tool in cut head join pr sort tac tail test tr uniq wc; do
-    m=tests/$tool/Makefile.am
-    t=${m}t
-    rm -f $m $t
-    sed -n '1,/^##test-files-begin/p' $mam_template > $t
-    echo "x = $tool" >> $t
-    srcdir=tests/$tool
-    $PERL -I$srcdir -w -- tests/mk-script $srcdir --list >> $t
-    sed -n '/^##test-files-end/,$p' $mam_template >> $t
-    chmod -w $t
-    mv $t $m
-  done
-fi
+rm -fr $bt $bt2 || exit
 
 # Remove any dangling symlink matching "*.m4" or "*.[ch]" in some
 # gnulib-populated directories.  Such .m4 files would cause aclocal to fail.
@@ -621,14 +616,83 @@ find "$m4_base" "$source_base" \
   -depth \( -name '*.m4' -o -name '*.[ch]' \) \
   -type l -xtype l -delete > /dev/null 2>&1
 
+# copy_files srcdir dstdir
+copy_files() {
+  for file in `cat $1/DISTFILES`
+  do
+    case $file in
+    "#*")  continue;;
+    esac
+    dst=`echo $file | sed 's^.*/^^'`
+    if [ $# -eq 3 ]; then
+      case $dst in
+      ${3}*) ;;
+      *) dst=${3}$dst;;
+      esac
+    fi
+    symlink_to_dir "$1" "$file" "$2/$dst" || exit
+# FIXME    ignorefile $2 $dst
+  done
+}
+
+# Import from paxutils
+copy_files ${PAXUTILS_SRCDIR} .
+copy_files ${PAXUTILS_SRCDIR}/am m4
+echo "$0: Creating m4/paxutils.m4"
+(echo "# This file is generated automatically. Please, do not edit."
+ echo "#"
+ echo "AC_DEFUN([${package}_PAXUTILS],["
+ cat ${PAXUTILS_SRCDIR}/am/DISTFILES | sed '/^#/d;s/\(.*\)\.m4/pu_\1/' | tr a-z A-Z
+ echo "])") > ./m4/paxutils.m4
+#FIXME ignorefile m4 paxutils.m4
+
+if [ -d rmt ]; then
+   :
+else
+   mkdir rmt
+fi
+
+for dir in doc rmt lib tests
+do
+	copy_files ${PAXUTILS_SRCDIR}/$dir $dir
+done
+
+copy_files ${PAXUTILS_SRCDIR}/paxlib lib 
+
+#FIXME:
+#echo "$0: Creating paxlib/system.c"
+#m4 -DMODE=C sysdep.m4 mingw.m4 > paxlib/system.c
+#echo "$0: Updating paxlib/system.h"
+#m4 -DMODE=H sysdep.m4 mingw.m4 >> paxlib/system.h
+#echo "$0: Creating m4/sysdep.m4"
+#m4 -DMODE=AC sysdep.m4 mingw.m4 > m4/sysdep.m4
+
 # Reconfigure, getting other files.
 
-echo "$0: autoreconf --force --install --symlink ..."
-autoreconf --force --install --symlink
+for command in \
+  libtool \
+  'aclocal --force -I m4' \
+  'autoconf --force' \
+  'autoheader --force' \
+  'automake --add-missing --copy --force-missing';
+do
+  if test "$command" = libtool; then
+    use_libtool=0
+    # We'd like to use grep -E, to see if any of LT_INIT,
+    # AC_PROG_LIBTOOL, AM_PROG_LIBTOOL is used in configure.ac,
+    # but that's not portable enough (e.g., for Solaris).
+    grep '^[	 ]*A[CM]_PROG_LIBTOOL' configure.ac >/dev/null \
+      && use_libtool=1
+    grep '^[	 ]*LT_INIT' configure.ac >/dev/null \
+      && use_libtool=1
+    test $use_libtool = 0 \
+      && continue
+    command='libtoolize -c -f'
+  fi
+  echo "$0: $command ..."
+  $command || exit
+done
 
-# FIXME: A kludge to avoid unnecessary data in the distribution.
-test -d libltdl/config && rm -rf libltdl/config
-test -d libltdl/m4 && rm -rf libltdl/m4
 
 # Get some extra files from gnulib, overriding existing files.
 for file in $gnulib_extra_files; do

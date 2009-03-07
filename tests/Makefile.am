@@ -1,6 +1,6 @@
 # Makefile for GNU cpio regression tests.
 
-# Copyright (C) 2004, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ check_PROGRAMS = genfile
 genfile_SOURCES = genfile.c argcv.c argcv.h
 
 localedir = $(datadir)/locale
-INCLUDES = -I$(top_srcdir)/gnu -I../gnu -I$(top_srcdir)/paxlib
+INCLUDES = -I$(top_srcdir)/gnu -I../gnu -I$(top_srcdir)/lib
 AM_CPPFLAGS = -DLOCALEDIR=\"$(localedir)\"
 
 LDADD=../gnu/libgnu.a @LIB_CLOCK_GETTIME@ @INTLLIBS@

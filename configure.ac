@@ -92,7 +92,7 @@ AC_CONFIG_FILES([Makefile
  doc/Makefile
  headers/Makefile
  gnu/Makefile
- paxlib/Makefile
+ lib/Makefile
  rmt/Makefile
  src/Makefile
  po/Makefile.in])

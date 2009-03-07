@@ -11,6 +11,7 @@ ChangeLog
 INSTALL
 Makefile
 Makefile.in
+Make.rules
 aclocal.m4
 autom4te.cache
 build-aux
@@ -21,6 +22,7 @@ config.status
 configure
 core
 gnu
+lib
 m4
 rmt
 stamp-h1

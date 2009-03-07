@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA.
 
-INCLUDES=-I. -I.. -I$(top_srcdir)/gnu -I$(top_builddir)/gnu  -I$(top_srcdir)/paxlib
+INCLUDES=-I. -I.. -I$(top_srcdir)/gnu -I$(top_builddir)/gnu  -I$(top_srcdir)/lib
 
 bin_PROGRAMS=cpio @CPIO_MT_PROG@
 EXTRA_PROGRAMS=mt
@@ -28,6 +28,7 @@ cpio_SOURCES = \
  defer.c\
  dstring.c\
  global.c\
+ fatal.c\
  main.c\
  tar.c\
  util.c\
@@ -47,6 +48,6 @@ noinst_HEADERS =\
  filetypes.h\
  safe-stat.h
 
-LDADD=../paxlib/libpax.a ../gnu/libgnu.a @INTLLIBS@
+LDADD=../lib/libpax.a ../gnu/libgnu.a @INTLLIBS@
 
-mt.o main.o: ../paxlib/rmt-command.h
+mt.o main.o: ../lib/rmt-command.h

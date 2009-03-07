@@ -20,40 +20,10 @@ ACLOCAL_AMFLAGS = -I m4
 
 AUTOMAKE_OPTIONS = gnits 1.8 dist-bzip2 std-options
 
-SUBDIRS = doc headers gnu paxlib rmt src po tests
+SUBDIRS = doc headers gnu lib rmt src po tests
 
 gen_start_date = 2008-03-07
+prev_change_log = ChangeLog.cvs
+changelog_dir = .
 
-.PHONY: make-ChangeLog
-make-ChangeLog: 
-	if test -d .git; then                                           \
-	  $(top_srcdir)/build-aux/gitlog-to-changelog                   \
-	    --since=$(gen_start_date) |                                 \
-            sed '/<unknown>$$/d' | fmt -s > $(distdir)/cl-t;            \
-	  cat ChangeLog.cvs | sed '/^Local Variables:/,/^End:/d'	\
-		>> $(distdir)/cl-t;					\
-	  echo "Local Variables:" >> $(distdir)/cl-t;                   \
-	  echo "mode: change-log" >> $(distdir)/cl-t;                   \
-	  echo "version-control: never"  >> $(distdir)/cl-t;            \
-	  echo "buffer-read-only: t" >> $(distdir)/cl-t;                \
-	  echo "End:" >> $(distdir)/cl-t;                               \
-	  rm -f $(distdir)/ChangeLog;                                   \
-	  mv $(distdir)/cl-t $(distdir)/ChangeLog;                      \
-	fi
-
-dist-hook: make-ChangeLog
-
-.PHONY: ChangeLog
-ChangeLog: 
-	if test -d .git; then                                           \
-	  $(top_srcdir)/build-aux/gitlog-to-changelog                   \
-	    --since=$(gen_start_date) |                                 \
-            sed '/<unknown>$$/d' | fmt -s > ChangeLog;                  \
-	  cat ChangeLog.cvs | sed '/^Local Variables:/,/^End:/d'	\
-		>> ChangeLog;						\
-	  echo "Local Variables:" >> ChangeLog;                         \
-	  echo "mode: change-log" >> ChangeLog;                         \
-	  echo "version-control: never"  >> ChangeLog;                  \
-	  echo "buffer-read-only: t" >> ChangeLog;                      \
-	  echo "End:" >> ChangeLog;                                     \
-        fi
+include Make.rules
