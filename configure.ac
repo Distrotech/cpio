@@ -54,7 +54,7 @@ gl_INIT
 cpio_PAXUTILS
 # Additional system dependencies (for mingw)
 CPIO_SYSDEP
-
+CPIO_PACKED_STRUCTS
 AC_SUBST(CPIO_MT_PROG)
 
 AC_ARG_ENABLE(mt,
