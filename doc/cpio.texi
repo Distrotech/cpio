@@ -369,31 +369,32 @@ ordinarily indicate a remote host name.
 
 @item -H @var{format}
 @itemx --format=@var{format}
-Use archive format @var{format}.  The valid formats are listed below; the same
+Use archive format @var{format}.  The valid formats are listed below
+with file size limits for individual files in parentheses; the same
 names are also recognized in all-caps.  The default in copy-in mode is
 to automatically detect the archive format, and in copy-out mode is
 @samp{bin}.
 
 @table @samp
 @item bin  
-The obsolete binary format.
+The obsolete binary format. (2147483647 bytes)
 
 @item odc
-The old (POSIX.1) portable format.
+The old (POSIX.1) portable format. (8589934591 bytes)
 
 @item newc
 The new (SVR4) portable format, which supports file systems having more
-than 65536 i-nodes.
+than 65536 i-nodes. (4294967295 bytes)
 
 @item crc
 The new (SVR4) portable format with a checksum added.
 
 @item tar
-The old tar format.
+The old tar format. (8589934591 bytes)
 
 @item ustar
 The POSIX.1 tar format.  Also recognizes GNU tar archives, which are
-similar but not identical.
+similar but not identical. (8589934591 bytes)
 
 @item hpbin
 The obsolete binary format used by HPUX's cpio (which stores device
