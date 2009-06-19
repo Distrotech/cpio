@@ -9,9 +9,9 @@
 ABOUT-NLS
 ChangeLog
 INSTALL
+Make.rules
 Makefile
 Makefile.in
-Make.rules
 aclocal.m4
 autom4te.cache
 build-aux

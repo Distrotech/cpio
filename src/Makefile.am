@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301 USA.
 
-INCLUDES=-I. -I.. -I$(top_srcdir)/gnu -I$(top_builddir)/gnu  -I$(top_srcdir)/lib
+INCLUDES=-I. -I.. -I$(top_srcdir)/gnu -I$(top_builddir)/gnu  -I$(top_srcdir)/lib -I$(top_builddir)/lib
 
 bin_PROGRAMS=cpio @CPIO_MT_PROG@
 EXTRA_PROGRAMS=mt

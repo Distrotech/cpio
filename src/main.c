@@ -41,6 +41,7 @@
 #include "extern.h"
 #include <rmt.h>
 #include <rmt-command.h>
+#include "configmake.h"
 
 enum cpio_options {
   NO_ABSOLUTE_FILENAMES_OPTION=256,
