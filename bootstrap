@@ -660,12 +660,14 @@ done
 copy_files ${PAXUTILS_SRCDIR}/paxlib lib 
 
 #FIXME:
-#echo "$0: Creating paxlib/system.c"
-#m4 -DMODE=C sysdep.m4 mingw.m4 > paxlib/system.c
-#echo "$0: Updating paxlib/system.h"
-#m4 -DMODE=H sysdep.m4 mingw.m4 >> paxlib/system.h
-#echo "$0: Creating m4/sysdep.m4"
-#m4 -DMODE=AC sysdep.m4 mingw.m4 > m4/sysdep.m4
+echo "$0: Creating lib/sysdep.c"
+m4 -DMODE=C sysdep.m4 mingw.m4 > lib/sysdep.c
+echo "$0: Creating lib/sysdep.h"
+m4 -DMODE=H sysdep.m4 mingw.m4 > lib/sysdep.h
+echo "$0: Updating lib/system.h"
+echo '#include "sysdep.h"' >> lib/system.h
+echo "$0: Creating am/sysdep.m4"
+m4 -DMODE=AC sysdep.m4 mingw.m4 > am/sysdep.m4
 
 # Reconfigure, getting other files.
 

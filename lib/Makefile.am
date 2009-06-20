@@ -33,6 +33,8 @@ libpax_a_SOURCES = \
  exit.c\
  paxlib.h\
  rtapelib.c\
+ sysdep.h\
+ sysdep.c\
  system.h\
  error.c\
  names.c
