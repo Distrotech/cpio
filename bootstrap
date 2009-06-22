@@ -665,6 +665,8 @@ m4 -DMODE=C sysdep.m4 mingw.m4 > lib/sysdep.c
 echo "$0: Creating lib/sysdep.h"
 m4 -DMODE=H sysdep.m4 mingw.m4 > lib/sysdep.h
 echo "$0: Updating lib/system.h"
+mv lib/system.h lib/system.h~
+cat lib/system.h~ > lib/system.h
 echo '#include "sysdep.h"' >> lib/system.h
 echo "$0: Creating am/sysdep.m4"
 m4 -DMODE=AC sysdep.m4 mingw.m4 > am/sysdep.m4
