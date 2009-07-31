@@ -50,4 +50,3 @@ noinst_HEADERS =\
 
 LDADD=../lib/libpax.a ../gnu/libgnu.a @INTLLIBS@
 
-mt.o main.o: ../lib/rmt-command.h

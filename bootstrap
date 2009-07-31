@@ -742,4 +742,8 @@ if test $with_gettext = yes; then
   fi
 fi
 
+echo "$0: patching Makefile.in"
+mv Makefile.in Makefile.in~
+sed 's/\$(DISTCHECK_CONFIGURE_FLAGS)/$(AM_DISTCHECK_CONFIGURE_FLAGS) $(DISTCHECK_CONFIGURE_FLAGS)/' Makefile.in~ > Makefile.in
+
 echo "$0: done.  Now you can run './configure'."

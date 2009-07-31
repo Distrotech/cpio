@@ -4,6 +4,7 @@
 alloca
 argmatch
 argp
+argp-version-etc
 dirname
 error
 fileblocks
@@ -15,6 +16,7 @@ gitlog-to-changelog
 hash
 inttypes
 lchown
+progname
 safe-read
 savedir
 stdbool

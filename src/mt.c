@@ -69,46 +69,39 @@
 #include <sys/file.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <getopt.h>
 #include <stdbool.h>
+#include <argp.h>
+#include <argp-version-etc.h>
+#include <progname.h>
 
 #ifdef HAVE_LOCALE_H
-#  include <locale.h>
+# include <locale.h>
 #endif
 #include <rmt-command.h>
 
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
 #include <rmt.h>
 
-#if defined(HAVE_STRING_H) || defined(STDC_HEADERS)
-#include <string.h>
-#else
-#include <strings.h>
-#endif
+#include <argmatch.h>
+#include <paxlib.h>
+#include "configmake.h"
 
-#if defined(HAVE_STDLIB_H)
-# include <stdlib.h>
-#endif
+#define MT_EXIT_SUCCESS 0
+#define MT_EXIT_INVOP   1
+#define MT_EXIT_FAILURE 2
 
-#if !HAVE_DECL_ERRNO
-extern int errno;
-#endif
-#if !HAVE_DECL_GETENV
-char *getenv ();
-#endif
-#if !HAVE_DECL_ATOI
-int atoi ();
-#endif
-#if !HAVE_DECL_EXIT
-void exit ();
-#endif
-
-char *opnames[] =
+char const * const opnames[] =
 {
-  "eof", "weof", "fsf", "bsf", "fsr", "bsr",
-  "rewind", "offline", "rewoffl", "eject", "status",
+  "eof",
+  "weof",
+  "fsf",
+  "bsf",
+  "fsr",
+  "bsr",
+  "rewind",
+  "offline",
+  "rewoffl",
+  "eject",
+  "status",
 #ifdef MTBSFM
   "bsfm",
 #endif
@@ -134,8 +127,17 @@ char *opnames[] =
 #define MTASF 600		/* Random unused number.  */
 short operations[] =
 {
-  MTWEOF, MTWEOF, MTFSF, MTBSF, MTFSR, MTBSR,
-  MTREW, MTOFFL, MTOFFL, MTOFFL, MTNOP,
+  MTWEOF,
+  MTWEOF,
+  MTFSF,
+  MTBSF,
+  MTFSR,
+  MTBSR,
+  MTREW,
+  MTOFFL,
+  MTOFFL,
+  MTOFFL,
+  MTNOP,
 #ifdef MTBSFM
   MTBSFM,
 #endif
@@ -155,20 +157,105 @@ short operations[] =
 #ifdef MTSEEK
   MTSEEK,
 #endif
-  0
 };
 
-struct option longopts[] =
+ARGMATCH_VERIFY (opnames, operations);
+
+const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
+static char doc[] = N_("control magnetic tape drive operation");
+const char *program_authors[] =
+  {
+    "David MacKenzie",
+    "Sergey Poznyakoff",
+    NULL
+  };
+
+enum
+  {
+    RSH_COMMAND_OPTION = 256
+  };
+
+static struct argp_option options[] = {
+  { "file", 'f', N_("DEVICE"), 0,
+    N_("use device as the file name of the tape drive to operate on") },
+  { "rsh-command", RSH_COMMAND_OPTION, N_("COMMAND"), 0,
+    N_("use remote COMMAND instead of rsh") },
+  { NULL }
+};
+
+char *tapedev;                   /* tape device */
+char *rsh_command_option = NULL; /* rsh command */
+short operation;                 /* operation code */ 
+int count = 1;                   /* count */
+
+int argcnt = 0;                  /* number of command line arguments
+				    processed so far */
+
+static error_t
+parse_opt (int key, char *arg, struct argp_state *state)
 {
-  {"file", 1, NULL, 'f'},
-  {"rsh-command", 1, NULL, 1},
-  {"version", 0, NULL, 'V'},
-  {"help", 0, NULL, 'H'},
-  {NULL, 0, NULL, 0}
-};
+  switch (key)
+    {
+    case ARGP_KEY_ARG:
+      switch (argcnt++)
+	{
+	case 0:
+	  operation = XARGMATCH (N_("operation"), arg, opnames, operations);
+	  break;
 
-/* The name this program was run with.  */
-char *program_name;
+	case 1:
+	  {
+	    char *p;
+	    long val = strtol (arg, &p, 0);
+	    if (*p || (count = val) != count)
+	      error (MT_EXIT_INVOP, 0, _("invalid count value"));
+	  }
+	  break;
+
+	default:
+	  argp_usage (state);
+	}
+      break;
+
+    case ARGP_KEY_FINI:
+      if (argcnt == 0)
+	argp_usage (state);
+      if (tapedev == NULL)
+	{
+	  tapedev = getenv ("TAPE");
+	  if (tapedev == NULL)
+#ifdef DEFTAPE			/* From sys/mtio.h.  */
+	    tapedev = DEFTAPE;
+#else
+	  error (MT_EXIT_INVOP, 0, _("no tape device specified"));
+#endif
+	}
+      break;
+      
+    case 'f':
+    case 't':
+      tapedev = arg;
+      break;
+
+    case RSH_COMMAND_OPTION:
+      rsh_command_option = arg;
+      break;
+
+    default:
+      return ARGP_ERR_UNKNOWN;
+    }
+  return 0;
+}
+
+static struct argp argp = {
+  options,
+  parse_opt,
+  N_("operation [count]"),
+  doc,
+  NULL,
+  NULL,
+  NULL
+};
 
 void
 check_type (char *dev, int desc)
@@ -180,8 +267,9 @@ check_type (char *dev, int desc)
   if (fstat (desc, &stats) == -1)
     stat_error (dev);
   if ((stats.st_mode & S_IFMT) != S_IFCHR)
-    error (1, 0, _("%s is not a character special file"), dev);
+    error (MT_EXIT_INVOP, 0, _("%s is not a character special file"), dev);
 }
+
 void
 perform_operation (char *dev, int desc, short op, int count)
 {
@@ -189,11 +277,8 @@ perform_operation (char *dev, int desc, short op, int count)
 
   control.mt_op = op;
   control.mt_count = count;
-  /* Debian hack: The rmtioctl function returns -1 in case of an
-     error, not 0.  This bug has been reported to
-     "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
   if (rmtioctl (desc, MTIOCTOP, (char*)&control) == -1)
-    error (2, errno, _("%s: rmtioctl failed"), dev);
+    error (MT_EXIT_FAILURE, errno, _("%s: rmtioctl failed"), dev);
 }
 
 void
@@ -202,7 +287,7 @@ print_status (char *dev, int desc)
   struct mtget status;
 
   if (rmtioctl (desc, MTIOCGET, (char*)&status) == -1)
-    error (2, errno, _("%s: rmtioctl failed"), dev);
+    error (MT_EXIT_FAILURE, errno, _("%s: rmtioctl failed"), dev);
 
   printf ("drive type = %d\n", (int) status.mt_type);
 #if defined(hpux) || defined(__hpux)
@@ -220,104 +305,42 @@ print_status (char *dev, int desc)
 }
 
 void
-usage (FILE *fp,int status)
+fatal_exit ()
 {
-  fprintf (fp, _("\
-Usage: %s [-V] [-f device] [--file=device] [--rsh-command=command]\n\
-\t[--help] [--version] operation [count]\n"),
-	   program_name);
-  exit (status);
+  exit (MT_EXIT_INVOP);
 }
 
 int
 main (int argc, char **argv)
 {
-  short operation;
-  int count;
-  char *tapedev;
   int tapedesc;
-  int i;
-  char *rsh_command_option = NULL;
 
   setlocale (LC_ALL, "");
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
   
-  program_name = argv[0];
-  tapedev = NULL;
-  count = 1;
+  set_program_name (argv[0]);
+  argp_version_setup ("mt", program_authors);
+  argmatch_die = fatal_exit;
+  argp_err_exit_status = MT_EXIT_INVOP;
+  if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER, NULL, NULL))
+    exit (MT_EXIT_INVOP);
 
-  /* Debian hack: Fixed a bug in the -V flag.  This bug has been
-     reported to "bug-gnu-utils@prep.ai.mit.edu".  -BEM */
-  while ((i = getopt_long (argc, argv, "f:t:VH", longopts, (int *) 0)) != -1)
+  switch (operation)
     {
-      switch (i)
-	{
-	case 'f':
-	case 't':
-	  tapedev = optarg;
-	  break;
-
-	case 1:
-	  rsh_command_option = optarg;
-	  break;
-
-	case 'V':
-	  printf ("mt (%s)\n", PACKAGE_STRING);
-	  exit (0);
-	  break;
-
-	case 'H':
-	default:
-	  usage (stdout, 0);
-	}
-    }
-
-  if (optind == argc)
-    usage (stderr, 1);
-
-  i = argmatch (argv[optind], opnames);
-  if (i < 0)
-    {
-      argmatch_invalid ("tape operation", argv[optind], i);
-      exit (1);
-    }
-  operation = operations[i];
-
-  if (++optind < argc)
-    /* Debian hack: Replaced the atoi function call with strtol so
-       that hexidecimal values can be used for the count parameter.
-       This bug has been reported to "bug-gnu-utils@prep.ai.mit.edu".
-       (97/12/5) -BEM */
-#if defined(STDC_HEADERS)
-    count = (int) strtol (argv[optind], NULL, 0);
-#else
-    count = atoi (argv[optind]);
-#endif
-  if (++optind < argc)
-    usage (stderr, 1);
-
-  if (tapedev == NULL)
-    {
-      tapedev = getenv ("TAPE");
-      if (tapedev == NULL)
-#ifdef DEFTAPE			/* From sys/mtio.h.  */
-        tapedev = DEFTAPE;
-#else
-	error (1, 0, _("no tape device specified"));
-#endif
-    }
-
-  if ( (operation == MTWEOF)
+    case MTWEOF:
 #ifdef MTERASE
-       || (operation == MTERASE)
+    case MTERASE:
 #endif
-	)
-    tapedesc = rmtopen (tapedev, O_WRONLY, 0, rsh_command_option);
-  else
-    tapedesc = rmtopen (tapedev, O_RDONLY, 0, rsh_command_option);
+      tapedesc = rmtopen (tapedev, O_WRONLY, 0, rsh_command_option);
+      break;
+
+    default:
+      tapedesc = rmtopen (tapedev, O_RDONLY, 0, rsh_command_option);
+    }
+  
   if (tapedesc == -1)
-    error (1, errno, _("%s: rmtopen failed"), tapedev);
+    error (MT_EXIT_INVOP, errno, _("%s: rmtopen failed"), tapedev);
   check_type (tapedev, tapedesc);
 
   if (operation == MTASF)
@@ -330,8 +353,8 @@ main (int argc, char **argv)
     print_status (tapedev, tapedesc);
 
   if (rmtclose (tapedesc) == -1)
-    error (2, errno, _("%s: rmtclose failed"), tapedev);
+    error (MT_EXIT_FAILURE, errno, _("%s: rmtclose failed"), tapedev);
 
-  exit (0);
+  exit (MT_EXIT_SUCCESS);
 }
 

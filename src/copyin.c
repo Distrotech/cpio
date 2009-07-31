@@ -1,6 +1,6 @@
 /* copyin.c - extract or list a cpio archive
-   Copyright (C) 1990,1991,1992,2001,2002,2003,2004,
-   2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001, 2002, 2003, 2004,
+   2005, 2006, 2007, 2009 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -843,7 +843,7 @@ long_format (struct cpio_file_stat *file_hdr, char *link_name)
     }
   tbuf[16] = '\0';
 
-  printf ("%s %3lu ", mbuf, file_hdr->c_nlink);
+  printf ("%s %3lu ", mbuf, (unsigned long) file_hdr->c_nlink);
 
   if (numeric_uid)
     printf ("%-8u %-8u ", (unsigned int) file_hdr->c_uid,

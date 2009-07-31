@@ -1,6 +1,6 @@
 /* main.c - main program and argument processing for cpio.
    Copyright (C) 1990, 1991, 1992, 2001, 2003, 2004, 2005, 2006,
-   2007 Free Software Foundation, Inc.
+   2007, 2009 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,20 +20,22 @@
 /* Written by Phil Nelson <phil@cs.wwu.edu>,
    David MacKenzie <djm@gnu.ai.mit.edu>,
    John Oleynick <juo@klinzhai.rutgers.edu>,
-   and Sergey Poznyakoff <gray@mirddin.farlep.net> */
+   and Sergey Poznyakoff <gray@gnu.org> */
 
 #include <system.h>
 #include <paxlib.h>
 
 #include <stdio.h>
-#include <getopt.h>
 #include <argp.h>
+#include <argp-version-etc.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 
 #ifdef HAVE_LOCALE_H
 # include <locale.h>
 #endif
+
+#include <progname.h>
 
 #include "filetypes.h"
 #include "cpiohdr.h"
@@ -63,7 +65,15 @@ enum cpio_options {
   VERSION_OPTION
 };
 
-const char *argp_program_version = "cpio (" PACKAGE_NAME ") " VERSION;
+const char *program_authors[] =
+  {
+    "Phil Nelson",
+    "David MacKenzie",
+    "John Oleynick",
+    "Sergey Poznyakoff",
+    NULL
+  };
+  
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
 static char doc[] = N_("GNU `cpio' copies files to and from archives\n\
 \n\
@@ -223,46 +233,11 @@ static struct argp_option options[] = {
    N_("Write files with large blocks of zeros as sparse files"), GRID+1 },
 #undef GRID
   
-  /* ********** */
-#define GRID 800
-  {NULL, 0, NULL, 0,
-   N_("Informative options:"), GRID },
-
-  {"help",  '?', 0, 0,  N_("Give this help list"), -1},
-  {"usage", USAGE_OPTION, 0, 0,  N_("Give a short usage message"), -1},
-  {"license", LICENSE_OPTION, 0, 0, N_("Print license and exit"), -1},
-  {"version", VERSION_OPTION, 0, 0,  N_("Print program version"), -1},
-  /* FIXME -V (--dot) conflicts with the default short option for
-     --version */
-  {"HANG",	  HANG_OPTION,    "SECS", OPTION_ARG_OPTIONAL | OPTION_HIDDEN,
-   N_("hang for SECS seconds (default 3600)"), 0},
-#undef GRID     
   {0, 0, 0, 0}
 };
 
 static char *input_archive_name = 0;
 static char *output_archive_name = 0;
-
-static void
-license ()
-{
-  printf ("%s (%s) %s\n%s\n", program_name, PACKAGE_NAME, PACKAGE_VERSION,
-	  "Copyright (C) 2004 Free Software Foundation, Inc.\n");
-  printf (_("   GNU cpio is free software; you can redistribute it and/or modify\n"
-    "   it under the terms of the GNU General Public License as published by\n"
-    "   the Free Software Foundation; either version 3 of the License, or\n"
-    "   (at your option) any later version.\n"
-    "\n"
-    "   GNU cpio is distributed in the hope that it will be useful,\n"
-    "   but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-    "   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-    "   GNU General Public License for more details.\n"
-    "\n"
-    "   You should have received a copy of the GNU General Public License\n"
-    "   along with GNU cpio; if not, write to the Free Software Foundation,\n"
-    "   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA\n\n"));
-  exit (0);
-}
 
 static int
 warn_control (char *arg)
@@ -305,7 +280,6 @@ warn_control (char *arg)
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
-  static volatile int _argp_hang;
   switch (key)
     {
     case '0':		/* Read null-terminated filenames.  */
@@ -550,29 +524,6 @@ crc newc odc bin ustar tar (all-caps also recognized)"), arg);
       to_stdout_option = true;
       break;
 
-    case HANG_OPTION:
-      _argp_hang = atoi (arg ? arg : "3600");
-      while (_argp_hang-- > 0)
-	sleep (1);
-      break;
-      
-    case '?':
-      argp_state_help (state, state->out_stream, ARGP_HELP_STD_HELP);
-      break;
-
-    case USAGE_OPTION:
-      argp_state_help (state, state->out_stream,
-		       ARGP_HELP_USAGE | ARGP_HELP_EXIT_OK);
-      break;
-
-    case VERSION_OPTION:
-      fprintf (state->out_stream, "%s\n", argp_program_version);
-      exit (0);
-
-    case LICENSE_OPTION:
-      license ();
-      break;
-
     default:
       return ARGP_ERR_UNKNOWN;
     }
@@ -599,14 +550,9 @@ process_args (int argc, char *argv[])
   void (*copy_out) ();
   int index;
 
-  if (argc < 2)
-    error (PAXEXIT_FAILURE, 0, 
-	   _("You must specify one of -oipt options.\nTry `%s --help' or `%s --usage' for more information.\n"),
-	   program_name, program_name);
-
   xstat = lstat;
 
-  if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER|ARGP_NO_HELP, &index, NULL))
+  if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER, &index, NULL))
     exit (PAXEXIT_FAILURE); 
 
   /* Do error checking and look at other args.  */
@@ -787,8 +733,8 @@ main (int argc, char *argv[])
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
 
-  program_name = argv[0];
-
+  set_program_name (argv[0]);
+  argp_version_setup ("cpio", program_authors);
   process_args (argc, argv);
   
   initialize_buffers ();

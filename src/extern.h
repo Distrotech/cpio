@@ -1,6 +1,6 @@
 /* extern.h - External declarations for cpio.  Requires system.h.
    Copyright (C) 1990, 1991, 1992, 2001, 2006, 
-   2007 Free Software Foundation, Inc.
+   2007, 2009 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ extern char *new_media_message_after_number;
 extern int archive_des;
 extern char *archive_name;
 extern char *rsh_command_option;
-extern unsigned int crc;
+extern unsigned long crc;
 extern int delayed_seek_count;
 #ifdef DEBUG_CPIO
 extern int debug_flag;
@@ -95,7 +95,6 @@ extern char input_is_special;
 extern char output_is_special;
 extern char input_is_seekable;
 extern char output_is_seekable;
-extern char *program_name;
 extern int (*xstat) ();
 extern void (*copy_function) ();
 

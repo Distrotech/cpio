@@ -22,6 +22,8 @@ AUTOMAKE_OPTIONS = gnits 1.8 dist-bzip2 std-options
 
 SUBDIRS = doc headers gnu lib rmt src po tests
 
+AM_DISTCHECK_CONFIGURE_FLAGS = --enable-mt
+
 gen_start_date = 2008-03-07
 prev_change_log = ChangeLog.cvs
 changelog_dir = .

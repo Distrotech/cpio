@@ -1,6 +1,6 @@
 /* global.c - global variables and initial values for cpio.
    Copyright (C) 1990, 1991, 1992, 2001, 2006, 
-   2007 Free Software Foundation, Inc.
+   2007, 2009 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -144,7 +144,7 @@ char *archive_name = NULL;
 char *rsh_command_option = NULL;
 
 /* CRC checksum.  */
-unsigned int crc;
+unsigned long crc;
 
 /* Input and output buffers.  */
 char *input_buffer, *output_buffer;
