@@ -45,6 +45,8 @@ TESTSUITE_AT = \
  testsuite.at\
  inout.at\
  interdir.at\
+ setstat01.at\
+ setstat02.at\
  symlink.at\
  version.at
 

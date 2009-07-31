@@ -566,6 +566,30 @@ copyin_regular_file (struct cpio_file_stat* file_hdr, int in_file_des)
     }
 }
 
+static int
+copyin_mkdir (struct cpio_file_stat *file_hdr, int *setstat_delayed)
+{
+  int rc;
+  mode_t mode = file_hdr->c_mode;
+  if (!(file_hdr->c_mode & S_IWUSR))
+    {
+      rc = mkdir (file_hdr->c_name, mode | S_IWUSR);
+      if (rc == 0)
+	{
+	  struct stat st;
+	  cpio_to_stat (&st, file_hdr);
+	  delay_set_stat (file_hdr->c_name, &st, false);
+	  *setstat_delayed = 1;
+	}
+    }
+  else
+    {
+      rc = mkdir (file_hdr->c_name, mode);
+      *setstat_delayed = 0;
+    }
+  return rc;
+}
+
 static void
 copyin_directory (struct cpio_file_stat *file_hdr, int existing_dir)
 {
@@ -574,7 +598,8 @@ copyin_directory (struct cpio_file_stat *file_hdr, int existing_dir)
   int cdf_flag;                 /* True if file is a CDF.  */
   int cdf_char;                 /* Index of `+' char indicating a CDF.  */
 #endif
-
+  int setstat_delayed = 0;
+  
   if (to_stdout_option)
     return;
   
@@ -610,14 +635,14 @@ copyin_directory (struct cpio_file_stat *file_hdr, int existing_dir)
 	  cdf_flag = 1;
 	}
 #endif
-      res = mkdir (file_hdr->c_name, file_hdr->c_mode);
+      res = copyin_mkdir (file_hdr, &setstat_delayed);
     }
   else
     res = 0;
   if (res < 0 && create_dir_flag)
     {
       create_all_directories (file_hdr->c_name);
-      res = mkdir (file_hdr->c_name, file_hdr->c_mode);
+      res = copyin_mkdir (file_hdr, &setstat_delayed);
     }
   if (res < 0)
     {
@@ -645,7 +670,8 @@ copyin_directory (struct cpio_file_stat *file_hdr, int existing_dir)
 	}
     }
 
-  set_perms (-1, file_hdr); 
+  if (!setstat_delayed && repair_delayed_set_stat (file_hdr) == 0)
+    set_perms (-1, file_hdr);
 }
 
 static void

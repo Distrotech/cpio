@@ -1256,15 +1256,58 @@ stat_to_cpio (struct cpio_file_stat *hdr, struct stat *st)
   else if (S_ISNWK (st->st_mode))
     hdr->c_mode |= CP_IFNWK;
 #endif
+  hdr->c_nlink = st->st_nlink;
   hdr->c_uid = CPIO_UID (st->st_uid);
   hdr->c_gid = CPIO_GID (st->st_gid);
-  hdr->c_nlink = st->st_nlink;
   hdr->c_rdev_maj = major (st->st_rdev);
   hdr->c_rdev_min = minor (st->st_rdev);
   hdr->c_mtime = st->st_mtime;
   hdr->c_filesize = st->st_size;
   hdr->c_chksum = 0;
   hdr->c_tar_linkname = NULL;
+}
+
+void
+cpio_to_stat (struct stat *st, struct cpio_file_stat *hdr)
+{
+  memset (st, 0, sizeof (*st));
+  st->st_dev = makedev (hdr->c_dev_maj, hdr->c_dev_min);
+  st->st_ino = hdr->c_ino;
+  st->st_mode = hdr->c_mode & 0777;
+  if (hdr->c_mode & CP_IFREG)
+    st->st_mode |= S_IFREG;
+  else if (hdr->c_mode & CP_IFDIR)
+    st->st_mode |= S_IFDIR;
+#ifdef S_IFBLK
+  else if (hdr->c_mode & CP_IFBLK)
+    st->st_mode |= S_IFBLK;
+#endif
+#ifdef S_IFCHR
+  else if (hdr->c_mode & CP_IFCHR)
+    st->st_mode |= S_IFCHR;
+#endif
+#ifdef S_IFFIFO
+  else if (hdr->c_mode & CP_IFIFO)
+    st->st_mode |= S_IFIFO;
+#endif
+#ifdef S_IFLNK
+  else if (hdr->c_mode & CP_IFLNK)
+    st->st_mode |= S_IFLNK;
+#endif
+#ifdef S_IFSOCK
+  else if (hdr->c_mode & CP_IFSOCK)
+    st->st_mode |= S_IFSOCK;
+#endif
+#ifdef S_IFNWK
+  else if (hdr->c_mode & CP_IFNWK)
+    st->st_mode |= S_IFNWK;
+#endif
+  st->st_nlink = hdr->c_nlink;
+  st->st_uid = CPIO_UID (hdr->c_uid);
+  st->st_gid = CPIO_GID (hdr->c_gid);
+  st->st_rdev = makedev (hdr->c_rdev_maj, hdr->c_rdev_min);
+  st->st_mtime = hdr->c_mtime;
+  st->st_size = hdr->c_filesize;
 }
 
 #ifndef HAVE_FCHOWN
@@ -1289,7 +1332,7 @@ fchmod_or_chmod (int fd, const char *name, mode_t mode)
   if (HAVE_FCHMOD && fd != -1)
     return fchmod (fd, mode);
   else
-    return chmod(name, mode);
+    return chmod (name, mode);
 }
 
 void
@@ -1394,9 +1437,8 @@ delay_set_stat (char const *file_name, struct stat *st,
    created within the file name of DIR.  The intermediate directory turned
    out to be the same as this directory, e.g. due to ".." or symbolic
    links.  *DIR_STAT_INFO is the status of the directory.  */
-void
-repair_delayed_set_stat (char const *dir,
-			 struct stat *dir_stat_info)
+int
+repair_inter_delayed_set_stat (struct stat *dir_stat_info)
 {
   struct delayed_set_stat *data;
   for (data = delayed_set_stat_head; data; data = data->next)
@@ -1405,7 +1447,7 @@ repair_delayed_set_stat (char const *dir,
       if (stat (data->stat.c_name, &st) != 0)
 	{
 	  stat_error (data->stat.c_name);
-	  return;
+	  return -1;
 	}
 
       if (st.st_dev == dir_stat_info->st_dev
@@ -1415,12 +1457,31 @@ repair_delayed_set_stat (char const *dir,
 	  data->invert_permissions =
 	    ((dir_stat_info->st_mode ^ st.st_mode)
 	     & MODE_RWX & ~ newdir_umask);
-	  return;
+	  return 0;
 	}
     }
+  return 1;
+}
 
-  ERROR ((0, 0, _("%s: Unexpected inconsistency when making directory"),
-	  quotearg_colon (dir)));
+/* Update the delayed_set_stat info for a directory matching
+   FILE_HDR.
+
+   Return 0 if such info was found, 1 otherwise. */
+int
+repair_delayed_set_stat (struct cpio_file_stat *file_hdr)
+{
+  struct delayed_set_stat *data;
+  for (data = delayed_set_stat_head; data; data = data->next)
+    {
+      if (strcmp (file_hdr->c_name, data->stat.c_name) == 0)
+	{
+	  data->invert_permissions = 0;
+	  memcpy (&data->stat, file_hdr,
+		  offsetof (struct cpio_file_stat, c_name));
+	  return 0;
+	}
+    }
+  return 1;
 }
 
 void

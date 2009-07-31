@@ -196,6 +196,7 @@ void set_perms (int fd, struct cpio_file_stat *header);
 void set_file_times (int fd, const char *name, unsigned long atime,
 		     unsigned long mtime);
 void stat_to_cpio (struct cpio_file_stat *hdr, struct stat *st);
+void cpio_to_stat (struct stat *st, struct cpio_file_stat *hdr);
 void cpio_safer_name_suffix (char *name, bool link_target,
 			     bool absolute_names, bool strip_leading_dots);
 
@@ -210,7 +211,6 @@ uintmax_t from_ascii (char const *where, size_t digs, unsigned logbase);
 	    
 void delay_set_stat (char const *file_name, struct stat *st,
 		     mode_t invert_permissions);
-void repair_delayed_set_stat (char const *dir,
-			      struct stat *dir_stat_info);
+int repair_delayed_set_stat (struct cpio_file_stat *file_hdr);
 void apply_delayed_set_stat (void);
      

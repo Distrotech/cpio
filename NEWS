@@ -7,6 +7,12 @@ Please send cpio bug reports to <bug-cpio@gnu.org>.
 Version 2.10.90 (Git)
 
 * Fix mt build.
+* In copy-in mode, if directory attributes do not permit writing to it,
+setting them is delayed until the end of run. This allows to correctly
+extract files in such directories.
+* In copy-in mode, permissions of a directory are restored if it
+appears in the file list after files in it (find . -depth). This fixes
+debian bug #458079.
 
 
 Version 2.10 - Sergey Poznyakoff, 2009-06-20
