@@ -37,13 +37,13 @@
 struct old_cpio_header
 {
   unsigned short c_magic;
-  short c_dev;
+  unsigned short c_dev;
   unsigned short c_ino;
   unsigned short c_mode;
   unsigned short c_uid;
   unsigned short c_gid;
   unsigned short c_nlink;
-  short c_rdev;
+  unsigned short c_rdev;
   unsigned short c_mtimes[2];
   unsigned short c_namesize;
   unsigned short c_filesizes[2];
