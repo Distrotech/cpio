@@ -19,8 +19,6 @@
 
 ACLOCAL_AMFLAGS = -I m4 -I am
 
-AUTOMAKE_OPTIONS = gnits 1.8 dist-bzip2 std-options
-
 SUBDIRS = doc headers gnu lib rmt src po tests
 
 AM_DISTCHECK_CONFIGURE_FLAGS = --enable-mt

@@ -17,13 +17,15 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software Foundation,
 dnl Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-AC_INIT([GNU cpio], [2.10.90], [bug-cpio@gnu.org])
+AC_INIT([GNU cpio], [2.10.91], [bug-cpio@gnu.org])
 AC_CONFIG_SRCDIR(src/cpio.h)
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS([config.h])
+AC_PREREQ([2.63])
+AM_INIT_AUTOMAKE([1.11.1 gnits tar-ustar dist-bzip2 dist-shar std-options silent-rules])
 
-AC_PREREQ([2.59])
+# Enable silent rules by default:
+AM_SILENT_RULES([yes])
 
 dnl Check for programs
 AC_PROG_CC
@@ -83,6 +85,8 @@ AC_CHECK_DECLS([errno, getpwnam, getgrnam, getgrgid, strdup, strerror, getenv, a
 AM_ICONV
 AM_GNU_GETTEXT([external], [need-formatstring-macros])
 AM_GNU_GETTEXT_VERSION(0.17)
+
+LIBS="$LIBS $LIB_CLOCK_GETTIME"
 
 # Initialize the test suite.
 AC_CONFIG_TESTDIR(tests)
