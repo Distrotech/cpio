@@ -110,7 +110,7 @@ static int
 count_defered_links_to_dev_ino (struct cpio_file_stat *file_hdr)
 {
   struct deferment *d;
-  int	ino;
+  ino_t	ino;
   int 	maj;
   int   min;
   int 	count;
@@ -167,7 +167,7 @@ writeout_other_defers (struct cpio_file_stat *file_hdr, int out_des)
 {
   struct deferment *d;
   struct deferment *d_prev;
-  int	ino;
+  ino_t	ino;
   int 	maj;
   int   min;
   ino = file_hdr->c_ino;

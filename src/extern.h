@@ -119,7 +119,7 @@ void process_copy_out (void);
 /* copypass.c */
 void process_copy_pass (void);
 int link_to_maj_min_ino (char *file_name, int st_dev_maj, 
-			 int st_dev_min, int st_ino);
+			 int st_dev_min, ino_t st_ino);
 int link_to_name (char *link_name, char *link_target);
 
 /* dirname.c */
@@ -169,9 +169,9 @@ void warn_if_file_changed (char *file_name, off_t old_file_size,
                            time_t old_file_mtime);
 void create_all_directories (char *name);
 void prepare_append (int out_file_des);
-char *find_inode_file (unsigned long node_num,
+char *find_inode_file (ino_t node_num,
 		       unsigned long major_num, unsigned long minor_num);
-void add_inode (unsigned long node_num, char *file_name,
+void add_inode (ino_t node_num, char *file_name,
 	        unsigned long major_num, unsigned long minor_num);
 int open_archive (char *file);
 void tape_offline (int tape_des);

@@ -686,7 +686,7 @@ prepare_append (int out_file_des)
 
 struct inode_val
 {
-  unsigned long inode;
+  ino_t inode;
   unsigned long major_num;
   unsigned long minor_num;
   char *file_name;
@@ -713,7 +713,7 @@ inode_val_compare (const void *val1, const void *val2)
 }
 
 char *
-find_inode_file (unsigned long node_num, unsigned long major_num,
+find_inode_file (ino_t node_num, unsigned long major_num,
 		 unsigned long minor_num)
 {
   struct inode_val sample;
@@ -732,7 +732,7 @@ find_inode_file (unsigned long node_num, unsigned long major_num,
 /* Associate FILE_NAME with the inode NODE_NUM.  (Insert into hash table.)  */
 
 void
-add_inode (unsigned long node_num, char *file_name, unsigned long major_num,
+add_inode (ino_t node_num, char *file_name, unsigned long major_num,
 	   unsigned long minor_num)
 {
   struct inode_val *temp;

@@ -387,7 +387,7 @@ process_copy_pass ()
 
 int
 link_to_maj_min_ino (char *file_name, int st_dev_maj, int st_dev_min,
-		     int st_ino)
+		     ino_t st_ino)
 {
   int	link_res;
   char *link_name;

@@ -258,7 +258,7 @@ create_defered_links (struct cpio_file_stat *file_hdr)
 {
   struct deferment *d;
   struct deferment *d_prev;
-  int	ino;
+  ino_t	ino;
   int 	maj;
   int   min;
   int 	link_res;
@@ -306,7 +306,7 @@ create_defered_links_to_skipped (struct cpio_file_stat *file_hdr,
 {
   struct deferment *d;
   struct deferment *d_prev;
-  int	ino;
+  ino_t	ino;
   int 	maj;
   int   min;
   if (file_hdr->c_filesize == 0)
@@ -1460,8 +1460,8 @@ process_copy_in ()
 	  struct cpio_file_stat *h;
 	  h = &file_hdr;
 	  fprintf (stderr, 
-		"magic = 0%o, ino = %d, mode = 0%o, uid = %d, gid = %d\n",
-		h->c_magic, h->c_ino, h->c_mode, h->c_uid, h->c_gid);
+		"magic = 0%o, ino = %ld, mode = 0%o, uid = %d, gid = %d\n",
+		h->c_magic, (long)h->c_ino, h->c_mode, h->c_uid, h->c_gid);
 	  fprintf (stderr, 
 		"nlink = %d, mtime = %d, filesize = %d, dev_maj = 0x%x\n",
 		h->c_nlink, h->c_mtime, h->c_filesize, h->c_dev_maj);
