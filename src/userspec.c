@@ -1,6 +1,6 @@
 /* userspec.c -- Parse a user and group string.
-   Copyright (C) 1989, 1990, 1991, 1992, 2001, 
-   2004, 2005, 2007 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1990, 1991, 1992, 2001, 2004, 2005, 2007, 2010
+   Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

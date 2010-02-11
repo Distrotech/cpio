@@ -1,4 +1,5 @@
-/* Copyright (C) 1991, 1992, 1993, 2007 Free Software Foundation, Inc.
+/* Copyright (C) 1991, 1992, 1993, 2007, 2010 Free Software Foundation,
+ * Inc.
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Library General Public License as
