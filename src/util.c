@@ -1418,19 +1418,29 @@ struct delayed_set_stat
 static struct delayed_set_stat *delayed_set_stat_head;
 
 void
-delay_set_stat (char const *file_name, struct stat *st,
-		mode_t invert_permissions)
+delay_cpio_set_stat (struct cpio_file_stat *file_stat,
+		     mode_t invert_permissions)
 {
-  size_t file_name_len = strlen (file_name);
+  size_t file_name_len = strlen (file_stat->c_name);
   struct delayed_set_stat *data =
     xmalloc (sizeof (struct delayed_set_stat) + file_name_len + 1);
   data->next = delayed_set_stat_head;
-  memset (&data->stat, 0, sizeof data->stat);
-  stat_to_cpio (&data->stat, st);
+  memcpy (&data->stat, file_stat, sizeof data->stat);
   data->stat.c_name = (char*) (data + 1);
-  strcpy (data->stat.c_name, file_name);
+  strcpy (data->stat.c_name, file_stat->c_name);
   data->invert_permissions = invert_permissions;
   delayed_set_stat_head = data;
+}
+
+void
+delay_set_stat (char const *file_name, struct stat *st,
+		mode_t invert_permissions)
+{
+  struct cpio_file_stat fs;
+
+  stat_to_cpio (&fs, st);
+  fs.c_name = (char*) file_name;
+  delay_cpio_set_stat (&fs, invert_permissions);
 }
 
 /* Update the delayed_set_stat info for an intermediate directory
@@ -1500,4 +1510,111 @@ apply_delayed_set_stat ()
     }
 }
 
+
+static int
+cpio_mkdir (struct cpio_file_stat *file_hdr, int *setstat_delayed)
+{
+  int rc;
+  mode_t mode = file_hdr->c_mode;
+  
+  if (!(file_hdr->c_mode & S_IWUSR))
+    {
+      rc = mkdir (file_hdr->c_name, mode | S_IWUSR);
+      if (rc == 0)
+	{
+	  delay_cpio_set_stat (file_hdr, 0);
+	  *setstat_delayed = 1;
+	}
+    }
+  else
+    {
+      rc = mkdir (file_hdr->c_name, mode);
+      *setstat_delayed = 0;
+    }
+  return rc;
+}
+
+int
+cpio_create_dir (struct cpio_file_stat *file_hdr, int existing_dir)
+{
+  int res;			/* Result of various function calls.  */
+#ifdef HPUX_CDF
+  int cdf_flag;                 /* True if file is a CDF.  */
+  int cdf_char;                 /* Index of `+' char indicating a CDF.  */
+#endif
+  int setstat_delayed = 0;
+  
+  if (to_stdout_option)
+    return 0;
+  
+  /* Strip any trailing `/'s off the filename; tar puts
+     them on.  We might as well do it here in case anybody
+     else does too, since they cause strange things to happen.  */
+  strip_trailing_slashes (file_hdr->c_name);
+
+  /* Ignore the current directory.  It must already exist,
+     and we don't want to change its permission, ownership
+     or time.  */
+  if (file_hdr->c_name[0] == '.' && file_hdr->c_name[1] == '\0')
+    {
+      return 0;
+    }
+
+#ifdef HPUX_CDF
+  cdf_flag = 0;
+#endif
+  if (!existing_dir)
+    {
+#ifdef HPUX_CDF
+      /* If the directory name ends in a + and is SUID,
+	 then it is a CDF.  Strip the trailing + from
+	 the name before creating it.  */
+      cdf_char = strlen (file_hdr->c_name) - 1;
+      if ( (cdf_char > 0) &&
+	   (file_hdr->c_mode & 04000) && 
+	   (file_hdr->c_name [cdf_char] == '+') )
+	{
+	  file_hdr->c_name [cdf_char] = '\0';
+	  cdf_flag = 1;
+	}
+#endif
+      res = cpio_mkdir (file_hdr, &setstat_delayed);
+    }
+  else
+    res = 0;
+  if (res < 0 && create_dir_flag)
+    {
+      create_all_directories (file_hdr->c_name);
+      res = cpio_mkdir (file_hdr, &setstat_delayed);
+    }
+  if (res < 0)
+    {
+      /* In some odd cases where the file_hdr->c_name includes `.',
+	 the directory may have actually been created by
+	 create_all_directories(), so the mkdir will fail
+	 because the directory exists.  If that's the case,
+	 don't complain about it.  */
+      struct stat file_stat;
+      if (errno != EEXIST)
+	{
+	  mkdir_error (file_hdr->c_name);
+	  return -1;
+	}
+      if (lstat (file_hdr->c_name, &file_stat))
+	{
+	  stat_error (file_hdr->c_name);
+	  return -1;
+	}
+      if (!(S_ISDIR (file_stat.st_mode)))
+	{
+	  error (0, 0, _("%s is not a directory"),
+		 quotearg_colon (file_hdr->c_name));
+	  return -1;
+	}
+    }
+
+  if (!setstat_delayed && repair_delayed_set_stat (file_hdr) == 0)
+    set_perms (-1, file_hdr);
+  return 0;
+}
 

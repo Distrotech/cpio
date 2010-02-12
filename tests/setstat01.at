@@ -24,7 +24,7 @@ AT_KEYWORDS([setstat setstat01])
 
 AT_CHECK([
 mkdir dir
-echo "test file" > file
+echo "test file" > dir/file
 chmod 500 dir
 
 find dir | cpio -o --quiet > archive

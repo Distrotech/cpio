@@ -199,6 +199,7 @@ void stat_to_cpio (struct cpio_file_stat *hdr, struct stat *st);
 void cpio_to_stat (struct stat *st, struct cpio_file_stat *hdr);
 void cpio_safer_name_suffix (char *name, bool link_target,
 			     bool absolute_names, bool strip_leading_dots);
+int cpio_create_dir (struct cpio_file_stat *file_hdr, int existing_dir);
 
 /* FIXME: These two defines should be defined in paxutils */
 #define LG_8  3
@@ -208,7 +209,9 @@ uintmax_t from_ascii (char const *where, size_t digs, unsigned logbase);
 
 #define FROM_OCTAL(f) from_ascii (f, sizeof f, LG_8)
 #define FROM_HEX(f) from_ascii (f, sizeof f, LG_16)
-	    
+
+void delay_cpio_set_stat (struct cpio_file_stat *file_stat,
+			  mode_t invert_permissions);
 void delay_set_stat (char const *file_name, struct stat *st,
 		     mode_t invert_permissions);
 int repair_delayed_set_stat (struct cpio_file_stat *file_hdr);

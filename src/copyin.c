@@ -566,114 +566,6 @@ copyin_regular_file (struct cpio_file_stat* file_hdr, int in_file_des)
     }
 }
 
-static int
-copyin_mkdir (struct cpio_file_stat *file_hdr, int *setstat_delayed)
-{
-  int rc;
-  mode_t mode = file_hdr->c_mode;
-  if (!(file_hdr->c_mode & S_IWUSR))
-    {
-      rc = mkdir (file_hdr->c_name, mode | S_IWUSR);
-      if (rc == 0)
-	{
-	  struct stat st;
-	  cpio_to_stat (&st, file_hdr);
-	  delay_set_stat (file_hdr->c_name, &st, false);
-	  *setstat_delayed = 1;
-	}
-    }
-  else
-    {
-      rc = mkdir (file_hdr->c_name, mode);
-      *setstat_delayed = 0;
-    }
-  return rc;
-}
-
-static void
-copyin_directory (struct cpio_file_stat *file_hdr, int existing_dir)
-{
-  int res;			/* Result of various function calls.  */
-#ifdef HPUX_CDF
-  int cdf_flag;                 /* True if file is a CDF.  */
-  int cdf_char;                 /* Index of `+' char indicating a CDF.  */
-#endif
-  int setstat_delayed = 0;
-  
-  if (to_stdout_option)
-    return;
-  
-  /* Strip any trailing `/'s off the filename; tar puts
-     them on.  We might as well do it here in case anybody
-     else does too, since they cause strange things to happen.  */
-  strip_trailing_slashes (file_hdr->c_name);
-
-  /* Ignore the current directory.  It must already exist,
-     and we don't want to change its permission, ownership
-     or time.  */
-  if (file_hdr->c_name[0] == '.' && file_hdr->c_name[1] == '\0')
-    {
-      return;
-    }
-
-#ifdef HPUX_CDF
-  cdf_flag = 0;
-#endif
-  if (!existing_dir)
-
-    {
-#ifdef HPUX_CDF
-      /* If the directory name ends in a + and is SUID,
-	 then it is a CDF.  Strip the trailing + from
-	 the name before creating it.  */
-      cdf_char = strlen (file_hdr->c_name) - 1;
-      if ( (cdf_char > 0) &&
-	   (file_hdr->c_mode & 04000) && 
-	   (file_hdr->c_name [cdf_char] == '+') )
-	{
-	  file_hdr->c_name [cdf_char] = '\0';
-	  cdf_flag = 1;
-	}
-#endif
-      res = copyin_mkdir (file_hdr, &setstat_delayed);
-    }
-  else
-    res = 0;
-  if (res < 0 && create_dir_flag)
-    {
-      create_all_directories (file_hdr->c_name);
-      res = copyin_mkdir (file_hdr, &setstat_delayed);
-    }
-  if (res < 0)
-    {
-      /* In some odd cases where the file_hdr->c_name includes `.',
-	 the directory may have actually been created by
-	 create_all_directories(), so the mkdir will fail
-	 because the directory exists.  If that's the case,
-	 don't complain about it.  */
-      struct stat file_stat;
-      if (errno != EEXIST)
-	{
-	  mkdir_error (file_hdr->c_name);
-	  return;
-	}
-      if (lstat (file_hdr->c_name, &file_stat))
-	{
-	  stat_error (file_hdr->c_name);
-	  return;
-	}
-      if (!(S_ISDIR (file_stat.st_mode)))
-	{
-	  error (0, 0, _("%s is not a directory"),
-		 quotearg_colon (file_hdr->c_name));
-	  return;
-	}
-    }
-
-  if (!setstat_delayed && repair_delayed_set_stat (file_hdr) == 0)
-    set_perms (-1, file_hdr);
-}
-
 static void
 copyin_device (struct cpio_file_stat* file_hdr)
 {
@@ -795,7 +687,7 @@ copyin_link(struct cpio_file_stat *file_hdr, int in_file_des)
 }
 
 static void
-copyin_file (struct cpio_file_stat* file_hdr, int in_file_des)
+copyin_file (struct cpio_file_stat *file_hdr, int in_file_des)
 {
   int existing_dir;
 
@@ -811,7 +703,7 @@ copyin_file (struct cpio_file_stat* file_hdr, int in_file_des)
       break;
 
     case CP_IFDIR:
-      copyin_directory (file_hdr, existing_dir);
+      cpio_create_dir (file_hdr, existing_dir);
       break;
 
     case CP_IFCHR:

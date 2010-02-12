@@ -35,3 +35,6 @@ m4_include([interdir.at])
 
 m4_include([setstat01.at])
 m4_include([setstat02.at])
+m4_include([setstat03.at])
+m4_include([setstat04.at])
+m4_include([setstat05.at])

@@ -221,50 +221,11 @@ process_copy_pass ()
 	}
       else if (S_ISDIR (in_file_stat.st_mode))
 	{
-#ifdef HPUX_CDF
-	  cdf_flag = 0;
-#endif
-	  if (!existing_dir)
-	    {
-#ifdef HPUX_CDF
-	      /* If the directory name ends in a + and is SUID,
-		 then it is a CDF.  Strip the trailing + from the name
-		 before creating it.  */
-	      cdf_char = strlen (output_name.ds_string) - 1;
-	      if ( (cdf_char > 0) &&
-		   (in_file_stat.st_mode & 04000) &&
-		   (output_name.ds_string [cdf_char] == '+') )
-		{
-		  output_name.ds_string [cdf_char] = '\0';
-		  cdf_flag = 1;
-		}
-#endif
-	      res = mkdir (output_name.ds_string, in_file_stat.st_mode);
-
-	    }
-	  else
-	    res = 0;
-	  if (res < 0 && create_dir_flag)
-	    {
-	      create_all_directories (output_name.ds_string);
-	      res = mkdir (output_name.ds_string, in_file_stat.st_mode);
-	    }
-	  if (res < 0)
-	    {
-	      /* In some odd cases where the output_name includes `.',
-	         the directory may have actually been created by
-	         create_all_directories(), so the mkdir will fail
-	         because the directory exists.  If that's the case,
-	         don't complain about it.  */
-	      if ( (errno != EEXIST) ||
-      		   (lstat (output_name.ds_string, &out_file_stat) != 0) ||
-	           !(S_ISDIR (out_file_stat.st_mode) ) )
-		{
-		  stat_error (output_name.ds_string);
-		  continue;
-		}
-	    }
-	  set_copypass_perms (-1, output_name.ds_string, &in_file_stat);
+	  struct cpio_file_stat file_stat;
+	  
+	  stat_to_cpio (&file_stat, &in_file_stat);
+	  file_stat.c_name = output_name.ds_string;
+	  cpio_create_dir (&file_stat, existing_dir);
 	}
       else if (S_ISCHR (in_file_stat.st_mode) ||
 	       S_ISBLK (in_file_stat.st_mode) ||
