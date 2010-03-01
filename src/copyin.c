@@ -645,11 +645,14 @@ copyin_link(struct cpio_file_stat *file_hdr, int in_file_des)
   char *link_name = NULL;	/* Name of hard and symbolic links.  */
   int res;			/* Result of various function calls.  */
 
-  if (to_stdout_option)
-    return;
-
   if (archive_format != arf_tar && archive_format != arf_ustar)
     {
+      if (to_stdout_option)
+        {
+          tape_toss_input (in_file_des, file_hdr->c_filesize);
+          tape_skip_padding (in_file_des, file_hdr->c_filesize);
+          return;
+        }
       link_name = (char *) xmalloc ((unsigned int) file_hdr->c_filesize + 1);
       link_name[file_hdr->c_filesize] = '\0';
       tape_buffered_read (link_name, in_file_des, file_hdr->c_filesize);
@@ -657,6 +660,8 @@ copyin_link(struct cpio_file_stat *file_hdr, int in_file_des)
     }
   else
     {
+      if (to_stdout_option)
+        return;
       link_name = xstrdup (file_hdr->c_tar_linkname);
     }
 

@@ -52,6 +52,7 @@ TESTSUITE_AT = \
  setstat04.at\
  setstat05.at\
  symlink.at\
+ symlink-to-stdout.at\
  version.at
 
 TESTSUITE = $(srcdir)/testsuite
