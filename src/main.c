@@ -57,12 +57,7 @@ enum cpio_options {
   FORCE_LOCAL_OPTION,            
   DEBUG_OPTION,                  
   BLOCK_SIZE_OPTION,             
-  TO_STDOUT_OPTION,
-  
-  HANG_OPTION,
-  USAGE_OPTION,               
-  LICENSE_OPTION,             
-  VERSION_OPTION
+  TO_STDOUT_OPTION
 };
 
 const char *program_authors[] =

@@ -1613,7 +1613,7 @@ cpio_create_dir (struct cpio_file_stat *file_hdr, int existing_dir)
 	}
     }
 
-  if (!setstat_delayed && repair_delayed_set_stat (file_hdr) == 0)
+  if (!setstat_delayed && repair_delayed_set_stat (file_hdr))
     set_perms (-1, file_hdr);
   return 0;
 }
