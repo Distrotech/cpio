@@ -484,9 +484,9 @@ copy_files_disk_to_tape (int in_des, int out_des, off_t num_bytes,
   while (num_bytes > 0)
     {
       if (input_size == 0)
-	if (rc = disk_fill_input_buffer (in_des,
-					 num_bytes < DISK_IO_BLOCK_SIZE ?
-					 num_bytes : DISK_IO_BLOCK_SIZE))
+	if ((rc = disk_fill_input_buffer (in_des,
+					  num_bytes < DISK_IO_BLOCK_SIZE ?
+					  num_bytes : DISK_IO_BLOCK_SIZE)))
 	  {
 	    if (rc > 0)
 	      {
@@ -536,7 +536,7 @@ copy_files_disk_to_disk (int in_des, int out_des, off_t num_bytes,
   while (num_bytes > 0)
     {
       if (input_size == 0)
-	if (rc = disk_fill_input_buffer (in_des, num_bytes))
+	if ((rc = disk_fill_input_buffer (in_des, num_bytes)))
 	  {
 	    if (rc > 0)
 	      {

@@ -106,22 +106,20 @@ struct deferment *deferouts = NULL;
 /* Count the number of other (hard) links to this file that have
    already been defered.  */
 
-static int
+static size_t
 count_defered_links_to_dev_ino (struct cpio_file_stat *file_hdr)
 {
   struct deferment *d;
-  ino_t	ino;
-  int 	maj;
-  int   min;
-  int 	count;
-  ino = file_hdr->c_ino;
-  maj = file_hdr->c_dev_maj;
-  min = file_hdr->c_dev_min;
-  count = 0;
+  ino_t	ino = file_hdr->c_ino;
+  long 	maj = file_hdr->c_dev_maj;
+  long  min = file_hdr->c_dev_min;
+  size_t count = 0;
+
   for (d = deferouts; d != NULL; d = d->next)
     {
-      if ( (d->header.c_ino == ino) && (d->header.c_dev_maj == maj)
-	  && (d->header.c_dev_min == min) )
+      if (d->header.c_ino == ino
+	  && d->header.c_dev_maj == maj
+	  && d->header.c_dev_min == min)
 	++count;
     }
   return count;
@@ -133,16 +131,8 @@ count_defered_links_to_dev_ino (struct cpio_file_stat *file_hdr)
 static int
 last_link (struct cpio_file_stat *file_hdr)
 {
-  int	other_files_sofar;
-
-  other_files_sofar = count_defered_links_to_dev_ino (file_hdr);
-  if (file_hdr->c_nlink == (other_files_sofar + 1) )
-    {
-      return 1;
-    }
-  return 0;
+  return file_hdr->c_nlink == count_defered_links_to_dev_ino (file_hdr) + 1;
 }
-
 
 /* Add the file header for a link that is being defered to the deferouts
    list.  */
