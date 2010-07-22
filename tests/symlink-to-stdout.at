@@ -21,7 +21,7 @@
 # if the archive contained a symlink.
 
 AT_SETUP([symlink --to-stdout])
-AT_KEYWORDS([symlink --to-stdout])
+AT_KEYWORDS([symlink symlink-to-stdout])
 
 AT_DATA([filelist],[file
 symlink

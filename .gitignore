@@ -1,10 +1,12 @@
 *.a
 *.o
 *.tar.*
+*.shar.*
 *~
+*.patch
 .bootstrap
 .deps
-.emacs.desktop
+.emacs.desktop*
 .emacsrc
 ABOUT-NLS
 ChangeLog
@@ -12,6 +14,7 @@ INSTALL
 Make.rules
 Makefile
 Makefile.in
+TAGS
 aclocal.m4
 autom4te.cache
 build-aux
