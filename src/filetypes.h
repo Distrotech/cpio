@@ -81,5 +81,3 @@
 #ifndef S_ISLNK
 #define lstat stat
 #endif
-int lstat ();
-int stat ();
