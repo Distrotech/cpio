@@ -1343,6 +1343,8 @@ process_copy_in ()
     }
   output_is_seekable = true;
 
+  change_dir ();
+  
   /* While there is more input in the collection, process the input.  */
   while (!done)
     {

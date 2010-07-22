@@ -625,6 +625,8 @@ process_copy_out ()
       output_is_seekable = S_ISREG (file_stat.st_mode);
     }
 
+  change_dir ();
+  
   if (append_flag)
     {
       process_copy_in ();

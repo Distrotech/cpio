@@ -108,6 +108,9 @@ static struct argp_option options[] = {
 
   {"file", 'F', N_("[[USER@]HOST:]FILE-NAME"), 0,
    N_("Use this FILE-NAME instead of standard input or output. Optional USER and HOST specify the user and host names in case of a remote archive"), GRID+1 },
+  {"directory", 'D', N_("DIR"), 0,
+   N_("Change to directory DIR"), GRID+1 },
+  
   {"force-local", FORCE_LOCAL_OPTION, 0, 0,
    N_("Archive file is local, even if its name contains colons"), GRID+1 },
   {"format", 'H', N_("FORMAT"), 0,
@@ -325,6 +328,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       create_dir_flag = true;
       break;
 
+    case 'D':
+      change_directory_option = arg;
+      break;
+      
     case 'f':		/* Only copy files not matching patterns.  */
       copy_matching_files = false;
       break;

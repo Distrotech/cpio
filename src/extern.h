@@ -97,6 +97,7 @@ extern char input_is_seekable;
 extern char output_is_seekable;
 extern int (*xstat) ();
 extern void (*copy_function) ();
+extern char *change_directory_option;
 
 
 /* copyin.c */
@@ -200,6 +201,7 @@ void cpio_to_stat (struct stat *st, struct cpio_file_stat *hdr);
 void cpio_safer_name_suffix (char *name, bool link_target,
 			     bool absolute_names, bool strip_leading_dots);
 int cpio_create_dir (struct cpio_file_stat *file_hdr, int existing_dir);
+void change_dir (void);
 
 /* FIXME: These two defines should be defined in paxutils */
 #define LG_8  3

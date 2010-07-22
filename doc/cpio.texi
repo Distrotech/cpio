@@ -342,6 +342,38 @@ Set the I/O block size to @var{io-size} bytes.
 @itemx --make-directories
 Create leading directories where needed.
 
+@item -D @var{dir}
+@item --directory=@var{dir}
+Change to the directory @var{dir} before starting the operation.  This
+can be used, for example, to extract an archive contents in a
+different directory:
+
+@example
+$ cpio -i -D /usr/local < archive
+@end example
+
+@noindent
+or to copy-pass files from one directory to another:
+
+@example
+$ cpio -D /usr/bin -p /usr/local/bin < filelist
+@end example
+
+  The @option{-D} option does not affect file names supplied as
+arguments to another command line options, such as @option{-F}
+or @option{-E}.  For example, the following invocation:
+
+@example
+cpio -D /tmp/foo -d -i -F arc
+@end example
+
+@noindent
+instructs @command{cpio} to open the archive file @file{arc} in
+the current working directory, then change to the directory
+@file{/tmp/foo} and extract files to that directory.  If
+@file{/tmp/foo} does not exist, it will be created first (the
+@option{-d} option) and then changed to.
+
 @item -E @var{file}
 @itemx --pattern-file=@var{file}
 Read additional patterns specifying filenames to extract or list from

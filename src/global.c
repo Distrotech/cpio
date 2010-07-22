@@ -193,3 +193,5 @@ int (*xstat) ();
 
 /* Which copy operation to perform. (-i, -o, -p) */
 void (*copy_function) () = 0;
+
+char *change_directory_option;
