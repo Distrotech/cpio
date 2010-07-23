@@ -28,6 +28,8 @@ echo "test file" > dir/file
 chmod 500 dir
 
 find dir | cpio -o --quiet > archive
+# Darwin cannot rename a directory whose permissions disallow writing.
+chmod 700 dir
 mv dir old
 
 cpio -i --quiet < archive
