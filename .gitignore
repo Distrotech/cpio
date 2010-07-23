@@ -1,9 +1,9 @@
 *.a
 *.o
-*.tar.*
-*.shar.*
-*~
 *.patch
+*.shar.*
+*.tar.*
+*~
 .bootstrap
 .deps
 .emacs.desktop*

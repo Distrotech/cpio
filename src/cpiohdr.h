@@ -18,21 +18,21 @@
 
 #ifndef _CPIOHDR_H
 
-#define _CPIOHDR_H 1
+# define _CPIOHDR_H 1
 
-#include <cpio.h>
+# include <cpio.h>
 
-#ifdef HAVE_ATTRIB_PACKED
-#define ATTRIB_PACKED __attribute__((packed))
-#endif
+# ifdef HAVE_ATTRIB_PACKED
+#  define ATTRIB_PACKED __attribute__((packed))
+# endif
 
-#ifdef HAVE_PRAGMA_PACK
-#pragma pack(1)
-#endif
+# ifdef HAVE_PRAGMA_PACK
+#  pragma pack(1)
+# endif
 
-#ifdef HAVE_PRAGMA_PACK_HPPA
-#pragma pack 1
-#endif
+# ifdef HAVE_PRAGMA_PACK_HPPA
+#  pragma pack 1
+# endif
 
 struct old_cpio_header
 {
@@ -49,13 +49,13 @@ struct old_cpio_header
   unsigned short c_filesizes[2];
 } ATTRIB_PACKED;
 
-#ifdef HAVE_PRAGMA_PACK
-#pragma pack(1)
-#endif
+# ifdef HAVE_PRAGMA_PACK
+#  pragma pack(1)
+# endif
 
-#ifdef HAVE_PRAGMA_PACK_HPPA
-#pragma pack 1
-#endif
+# ifdef HAVE_PRAGMA_PACK_HPPA
+#  pragma pack 1
+# endif
 struct old_ascii_header
 {
   char c_magic[6];
@@ -81,13 +81,13 @@ struct old_ascii_header
 /* All the fields in the header are ISO 646 (approximately ASCII) strings
    of hexadecimal numbers, left padded, not NUL terminated: */
 
-#ifdef HAVE_PRAGMA_PACK
-#pragma pack(1)
-#endif
+# ifdef HAVE_PRAGMA_PACK
+#  pragma pack(1)
+# endif
 
-#ifdef HAVE_PRAGMA_PACK_HPPA
-#pragma pack 1
-#endif
+# ifdef HAVE_PRAGMA_PACK_HPPA
+#  pragma pack 1
+# endif
 struct new_ascii_header
 {
   char c_magic[6];     /* "070701" for "new" portable format
