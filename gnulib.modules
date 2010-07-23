@@ -27,3 +27,4 @@ unlocked-io
 utimens
 xalloc
 xalloc-die
+xgetcwd
