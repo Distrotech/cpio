@@ -308,7 +308,7 @@ print_status (char *dev, int desc)
 void
 fatal_exit ()
 {
-  exit (MT_EXIT_INVOP);
+  exit (MT_EXIT_FAILURE);
 }
 
 int

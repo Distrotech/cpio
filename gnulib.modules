@@ -10,6 +10,7 @@ error
 fileblocks
 fnmatch-gnu
 full-write
+getline
 getopt
 gettext-h
 gitlog-to-changelog
