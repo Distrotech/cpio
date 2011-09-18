@@ -200,17 +200,8 @@ process_copy_pass ()
 		}
 
 	      copy_files_disk_to_disk (in_file_des, out_file_des, in_file_stat.st_size, input_name.ds_string);
-	      disk_empty_output_buffer (out_file_des);
-	      /* Debian hack to fix a bug in the --sparse option.
-                 This bug has been reported to
-                 "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
-	      if (delayed_seek_count > 0)
-		{
-		  lseek (out_file_des, delayed_seek_count-1, SEEK_CUR);
-		  write (out_file_des, "", 1);
-		  delayed_seek_count = 0;
-		}
-
+	      disk_empty_output_buffer (out_file_des, true);
+	      
 	      set_copypass_perms (out_file_des,
 				  output_name.ds_string, &in_file_stat);
 

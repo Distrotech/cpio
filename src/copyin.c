@@ -518,7 +518,7 @@ copyin_regular_file (struct cpio_file_stat* file_hdr, int in_file_des)
 	       file_hdr->c_name);
     }
   copy_files_tape_to_disk (in_file_des, out_file_des, file_hdr->c_filesize);
-  disk_empty_output_buffer (out_file_des);
+  disk_empty_output_buffer (out_file_des, true);
   
   if (to_stdout_option)
     {
@@ -532,16 +532,6 @@ copyin_regular_file (struct cpio_file_stat* file_hdr, int in_file_des)
       return;
     }
       
-  /* Debian hack to fix a bug in the --sparse option.
-     This bug has been reported to
-     "bug-gnu-utils@prep.ai.mit.edu".  (96/7/10) -BEM */
-  if (delayed_seek_count > 0)
-    {
-      lseek (out_file_des, delayed_seek_count-1, SEEK_CUR);
-      write (out_file_des, "", 1);
-      delayed_seek_count = 0;
-    }
-
   set_perms (out_file_des, file_hdr);
 
   if (close (out_file_des) < 0)

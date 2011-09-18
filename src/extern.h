@@ -76,7 +76,6 @@ extern int archive_des;
 extern char *archive_name;
 extern char *rsh_command_option;
 extern unsigned long crc;
-extern int delayed_seek_count;
 #ifdef DEBUG_CPIO
 extern int debug_flag;
 #endif
@@ -157,7 +156,7 @@ char *parse_user_spec (char *name, uid_t *uid, gid_t *gid,
 
 /* util.c */
 void tape_empty_output_buffer (int out_des);
-void disk_empty_output_buffer (int out_des);
+void disk_empty_output_buffer (int out_des, bool flush);
 void swahw_array (char *ptr, int count);
 void tape_buffered_write (char *in_buf, int out_des, off_t num_bytes);
 void tape_buffered_read (char *in_buf, int in_des, off_t num_bytes);

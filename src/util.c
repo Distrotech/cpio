@@ -1,6 +1,6 @@
 /* util.c - Several utility routines for cpio.
-   Copyright (C) 1990, 1991, 1992, 2001, 2004, 2006, 2007, 2010 Free
-   Software Foundation, Inc.
+   Copyright (C) 1990, 1991, 1992, 2001, 2004, 2006, 2007, 2010,
+   2011 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -100,7 +100,7 @@ tape_empty_output_buffer (int out_des)
   output_size = 0;
 }
 
-static int sparse_write (int fildes, char *buf, unsigned int nbyte);
+static ssize_t sparse_write (int fildes, char *buf, size_t nbyte, bool flush);
 
 /* Write `output_size' bytes of `output_buffer' to file
    descriptor OUT_DES and reset `output_size' and `out_buff'.
@@ -113,9 +113,9 @@ static int sparse_write (int fildes, char *buf, unsigned int nbyte);
    insure this.  */
 
 void
-disk_empty_output_buffer (int out_des)
+disk_empty_output_buffer (int out_des, bool flush)
 {
-  int bytes_written;
+  ssize_t bytes_written;
 
   if (swapping_halfwords || swapping_bytes)
     {
@@ -136,13 +136,16 @@ disk_empty_output_buffer (int out_des)
     }
 
   if (sparse_flag)
-    bytes_written = sparse_write (out_des, output_buffer, output_size);
+    bytes_written = sparse_write (out_des, output_buffer, output_size, flush);
   else
     bytes_written = write (out_des, output_buffer, output_size);
 
   if (bytes_written != output_size)
     {
-      error (1, errno, _("write error"));
+      if (bytes_written == -1)
+	error (1, errno, _("write error"));
+      else
+	error (1, 0, _("write error: partial write"));
     }
   output_bytes += output_size;
   out_buff = output_buffer;
@@ -275,7 +278,7 @@ disk_buffered_write (char *in_buf, int out_des, off_t num_bytes)
     {
       space_left = DISK_IO_BLOCK_SIZE - output_size;
       if (space_left == 0)
-	disk_empty_output_buffer (out_des);
+	disk_empty_output_buffer (out_des, false);
       else
 	{
 	  if (bytes_left < space_left)
@@ -1111,107 +1114,95 @@ buf_all_zeros (char *buf, int bufsize)
   return 1;
 }
 
-int delayed_seek_count = 0;
+/* Write NBYTE bytes from BUF to file descriptor FILDES, trying to
+   create holes instead of writing blockfuls of zeros.
+   
+   Return the number of bytes written (including bytes in zero
+   regions) on success, -1 on error.
 
-/* Write NBYTE bytes from BUF to remote tape connection FILDES.
-   Return the number of bytes written on success, -1 on error.  */
+   If FLUSH is set, make sure the trailing zero region is flushed
+   on disk.
+*/
 
-static int
-sparse_write (int fildes, char *buf, unsigned int nbyte)
+static ssize_t
+sparse_write (int fildes, char *buf, size_t nbytes, bool flush)
 {
-  int complete_block_count;
-  int leftover_bytes_count;
-  int seek_count;
-  int write_count;
-  char *cur_write_start;
-  int lseek_rc;
-  int write_rc;
-  int i;
-  enum { begin, in_zeros, not_in_zeros } state;
+  size_t nwritten = 0;
+  ssize_t n;
+  char *start_ptr = buf;
 
-  complete_block_count = nbyte / DISKBLOCKSIZE;
-  leftover_bytes_count = nbyte % DISKBLOCKSIZE;
+  static off_t delayed_seek_count = 0;
+  off_t seek_count = 0;
 
-  if (delayed_seek_count != 0)
-    state = in_zeros;
-  else
-    state = begin;
-
-  seek_count = delayed_seek_count;
-
-  for (i = 0; i < complete_block_count; ++i)
+  enum { begin, in_zeros, not_in_zeros } state =
+			   delayed_seek_count ? in_zeros : begin;
+  
+  while (nbytes)
     {
-      switch (state)
+      size_t rest = nbytes;
+
+      if (rest < DISKBLOCKSIZE)
+	/* Force write */
+	state = not_in_zeros;
+      else
 	{
-	  case begin :
-	    if (buf_all_zeros (buf, DISKBLOCKSIZE))
-	      {
-		seek_count = DISKBLOCKSIZE;
-		state = in_zeros;
-	      }
-	    else
-	      {
-		cur_write_start = buf;
-		write_count = DISKBLOCKSIZE;
-		state = not_in_zeros;
-	      }
-	    buf += DISKBLOCKSIZE;
-	    break;
-	    
-	  case in_zeros :
-	    if (buf_all_zeros (buf, DISKBLOCKSIZE))
-	      {
-		seek_count += DISKBLOCKSIZE;
-	      }
-	    else
-	      {
-		lseek (fildes, seek_count, SEEK_CUR);
-		cur_write_start = buf;
-		write_count = DISKBLOCKSIZE;
-		state = not_in_zeros;
-	      }
-	    buf += DISKBLOCKSIZE;
-	    break;
-	    
-	  case not_in_zeros :
-	    if (buf_all_zeros (buf, DISKBLOCKSIZE))
-	      {
-		write_rc = write (fildes, cur_write_start, write_count);
-		seek_count = DISKBLOCKSIZE;
-		state = in_zeros;
-	      }
-	    else
-	      {
-		write_count += DISKBLOCKSIZE;
-	      }
-	    buf += DISKBLOCKSIZE;
-	    break;
+	  if (buf_all_zeros (buf, rest))
+	    {
+	      if (state == not_in_zeros)
+		{
+		  ssize_t bytes = buf - start_ptr + rest;
+		  
+		  n = write (fildes, start_ptr, bytes);
+		  if (n == -1)
+		    return -1;
+		  nwritten += n;
+		  if (n < bytes)
+		    return nwritten + seek_count;
+		  start_ptr = NULL;
+		}
+	      else
+		seek_count += rest;
+	      state = in_zeros;
+	    }
+	  else
+	    {
+	      seek_count += delayed_seek_count;
+	      if (lseek (fildes, seek_count, SEEK_CUR) == -1)
+		return -1;
+	      delayed_seek_count = seek_count = 0;
+	      state = not_in_zeros;
+	      start_ptr = buf;
+	    }
 	}
+      buf += rest;
+      nbytes -= rest;
     }
 
-  switch (state)
+  if (state != in_zeros)
     {
-      case begin :
-      case in_zeros :
-	delayed_seek_count = seek_count;
-	break;
-	
-      case not_in_zeros :
-	write_rc = write (fildes, cur_write_start, write_count);
-	delayed_seek_count = 0;
-	break;
-    }
+      seek_count += delayed_seek_count;
+      if (seek_count && lseek (fildes, seek_count, SEEK_CUR) == -1)
+	return -1;
+      delayed_seek_count = seek_count = 0;
 
-  if (leftover_bytes_count != 0)
-    {
-      if (delayed_seek_count != 0)
-	{
-	  lseek_rc = lseek (fildes, delayed_seek_count, SEEK_CUR);
-	  delayed_seek_count = 0;
-	}
-      write_rc = write (fildes, buf, leftover_bytes_count);
+      n = write (fildes, start_ptr, buf - start_ptr);
+      if (n == -1)
+	return n;
+      nwritten += n;
     }
-  return nbyte;
+  delayed_seek_count += seek_count;
+
+  if (flush && delayed_seek_count)
+    {
+      if (lseek (fildes, delayed_seek_count - 1, SEEK_CUR) == -1)
+	return -1;
+      n = write (fildes, "", 1);
+      if (n != 1)
+	return n;
+      delayed_seek_count = 0;
+    }      
+  
+  return nwritten + seek_count;
 }
 
 #define CPIO_UID(uid) (set_owner_flag ? set_owner : (uid))
