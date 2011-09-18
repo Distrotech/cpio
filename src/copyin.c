@@ -866,7 +866,7 @@ read_pattern_file ()
 
   pattern_fp = fopen (pattern_file_name, "r");
   if (pattern_fp == NULL)
-    open_error (pattern_file_name);
+    open_fatal (pattern_file_name);
   while (ds_fgetstr (pattern_fp, &pattern_name, '\n') != NULL)
     {
       if (new_num_patterns >= max_new_patterns)

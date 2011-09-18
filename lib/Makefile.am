@@ -31,6 +31,7 @@ INCLUDES = -I$(top_srcdir)/gnu -I../ -I../gnu
 noinst_HEADERS = system.h system-ioctl.h rmt.h paxlib.h
 libpax_a_SOURCES = \
  exit.c\
+ exit-status.c\
  paxlib.h\
  rtapelib.c\
  sysdep.h\

@@ -84,7 +84,7 @@ AC_CHECK_DECLS([errno, getpwnam, getgrnam, getgrgid, strdup, strerror, getenv, a
 # Gettext.
 AM_ICONV
 AM_GNU_GETTEXT([external], [need-formatstring-macros])
-AM_GNU_GETTEXT_VERSION(0.17)
+AM_GNU_GETTEXT_VERSION(0.18)
 
 LIBS="$LIBS $LIB_CLOCK_GETTIME"
 

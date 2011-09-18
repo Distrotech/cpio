@@ -1372,7 +1372,7 @@ set_file_times (int fd,
 
   /* Silently ignore EROFS because reading the file won't have upset its 
      timestamp if it's on a read-only filesystem. */
-  if (gl_futimens (fd, name, ts) < 0 && errno != EROFS)
+  if (fdutimens (fd, name, ts) < 0 && errno != EROFS)
     utime_error (name);
 }
 

@@ -21,5 +21,6 @@ cpio.vr
 genfile.texi
 getdate.texi
 manual
+parse-datetime.texi
 stamp-vti
 version.texi
