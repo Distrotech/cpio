@@ -33,10 +33,10 @@
 /* Read FILE_SIZE bytes of FILE_NAME from IN_FILE_DES and
    compute and return a checksum for them.  */
 
-static unsigned long
+static uint32_t
 read_for_checksum (int in_file_des, int file_size, char *file_name)
 {
-  unsigned long crc;
+  uint32_t crc;
   char buf[BUFSIZ];
   int bytes_left;
   int bytes_read;

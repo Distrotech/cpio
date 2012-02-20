@@ -178,7 +178,7 @@ list_file(struct cpio_file_stat* file_hdr, int in_file_des)
 #endif
       if (crc != file_hdr->c_chksum)
 	{
-	  error (0, 0, _("%s: checksum error (0x%lx, should be 0x%lx)"),
+	  error (0, 0, _("%s: checksum error (0x%x, should be 0x%x)"),
 		 file_hdr->c_name, crc, file_hdr->c_chksum);
 	}
     }
@@ -525,7 +525,7 @@ copyin_regular_file (struct cpio_file_stat* file_hdr, int in_file_des)
       if (archive_format == arf_crcascii)
 	{
 	  if (crc != file_hdr->c_chksum)
-	    error (0, 0, _("%s: checksum error (0x%lx, should be 0x%lx)"),
+	    error (0, 0, _("%s: checksum error (0x%x, should be 0x%x)"),
 		   file_hdr->c_name, crc, file_hdr->c_chksum);
 	}
       tape_skip_padding (in_file_des, file_hdr->c_filesize);
@@ -540,7 +540,7 @@ copyin_regular_file (struct cpio_file_stat* file_hdr, int in_file_des)
   if (archive_format == arf_crcascii)
     {
       if (crc != file_hdr->c_chksum)
-	error (0, 0, _("%s: checksum error (0x%lx, should be 0x%lx)"),
+	error (0, 0, _("%s: checksum error (0x%x, should be 0x%x)"),
 	       file_hdr->c_name, crc, file_hdr->c_chksum);
     }
 
@@ -1436,7 +1436,7 @@ process_copy_in ()
 	    tape_skip_padding (in_file_des, file_hdr.c_filesize);
 	    if (crc != file_hdr.c_chksum)
 	      {
-		error (0, 0, _("%s: checksum error (0x%lx, should be 0x%lx)"),
+		error (0, 0, _("%s: checksum error (0x%x, should be 0x%x)"),
 		       file_hdr.c_name, crc, file_hdr.c_chksum);
 	      }
          /* Debian hack: -v and -V now work with --only-verify-crc.

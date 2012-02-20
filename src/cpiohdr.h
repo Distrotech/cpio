@@ -123,7 +123,7 @@ struct cpio_file_stat /* Internal representation of a CPIO header */
   long c_rdev_maj;
   long c_rdev_min;
   size_t c_namesize;
-  unsigned long c_chksum;
+  uint32_t c_chksum;
   char *c_name;
   char *c_tar_linkname;
 };

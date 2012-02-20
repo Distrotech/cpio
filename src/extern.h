@@ -75,7 +75,7 @@ extern char *new_media_message_after_number;
 extern int archive_des;
 extern char *archive_name;
 extern char *rsh_command_option;
-extern unsigned long crc;
+extern uint32_t crc;
 #ifdef DEBUG_CPIO
 extern int debug_flag;
 #endif
