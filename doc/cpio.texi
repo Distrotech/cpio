@@ -295,7 +295,7 @@ Use @var{command} instead of @command{rsh} to access remote archives.
 @item -R
 @itemx --owner=[@var{user}][:.][@var{group}]
 Set the ownership of all files created to the specified @var{user}
-and/or @var{group}.
+and/or @var{group}.  @xref{owner}.
 @item -v
 @itemx --verbose
 Verbosely list the files processed.
@@ -515,7 +515,7 @@ Interactively rename files
 @item -R
 @itemx --owner=[@var{user}][:.][@var{group}]
 Set the ownership of all files created to the specified @var{user}
-and/or @var{group}.
+and/or @var{group}.  @xref{owner}.
 @item -s
 @itemx --swap-bytes
 Swap the bytes of each halfword in the files
@@ -796,6 +796,7 @@ Run in copy-pass mode.
 [@ref{copy-in}]
 @*Interactively rename files.
 
+@anchor{owner}
 @item -R @var{owner}
 @itemx --owner @var{owner}
 [@ref{copy-in},@ref{copy-out},@ref{copy-pass}]
@@ -814,6 +815,23 @@ cpio --owner smith
 cpio --owner smith:
 cpio --owner smith:users
 cpio --owner :users
+@end group
+@end smallexample
+
+The argument parts are first looked up in the system user and
+group databases, correspondingly.  If any of them is not found there,
+it is treated as numeric UID or GID, provided that it consists of
+decimal digits only.
+
+To avoid the lookup and ensure that arguments are treated as numeric
+values, prefix them with a plus sign, e.g.:
+
+@smallexample
+@group
+cpio --owner +0
+cpio --owner +0:
+cpio --owner +0:+0
+cpio --owner :+0
 @end group
 @end smallexample
 

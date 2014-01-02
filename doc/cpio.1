@@ -13,7 +13,7 @@
 .\"
 .\" You should have received a copy of the GNU General Public License
 .\" along with GNU cpio.  If not, see <http://www.gnu.org/licenses/>.
-.TH CPIO 1 "January 29, 2014" "CPIO" "GNU CPIO"
+.TH CPIO 1 "January 30, 2014" "CPIO" "GNU CPIO"
 .SH NAME
 cpio \- copy files to and from archives
 .SH SYNOPSIS
@@ -182,6 +182,14 @@ files differently).
 In copy-in and copy-pass mode, set the ownership of all files created
 to the specified \fIUSER\fR and/or \fIGROUP\fR.  In copy-out mode,
 store the supplied owner information in the archive.
+
+\fIUSER\fR and \fIGROUP\fR are first looked up in the system user and
+group databases.  If not found, \fBcpio\fR checks if they consist of
+decimal digits only and, if so, treats them as numeric UID and GID,
+correspondingly.
+
+To avoid the lookup and ensure that arguments are treated as numeric
+values, prefix them with a plus sign, e.g.: \fB-R +0:+0\fR.
 .TP
 .B \-\-quiet
 Do not print the number of blocks copied at the end of the run.

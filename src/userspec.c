@@ -108,10 +108,16 @@ parse_user_spec (const char *spec_arg, uid_t *uid, gid_t *gid,
 
   if (u != NULL)
     {
-      pwd = getpwnam (u);
+      if (*u == '+')
+	{
+	  pwd = NULL;
+	  ++u;
+	}
+      else
+	pwd = getpwnam (u);
+
       if (pwd == NULL)
 	{
-
 	  if (!isnumber_p (u))
 	    error_msg = _("invalid user");
 	  else
@@ -155,7 +161,14 @@ parse_user_spec (const char *spec_arg, uid_t *uid, gid_t *gid,
   if (g != NULL && error_msg == NULL)
     {
       /* Explicit group.  */
-      grp = getgrnam (g);
+      if (*g == '+')
+	{
+	  grp = NULL;
+	  ++g;
+	}
+      else
+	grp = getgrnam (g);
+
       if (grp == NULL)
 	{
 	  if (!isnumber_p (g))
