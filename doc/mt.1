@@ -1,10 +1,25 @@
-.TH MT 1L \" -*- nroff -*-
+.\" This file is part of GNU cpio. -*- nroff -*-
+.\" Copyright 2014 Free Software Foundation, Inc.
+.\"
+.\" GNU cpio is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 3 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" GNU cpio is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with GNU cpio.  If not, see <http://www.gnu.org/licenses/>.
+.TH MT 1 "January 28, 2014" "MT" "GNU CPIO"
 .SH NAME
 mt \- control magnetic tape drive operation
 .SH SYNOPSIS
 .B mt
-[\-V] [\-f device] [\-\-file=device] [\-\-rsh-command=command] [\-\-version]
-operation [count]
+[\fB\-V\fR] [\fB\-f\fR \fIdevice\fR] [\fB\-\-file=\fIdevice\fR] [\fB\-\-rsh-command=\fIcommand\fR] [\fB\-\-version\fR]
+\fIoperation\fR [\fIcount\fR]
 .SH DESCRIPTION
 This manual page
 documents the GNU version of
@@ -16,7 +31,7 @@ which must be one of the tape operations listed below, on a tape
 drive.
 .PP
 The default tape device to operate on is taken from the file
-.I /usr/include/sys/mtio.h
+.B /usr/include/sys/mtio.h
 when
 .B mt
 is compiled.  It can be overridden by giving a device file name in
@@ -37,61 +52,76 @@ accepted.  Not all operations are available on all systems, or work on
 all types of tape drives.
 Some operations optionally take a repeat count, which can be given
 after the operation name and defaults to 1.
-.IP "eof, weof"
+.TP
+.BR eof ", " weof
 Write
 .I count
 EOF marks at current position.
-.IP fsf
+.TP 
+.B fsf
 Forward space
 .I count
 files.
 The tape is positioned on the first block of the next file.
-.IP bsf
+.TP 
+.B bsf
 Backward space
 .I count
 files.
 The tape is positioned on the first block of the next file.
-.IP fsr
+.TP 
+.B fsr
 Forward space
 .I count
 records.
-.IP bsr
+.TP 
+.B bsr
 Backward space
 .I count
 records.
-.IP bsfm
+.TP 
+.B bsfm
 Backward space
 .I count
 file marks.
 The tape is positioned on the beginning-of-the-tape side of
 the file mark.
-.IP fsfm
+.TP 
+.B fsfm
 Forward space
 .I count
 file marks.
 The tape is positioned on the beginning-of-the-tape side of
 the file mark.
-.IP asf
+.TP 
+.B asf
 Absolute space to file number
 .IR count .
 Equivalent to rewind followed by fsf
 .IR count .
-.IP seek
+.TP 
+.B seek
 Seek to block number
 .IR count .
-.IP eom
+.TP 
+.B eom
 Space to the end of the recorded media on the tape
 (for appending files onto tapes).
-.IP rewind
+.TP 
+.B rewind
 Rewind the tape.
-.IP "offline, rewoffl"
+.TP 
+.BR offline ", " rewoffl
 Rewind the tape and, if applicable, unload the tape.
-.IP status
+.TP 
+.B status
 Print status information about the tape unit.
-.IP retension
+.TP 
+.B retension
 Rewind the tape, then wind it to the end of the reel,
 then rewind it again.
-.IP erase
+.TP 
+.B erase
 Erase the tape.
 .PP
 .B mt
@@ -100,7 +130,7 @@ operation or device name given was invalid, or 2 if the operation
 failed.
 .SS OPTIONS
 .TP
-.I "\-f, \-\-file=device"
+\fB\-f\fR, \fB\-\-file=\fIdevice\fR
 Use
 .I device
 as the file name of the tape drive to operate on.
@@ -111,16 +141,35 @@ username and an `@' to access the remote tape drive as that user, if
 you have permission to do so (typically an entry in that user's
 `~/.rhosts' file).
 .TP
-.I "\-\-rsh-command=command"
+\fB\-\-rsh-command=\fIcommand\fR
 Notifies
 .B mt
 that it should use
 .I command
 to communicate with remote devices instead of
-.I /usr/bin/ssh
+.B /usr/bin/ssh
 or
-.IR /usr/bin/rsh .
+.BR /usr/bin/rsh .
 .TP
-.I "\-V, \-\-version"
+\fB\-V\fR, \fB\-\-version\fR
 Print the version number of
 .BR mt .
+.SH "BUG REPORTS"
+Report bugs to <bug\-cpio@gnu.org>.
+.SH COPYRIGHT
+Copyright \(co 2014 Free Software Foundation, Inc.
+.br
+.na
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+.br
+.ad
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+.\" Local variables:
+.\" eval: (add-hook 'write-file-hooks 'time-stamp)
+.\" time-stamp-start: ".TH [A-Z_][A-Z0-9_.\\-]* [0-9] \""
+.\" time-stamp-format: "%:B %:d, %:y"
+.\" time-stamp-end: "\""
+.\" time-stamp-line-limit: 20
+.\" end:
+

@@ -17,8 +17,16 @@
 # 02110-1301 USA.
 
 info_TEXINFOS = cpio.texi
-man_MANS = cpio.1 mt.1
-EXTRA_DIST = $(man_MANS) gendocs_template
+dist_man_MANS = cpio.1 $(MT_1) $(RMT_8)
+
+if CPIO_MT_COND
+  MT_1=mt.1
+endif
+if PU_RMT_COND
+  RMT_8=rmt.8
+endif
+
+EXTRA_DIST = gendocs_template mt.1 rmt.8
 
 # Make sure you set TEXINPUT 
 manual:
