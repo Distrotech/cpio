@@ -211,7 +211,7 @@ tape_fill_input_buffer (int in_des, int num_bytes)
   if (input_size == 0)
     {
       error (0, 0, _("premature end of file"));
-      exit (1);
+      exit (PAXEXIT_FAILURE);
     }
   input_bytes += input_size;
 }
@@ -872,7 +872,7 @@ get_next_reel (int tape_des)
 
 	  str_res = ds_fgets (tty_in, &new_name);
 	  if (str_res == NULL || str_res[0] == '\0')
-	    exit (1);
+	    exit (PAXEXIT_FAILURE);
 	  next_archive_name = str_res;
 
 	  tape_des = open_archive (next_archive_name);

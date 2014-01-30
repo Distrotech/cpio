@@ -106,8 +106,6 @@ static struct argp_option options[] = {
   {NULL, 0, NULL, 0,
    N_("Operation modifiers valid in any mode:"), GRID },
 
-  {"file", 'F', N_("[[USER@]HOST:]FILE-NAME"), 0,
-   N_("Use this FILE-NAME instead of standard input or output. Optional USER and HOST specify the user and host names in case of a remote archive"), GRID+1 },
   {"directory", 'D', N_("DIR"), 0,
    N_("Change to directory DIR"), GRID+1 },
   
@@ -125,16 +123,6 @@ static struct argp_option options[] = {
    N_("Print a \".\" for each file processed"), GRID+1 },
   {"io-size", 'C', N_("NUMBER"), 0,
    N_("Set the I/O block size to the given NUMBER of bytes"), GRID+1 },
-  {"message", 'M', N_("STRING"), 0,
-   N_("Print STRING when the end of a volume of the backup media is reached"),
-   GRID+1 },
-  {"nonmatching", 'f', 0, 0,
-   N_("Only copy files that do not match any of the given patterns"), GRID+1 },
-  {"numeric-uid-gid", 'n', 0, 0,
-   N_("In the verbose table of contents listing, show numeric UID and GID"),
-   GRID+1 },
-  {"rsh-command", RSH_COMMAND_OPTION, N_("COMMAND"), 0,
-   N_("Use remote COMMAND instead of rsh"), GRID+1 },
   {"quiet", QUIET_OPTION, NULL, 0,
    N_("Do not print the number of blocks copied"), GRID+1 },
   {"verbose", 'v', NULL, 0,
@@ -145,12 +133,31 @@ static struct argp_option options[] = {
 #endif
   {"warning", 'W', N_("FLAG"), 0,
    N_("Control warning display. Currently FLAG is one of 'none', 'truncate', 'all'. Multiple options accumulate."), GRID+1 },
+  {"owner", 'R', N_("[USER][:.][GROUP]"), 0,
+   N_("Set the ownership of all files created to the specified USER and/or GROUP"), GRID+1 },
+#undef GRID
+
+#define GRID 110
+  {NULL, 0, NULL, 0,
+   N_("Operation modifiers valid in copy-in and copy-out modes"), GRID },
+  {"file", 'F', N_("[[USER@]HOST:]FILE-NAME"), 0,
+   N_("Use this FILE-NAME instead of standard input or output. Optional USER and HOST specify the user and host names in case of a remote archive"), GRID+1 },
+  {"message", 'M', N_("STRING"), 0,
+   N_("Print STRING when the end of a volume of the backup media is reached"),
+   GRID+1 },
+  {"rsh-command", RSH_COMMAND_OPTION, N_("COMMAND"), 0,
+   N_("Use COMMAND instead of rsh"), GRID+1 },
 #undef GRID
   
   /* ********** */
 #define GRID 200  
   {NULL, 0, NULL, 0,
    N_("Operation modifiers valid only in copy-in mode:"), GRID },
+  {"nonmatching", 'f', 0, 0,
+   N_("Only copy files that do not match any of the given patterns"), GRID+1 },
+  {"numeric-uid-gid", 'n', 0, 0,
+   N_("In the verbose table of contents listing, show numeric UID and GID"),
+   GRID+1 },
   {"pattern-file", 'E', N_("FILE"), 0,
    N_("Read additional patterns specifying filenames to extract or list from FILE"), 210},
   {"only-verify-crc", ONLY_VERIFY_CRC_OPTION, 0, 0,
@@ -168,6 +175,8 @@ static struct argp_option options[] = {
    GRID+1 },
   {"to-stdout", TO_STDOUT_OPTION, NULL, 0,
    N_("Extract files to standard output"), GRID+1 },
+  {NULL, 'I', N_("[[USER@]HOST:]FILE-NAME"), 0,
+   N_("Archive filename to use instead of standard input. Optional USER and HOST specify the user and host names in case of a remote archive"), GRID+1 },
 #undef GRID   
 
   /* ********** */
@@ -204,13 +213,9 @@ static struct argp_option options[] = {
   {NULL, 0, NULL, 0,
    N_("Operation modifiers valid in copy-out and copy-pass modes:"), GRID },
   {"null", '0', 0, 0,
-   N_("A list of filenames is terminated by a null character instead of a newline"), GRID+1 },
-  {NULL, 'I', N_("[[USER@]HOST:]FILE-NAME"), 0,
-   N_("Archive filename to use instead of standard input. Optional USER and HOST specify the user and host names in case of a remote archive"), GRID+1 },
+   N_("Filenames in the list are delimited by null characters instead of newlines"), GRID+1 },
   {"dereference", 'L', 0, 0,
    N_("Dereference  symbolic  links  (copy  the files that they point to instead of copying the links)."), GRID+1 },
-  {"owner", 'R', N_("[USER][:.][GROUP]"), 0,
-   N_("Set the ownership of all files created to the specified USER and/or GROUP"), GRID+1 },
   {"reset-access-time", 'a', NULL, 0,
    N_("Reset the access times of files after reading them"), GRID+1 },
 
@@ -377,11 +382,6 @@ crc newc odc bin ustar tar (all-caps also recognized)"), arg);
 
     case 'I':		/* Input archive file name.  */
       input_archive_name = arg;
-      break;
-
-    case 'k':		/* Handle corrupted archives.  We always handle
-			   corrupted archives, but recognize this
-			   option for compatability.  */
       break;
 
     case 'l':		/* Link files when possible.  */
