@@ -1,5 +1,5 @@
 /* global.c - global variables and initial values for cpio.
-   Copyright (C) 1990, 1991, 1992, 2001, 2006, 2007, 2009, 2010 Free
+   Copyright (C) 1990-1992, 2001, 2006-2007, 2009-2010, 2014 Free
    Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
