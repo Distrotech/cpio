@@ -36,6 +36,7 @@
 #endif
 
 #include <progname.h>
+#include <closeout.h>
 
 #include "filetypes.h"
 #include "cpiohdr.h"
@@ -80,11 +81,13 @@ Examples:\n\
   # Copy files named in name-list to destination-directory\n\
   cpio -p destination-directory < name-list\n");
 
+static void usage (int status);
+
 /*  Print usage error message and exit with error.  */
 
 #define CHECK_USAGE(cond, opt, mode_opt) \
  if (cond) \
-   ERROR((PAXEXIT_FAILURE, 0, _("%s is meaningless with %s"), opt, mode_opt));
+   USAGE_ERROR ((0, 0, _("%s is meaningless with %s"), opt, mode_opt));
 
 static struct argp_option options[] = {
   /* ********** */
@@ -309,13 +312,13 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case BLOCK_SIZE_OPTION:		/* --block-size */
       io_block_size = atoi (arg);
       if (io_block_size < 1)
-	error (2, 0, _("invalid block size"));
+	USAGE_ERROR ((0, 0, _("invalid block size")));
       io_block_size *= 512;
       break;
 
     case 'c':		/* Use the old portable ASCII format.  */
       if (archive_format != arf_unknown)
-	error (0, EXIT_FAILURE, _("Archive format multiply defined"));
+	USAGE_ERROR ((0, 0, _("Archive format multiply defined")));
 #ifdef SVR4_COMPAT
       archive_format = arf_newascii; /* -H newc.  */
 #else
@@ -326,7 +329,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 'C':		/* Block size.  */
       io_block_size = atoi (arg);
       if (io_block_size < 1)
-	error (2, 0, _("invalid block size"));
+	USAGE_ERROR ((0, 0, _("invalid block size")));
       break;
 
     case 'd':		/* Create directories where needed.  */
@@ -351,7 +354,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case 'H':		/* Header format name.  */
       if (archive_format != arf_unknown)
-	error (PAXEXIT_FAILURE, 0, _("Archive format multiply defined"));
+	USAGE_ERROR ((0, 0, _("Archive format multiply defined")));
       if (!strcasecmp (arg, "crc"))
 	archive_format = arf_crcascii;
       else if (!strcasecmp (arg, "newc"))
@@ -369,14 +372,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
       else if (!strcasecmp (arg, "hpbin"))
 	archive_format = arf_hpbinary;
       else
-	error (2, 0, _("\
+	USAGE_ERROR ((0, 0, _("\
 invalid archive format `%s'; valid formats are:\n\
-crc newc odc bin ustar tar (all-caps also recognized)"), arg);
+crc newc odc bin ustar tar (all-caps also recognized)"), arg));
       break;
 	  
     case 'i':		/* Copy-in mode.  */
       if (copy_function != 0)
-	error (PAXEXIT_FAILURE, 0, _("Mode already defined"));
+	USAGE_ERROR ((0, 0, _("Mode already defined")));
       copy_function = process_copy_in;
       break;
 
@@ -414,14 +417,14 @@ crc newc odc bin ustar tar (all-caps also recognized)"), arg);
       
     case NO_PRESERVE_OWNER_OPTION:		/* --no-preserve-owner */
       if (set_owner_flag || set_group_flag)
-	error (PAXEXIT_FAILURE, 0, 
-               _("--no-preserve-owner cannot be used with --owner"));
+	USAGE_ERROR ((0, 0,  
+		      _("--no-preserve-owner cannot be used with --owner")));
       no_chown_flag = true;
       break;
 
     case 'o':		/* Copy-out mode.  */
       if (copy_function != 0)
-	error (PAXEXIT_FAILURE, 0, _("Mode already defined"));
+	USAGE_ERROR ((0, 0, _("Mode already defined")));
       copy_function = process_copy_out;
       break;
 
@@ -435,7 +438,7 @@ crc newc odc bin ustar tar (all-caps also recognized)"), arg);
 
     case 'p':		/* Copy-pass mode.  */
       if (copy_function != 0)
-	error (PAXEXIT_FAILURE, 0, _("Mode already defined"));
+	USAGE_ERROR ((0, 0, _("Mode already defined")));
       copy_function = process_copy_pass;
       break;
 	  
@@ -457,15 +460,15 @@ crc newc odc bin ustar tar (all-caps also recognized)"), arg);
 
     case 'R':		/* Set the owner.  */
       if (no_chown_flag)
-	error (PAXEXIT_FAILURE, 0, 
-	       _("--owner cannot be used with --no-preserve-owner"));
+	USAGE_ERROR ((0, 0,  
+		      _("--owner cannot be used with --no-preserve-owner")));
       else
 	{
 	  char *e, *u, *g;
 	  
 	  e = parse_user_spec (arg, &set_owner, &set_group, &u, &g);
 	  if (e)
-	    error (PAXEXIT_FAILURE, 0, "%s: %s", arg, e);
+	    USAGE_ERROR ((0, 0, "%s: %s", arg, e));
 	  if (u)
 	    {
 	      free (u);
@@ -505,7 +508,7 @@ crc newc odc bin ustar tar (all-caps also recognized)"), arg);
 
     case 'W':
       if (warn_control (arg))
-	argp_error (state, _("Invalid value for --warning option: %s"), arg);
+	USAGE_ERROR ((0, 0, _("Invalid value for --warning option: %s"), arg));
       break;
       
     case SPARSE_OPTION:
@@ -542,6 +545,14 @@ static struct argp argp = {
   NULL
 };
 
+static void
+usage (int status)
+{
+  argp_help (&argp, stderr, ARGP_HELP_SEE, (char*) program_name);
+  close_stdout ();
+  exit (status);
+}
+
 /* Process the arguments.  Set all options and set up the copy pass
    directory or the copy in patterns.  */
 
@@ -564,9 +575,9 @@ process_args (int argc, char *argv[])
       if (table_flag)
 	copy_function = process_copy_in;
       else
-	error (PAXEXIT_FAILURE, 0, 
+	USAGE_ERROR ((0, 0,
 	       _("You must specify one of -oipt options.\nTry `%s --help' or `%s --usage' for more information.\n"),
-	       program_name, program_name);
+		      program_name, program_name));
     }
 
   /* Work around for pcc bug.  */
@@ -576,24 +587,25 @@ process_args (int argc, char *argv[])
   if (copy_function == copy_in)
     {
       archive_des = 0;
-      CHECK_USAGE(link_flag, "--link", "--extract");
-      CHECK_USAGE(reset_time_flag, "--reset", "--extract");
-      CHECK_USAGE(xstat != lstat, "--dereference", "--extract");
-      CHECK_USAGE(append_flag, "--append", "--extract");
-      CHECK_USAGE(output_archive_name, "-O", "--extract");
+      CHECK_USAGE (link_flag, "--link", "--extract");
+      CHECK_USAGE (reset_time_flag, "--reset", "--extract");
+      CHECK_USAGE (xstat != lstat, "--dereference", "--extract");
+      CHECK_USAGE (append_flag, "--append", "--extract");
+      CHECK_USAGE (output_archive_name, "-O", "--extract");
       if (to_stdout_option)
 	{
-	  CHECK_USAGE(create_dir_flag, "--make-directories", "--to-stdout");
-	  CHECK_USAGE(rename_flag, "--rename", "--to-stdout");
-	  CHECK_USAGE(no_chown_flag, "--no-preserve-owner", "--to-stdout");
-	  CHECK_USAGE(set_owner_flag||set_group_flag, "--owner", "--to-stdout");
-	  CHECK_USAGE(retain_time_flag, "--preserve-modification-time",
-		      "--to-stdout");
+	  CHECK_USAGE (create_dir_flag, "--make-directories", "--to-stdout");
+	  CHECK_USAGE (rename_flag, "--rename", "--to-stdout");
+	  CHECK_USAGE (no_chown_flag, "--no-preserve-owner", "--to-stdout");
+	  CHECK_USAGE (set_owner_flag||set_group_flag,
+		       "--owner", "--to-stdout");
+	  CHECK_USAGE (retain_time_flag, "--preserve-modification-time",
+		       "--to-stdout");
 	}
       
       if (archive_name && input_archive_name)
-	error (PAXEXIT_FAILURE, 0, 
-	       _("Both -I and -F are used in copy-in mode"));
+	USAGE_ERROR ((0, 0,  
+		      _("Both -I and -F are used in copy-in mode")));
 
       if (archive_format == arf_crcascii)
 	crc_i_flag = true;
@@ -605,32 +617,33 @@ process_args (int argc, char *argv[])
   else if (copy_function == copy_out)
     {
       if (index != argc)
-	error (PAXEXIT_FAILURE, 0, _("Too many arguments"));
+	USAGE_ERROR ((0, 0, _("Too many arguments")));
 
       archive_des = 1;
-      CHECK_USAGE(create_dir_flag, "--make-directories", "--create");
-      CHECK_USAGE(rename_flag, "--rename", "--create");
-      CHECK_USAGE(table_flag, "--list", "--create");
-      CHECK_USAGE(unconditional_flag, "--unconditional", "--create");
-      CHECK_USAGE(link_flag, "--link", "--create");
-      CHECK_USAGE(sparse_flag, "--sparse", "--create");
-      CHECK_USAGE(retain_time_flag, "--preserve-modification-time",
-		  "--create");
-      CHECK_USAGE(no_chown_flag, "--no-preserve-owner", "--create");
-      CHECK_USAGE(swap_bytes_flag, "--swap-bytes (--swap)", "--create");
-      CHECK_USAGE(swap_halfwords_flag, "--swap-halfwords (--swap)",
-		  "--create");
-      CHECK_USAGE(to_stdout_option, "--to-stdout", "--create");
+      CHECK_USAGE (create_dir_flag, "--make-directories", "--create");
+      CHECK_USAGE (rename_flag, "--rename", "--create");
+      CHECK_USAGE (table_flag, "--list", "--create");
+      CHECK_USAGE (unconditional_flag, "--unconditional", "--create");
+      CHECK_USAGE (link_flag, "--link", "--create");
+      CHECK_USAGE (sparse_flag, "--sparse", "--create");
+      CHECK_USAGE (retain_time_flag, "--preserve-modification-time",
+		   "--create");
+      CHECK_USAGE (no_chown_flag, "--no-preserve-owner", "--create");
+      CHECK_USAGE (swap_bytes_flag, "--swap-bytes (--swap)", "--create");
+      CHECK_USAGE (swap_halfwords_flag, "--swap-halfwords (--swap)",
+		   "--create");
+      CHECK_USAGE (to_stdout_option, "--to-stdout", "--create");
       
       if (append_flag && !(archive_name || output_archive_name))
-	error (PAXEXIT_FAILURE, 0, 
-	       _("--append is used but no archive file name is given (use -F or -O options)"));
+	USAGE_ERROR ((0, 0,  
+		      _("--append is used but no archive file name "
+			"is given (use -F or -O options)")));
 
-      CHECK_USAGE(rename_batch_file, "--rename-batch-file", "--create");
-      CHECK_USAGE(input_archive_name, "-I", "--create");
+      CHECK_USAGE (rename_batch_file, "--rename-batch-file", "--create");
+      CHECK_USAGE (input_archive_name, "-I", "--create");
       if (archive_name && output_archive_name)
-	error (PAXEXIT_FAILURE, 0, 
-	       _("Both -O and -F are used in copy-out mode"));
+	USAGE_ERROR ((0, 0,  
+		      _("Both -O and -F are used in copy-out mode")));
 
       if (archive_format == arf_unknown)
 	archive_format = arf_binary;
@@ -641,26 +654,27 @@ process_args (int argc, char *argv[])
     {
       /* Copy pass.  */
       if (index < argc - 1)
-	error (PAXEXIT_FAILURE, 0, _("Too many arguments"));
+	USAGE_ERROR ((0, 0, _("Too many arguments")));
       else if (index > argc - 1)
-	error (PAXEXIT_FAILURE, 0, _("Not enough arguments"));
+	USAGE_ERROR ((0, 0, _("Not enough arguments")));
 
       if (archive_format != arf_unknown)
-	error (PAXEXIT_FAILURE, 0, 
-	       _("Archive format is not specified in copy-pass mode (use --format option)"));
+	USAGE_ERROR ((0, 0,  
+		      _("Archive format is not specified in copy-pass mode "
+			"(use --format option)")));
 
-      CHECK_USAGE(swap_bytes_flag, "--swap-bytes (--swap)", "--pass-through");
-      CHECK_USAGE(swap_halfwords_flag, "--swap-halfwords (--swap)",
-		  "--pass-through");
-      CHECK_USAGE(table_flag, "--list", "--pass-through");
-      CHECK_USAGE(rename_flag, "--rename", "--pass-through");
-      CHECK_USAGE(append_flag, "--append", "--pass-through");
-      CHECK_USAGE(rename_batch_file, "--rename-batch-file", "--pass-through");
-      CHECK_USAGE(no_abs_paths_flag, "--no-absolute-pathnames",
-		  "--pass-through");
-      CHECK_USAGE(no_abs_paths_flag, "--absolute-pathnames",
-		  "--pass-through");
-      CHECK_USAGE(to_stdout_option, "--to-stdout", "--pass-through");
+      CHECK_USAGE (swap_bytes_flag, "--swap-bytes (--swap)", "--pass-through");
+      CHECK_USAGE (swap_halfwords_flag, "--swap-halfwords (--swap)",
+		   "--pass-through");
+      CHECK_USAGE (table_flag, "--list", "--pass-through");
+      CHECK_USAGE (rename_flag, "--rename", "--pass-through");
+      CHECK_USAGE (append_flag, "--append", "--pass-through");
+      CHECK_USAGE (rename_batch_file, "--rename-batch-file", "--pass-through");
+      CHECK_USAGE (no_abs_paths_flag, "--no-absolute-pathnames",
+		   "--pass-through");
+      CHECK_USAGE (no_abs_paths_flag, "--absolute-pathnames",
+		   "--pass-through");
+      CHECK_USAGE (to_stdout_option, "--to-stdout", "--pass-through");
       
       directory_name = argv[index];
     }

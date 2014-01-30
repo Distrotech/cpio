@@ -48,7 +48,7 @@ read_for_checksum (int in_file_des, int file_size, char *file_name)
     {
       bytes_read = read (in_file_des, buf, BUFSIZ);
       if (bytes_read < 0)
-	error (1, errno, _("cannot read checksum for %s"), file_name);
+	error (PAXEXIT_FAILURE, errno, _("cannot read checksum for %s"), file_name);
       if (bytes_read == 0)
 	break;
       if (bytes_left < bytes_read)
@@ -57,7 +57,7 @@ read_for_checksum (int in_file_des, int file_size, char *file_name)
 	crc += buf[i] & 0xff;
     }
   if (lseek (in_file_des, 0L, SEEK_SET))
-    error (1, errno, _("cannot read checksum for %s"), file_name);
+    error (PAXEXIT_FAILURE, errno, _("cannot read checksum for %s"), file_name);
 
   return crc;
 }
@@ -606,7 +606,7 @@ process_copy_out ()
   else
     {
       if (fstat (out_file_des, &file_stat))
-	error (1, errno, _("standard output is closed"));
+	error (PAXEXIT_FAILURE, errno, _("standard output is closed"));
       output_is_special =
 #ifdef S_ISBLK
 	S_ISBLK (file_stat.st_mode) ||

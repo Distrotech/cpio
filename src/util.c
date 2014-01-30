@@ -90,10 +90,10 @@ tape_empty_output_buffer (int out_des)
 	  rest_bytes_written = rmtwrite (out_des, output_buffer,
 					 rest_output_size);
 	  if (rest_bytes_written != rest_output_size)
-	    error (1, errno, _("write error"));
+	    error (PAXEXIT_FAILURE, errno, _("write error"));
 	}
       else
-	error (1, errno, _("write error"));
+	error (PAXEXIT_FAILURE, errno, _("write error"));
     }
   output_bytes += output_size;
   out_buff = output_buffer;
@@ -143,9 +143,9 @@ disk_empty_output_buffer (int out_des, bool flush)
   if (bytes_written != output_size)
     {
       if (bytes_written == -1)
-	error (1, errno, _("write error"));
+	error (PAXEXIT_FAILURE, errno, _("write error"));
       else
-	error (1, 0, _("write error: partial write"));
+	error (PAXEXIT_FAILURE, 0, _("write error: partial write"));
     }
   output_bytes += output_size;
   out_buff = output_buffer;
@@ -207,7 +207,7 @@ tape_fill_input_buffer (int in_des, int num_bytes)
       input_size = rmtread (in_des, input_buffer, num_bytes);
     }
   if (input_size < 0)
-    error (1, errno, _("read error"));
+    error (PAXEXIT_FAILURE, errno, _("read error"));
   if (input_size == 0)
     {
       error (0, 0, _("premature end of file"));
@@ -376,7 +376,7 @@ tape_buffered_peek (char *peek_buf, int in_des, int num_bytes)
 	    break;
 	}
       if (tmp_input_size < 0)
-	error (1, errno, _("read error"));
+	error (PAXEXIT_FAILURE, errno, _("read error"));
       input_bytes += tmp_input_size;
       input_size += tmp_input_size;
     }
@@ -620,7 +620,7 @@ create_all_directories (char *name)
 #endif
   
   if (dir == NULL)
-    error (2, 0, _("virtual memory exhausted"));
+    error (PAXEXIT_FAILURE, 0, _("virtual memory exhausted"));
 
   if (dir[0] != '.' || dir[1] != '\0')
     {
@@ -663,13 +663,13 @@ prepare_append (int out_file_des)
   start_of_block = start_of_header - useful_bytes_in_block;
 
   if (lseek (out_file_des, start_of_block, SEEK_SET) < 0)
-    error (1, errno, _("cannot seek on output"));
+    error (PAXEXIT_FAILURE, errno, _("cannot seek on output"));
   if (useful_bytes_in_block > 0)
     {
       tmp_buf = (char *) xmalloc (useful_bytes_in_block);
       read (out_file_des, tmp_buf, useful_bytes_in_block);
       if (lseek (out_file_des, start_of_block, SEEK_SET) < 0)
-	error (1, errno, _("cannot seek on output"));
+	error (PAXEXIT_FAILURE, errno, _("cannot seek on output"));
       /* fix juo -- is this copy_tape_buf_out?  or copy_disk? */
       tape_buffered_write (tmp_buf, out_file_des, useful_bytes_in_block);
       free (tmp_buf);
@@ -823,10 +823,10 @@ get_next_reel (int tape_des)
   /* Open files for interactive communication.  */
   tty_in = fopen (TTY_NAME, "r");
   if (tty_in == NULL)
-    error (2, errno, TTY_NAME);
+    error (PAXEXIT_FAILURE, errno, TTY_NAME);
   tty_out = fopen (TTY_NAME, "w");
   if (tty_out == NULL)
-    error (2, errno, TTY_NAME);
+    error (PAXEXIT_FAILURE, errno, TTY_NAME);
 
   old_tape_des = tape_des;
   tape_offline (tape_des);
@@ -891,7 +891,7 @@ get_next_reel (int tape_des)
      the archive.  */
 
   if (tape_des != old_tape_des)
-    error (1, 0, _("internal error: tape descriptor changed from %d to %d"),
+    error (PAXEXIT_FAILURE, 0, _("internal error: tape descriptor changed from %d to %d"),
 	   old_tape_des, tape_des);
 
   free (new_name.ds_string);

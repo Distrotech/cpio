@@ -956,7 +956,7 @@ read_in_header (struct cpio_file_stat *file_hdr, int in_des)
 	{
 	  peeked_bytes = tape_buffered_peek (tmpbuf, in_des, 512);
 	  if (peeked_bytes < 6)
-	    error (1, 0, _("premature end of archive"));
+	    error (PAXEXIT_FAILURE, 0, _("premature end of archive"));
 
 	  if (!strncmp (tmpbuf, "070701", 6))
 	    archive_format = arf_newascii;
@@ -1289,7 +1289,7 @@ process_copy_in ()
       rename_in = fopen (rename_batch_file, "r");
       if (rename_in == NULL)
 	{
-	  error (2, errno, TTY_NAME);
+	  error (PAXEXIT_FAILURE, errno, TTY_NAME);
 	}
     }
   else if (rename_flag)
@@ -1298,12 +1298,12 @@ process_copy_in ()
       tty_in = fopen (TTY_NAME, "r");
       if (tty_in == NULL)
 	{
-	  error (2, errno, TTY_NAME);
+	  error (PAXEXIT_FAILURE, errno, TTY_NAME);
 	}
       tty_out = fopen (TTY_NAME, "w");
       if (tty_out == NULL)
 	{
-	  error (2, errno, TTY_NAME);
+	  error (PAXEXIT_FAILURE, errno, TTY_NAME);
 	}
     }
 
@@ -1323,7 +1323,7 @@ process_copy_in ()
   else
     {
       if (fstat (in_file_des, &file_stat))
-	error (1, errno, _("standard input is closed"));
+	error (PAXEXIT_FAILURE, errno, _("standard input is closed"));
       input_is_special =
 #ifdef S_ISBLK
 	S_ISBLK (file_stat.st_mode) ||
