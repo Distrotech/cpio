@@ -80,24 +80,10 @@ gnulib_files=
 po_download_command_format=\
 "rsync -Lrtvz 'translationproject.org::tp/latest/%s/' '%s'"
 
-extract_package_name='
-  /^AC_INIT(/{
-     /.*,.*,.*, */{
-       s///
-       s/[][]//g
-       s/)$//
-       p
-       q
-     }
-     s/AC_INIT(\[*//
-     s/]*,.*//
-     s/^GNU //
-     y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/
-     s/[^A-Za-z0-9_]/-/g
-     p
-  }
-'
-package=`sed -n "$extract_package_name" configure.ac` || exit
+extract_package_name='divert(-1)[]changequote([,])[]define([AC_INIT],[divert(0)[]patsubst([$1],[GNU ],[])[]divert(-1)])'
+
+package=`echo $extract_package_name | m4 - configure.ac` || exit
+
 gnulib_name=lib$package
 
 build_aux=build-aux
