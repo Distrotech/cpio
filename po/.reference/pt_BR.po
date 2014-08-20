@@ -1,0 +1,517 @@
+# Arquivo de Mensagens do CPIO.
+# Copyright (C) 1999 Free Software Foundation, Inc.
+# Fábio Henrique F. Silva <fabiohfs@eol.com.br>, 1999.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: cpio 2.3.911\n"
+"POT-Creation-Date: 1999-09-11 13:40-03:00\n"
+"PO-Revision-Date: 1999-09-11 13:40-03:00\n"
+"Last-Translator: Fábio Henrique F. Silva  <fabiohfs@eol.com.br>\n"
+"Language-Team: Brazilian Portuguese <ldp-br@bazar.conectiva.com.br>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8-bit\n"
+
+#: lib/regex.c:933 lib/rx.c:3942 lib/rx.c:6209 lib/xmalloc.c:70
+msgid "Memory exhausted"
+msgstr "Memória Cheia"
+
+#: src/mt.c:260
+msgid "%s is not a character special file"
+msgstr "O %s não é um arquivo tipo caracter"
+
+#: src/copyout.c:104
+msgid "cannot open directory %s"
+msgstr "Não foi possível abrir o diretório %s"
+
+#: src/pax.c:130
+msgid "block size cannot be 0"
+msgstr "O tamanho do bloco não pode ser 0"
+
+#: src/mt.c:184
+msgid "GNU mt version %s\n"
+msgstr "GNU mt versão %s\n"
+
+#: src/copyin.c:65
+msgid "premature end of archive"
+msgstr "Final de arquivo prematuro"
+
+#: lib/getopt.c:519
+msgid "%s: option `%s' is ambiguous\n"
+msgstr "%s: A opção '%s' é ambigua\n"
+
+#: lib/regex.c:921 lib/rx.c:7153
+msgid "Success"
+msgstr "Sucesso"
+
+#: src/pax.c:115 src/pax.c:122
+msgid "parse error in blocksize"
+msgstr "Erro na análise do tamanho do bloco"
+
+#: lib/regex.c:936 lib/rx.c:3945 lib/rx.c:6212
+msgid "Regular expression too big"
+msgstr "Expressão regular muito grande"
+
+#: src/cpio.c:96
+msgid ""
+"Usage: %s {-o|--create} [-0acvABLV] [-C bytes] [-H format] [-M message]\n"
+"       [-O [[user@]host:]archive] [-F [[user@]host:]archive]\n"
+"       [--file=[[user@]host:]archive] [--format=format] [--message=message]\n"
+"       [--null] [--reset-access-time] [--verbose] [--dot] [--append]\n"
+"       [--block-size=blocks] [--dereference] [--io-size=bytes] [--quiet]\n"
+"       [--force-local] [--help] [--version] < name-list [> archive]\n"
+msgstr ""
+"Uso: %s {-o|--create} [-0acvABLV] [-C bytes] [-H formato] [-M mensagem]\n"
+"       [-O [[usuário@]máquina:]arquivo] [-F [[usuário@]máquina:]arquivo]\n"
+"       [--file=[[usuário@]máquina:]arquivo] [--format=formato] [--message=mensagem]\n"
+"       [--null] [--reset-access-time] [--verbose] [--dot] [--append]\n"
+"       [--block-size=blocos] [--dereference] [--io-size=bytes] [--quiet]\n"
+"       [--force-local] [--help] [--version] < lista-de-nomes [> arquivo]\n"
+
+#: lib/getopt.c:619
+msgid "%s: illegal option -- %c\n"
+msgstr "%s: opção ilegal -- %c\n"
+
+#: src/main.c:60
+msgid "error closing archive"
+msgstr "erro ao fechar o arquivo"
+
+#: lib/regex.c:935 lib/rx.c:3944 lib/rx.c:6211
+msgid "Premature end of regular expression"
+msgstr "Final prematuro de expressão regular"
+
+#: src/copyin.c:211
+msgid "standard input is closed"
+msgstr "a entrada padrão está fechada"
+
+#: src/copyout.c:414
+msgid "%s not dumped: not a regular file"
+msgstr "%s não descarregado: não é um arquivo regular"
+
+#: src/copyin.c:425 src/copypass.c:130
+msgid "cannot remove current %s"
+msgstr "não pôde remover %s"
+
+#: lib/getopt.c:547
+msgid "%s: option `%c%s' doesn't allow an argument\n"
+msgstr "%s: a opção '%c%s' não permite um argumento\n"
+
+#: src/pax.c:86
+msgid ""
+"       %s {-r|--read} {-w|--write} [-cdnv] [-f archive] [-s replacement]\n"
+"       [--nonmatching] [--directories-only] [--first-pattern] [--verbose]\n"
+"       [--replace=replacement] [pattern...] [< archive]\n"
+msgstr ""
+"       %s {-r|--read} {-w|--write} [-cdnv] [-f arquivo] [-s substituição]\n"
+"       [--nonmatching] [--directories-only] [--first-pattern] [--verbose]\n"
+"       [--replace=substituição] [padrão...] [< arquivo]\n"
+
+#: lib/userspec.c:217
+msgid "invalid group"
+msgstr "grupo inválido"
+
+#: src/copyout.c:515 src/copyout.c:522
+msgid "cannot read checksum for %s"
+msgstr "não pôde validar %s"
+
+#: src/mt.c:299
+msgid "block number = %d\n"
+msgstr "número de bloco = %d\n"
+
+#: src/copypass.c:460
+msgid "%s linked to %s"
+msgstr "%s vinculado a %s"
+
+#. +option or -option
+#.
+#: lib/getopt.c:594
+msgid "%s: unrecognized option `%c%s'\n"
+msgstr "%s: opção '%c%s' não reconhecida\n"
+
+#: src/format.c:80
+msgid ""
+"invalid archive format `%s'; valid formats are:\n"
+"crc, newc, odc, bin, ustar, tar, hpodc, hpbin"
+msgstr ""
+"formato do arquivo inválido `%s'; os formatos válidos são:\n"
+"crc, newc, odc, bin, ustar, tar, hpodc, hpbin"
+
+#: lib/getopt.c:542
+msgid "%s: option `--%s' doesn't allow an argument\n"
+msgstr "%s: a opção '--%s' não permite um argumento\n"
+
+#: lib/regex.c:925 lib/rx.c:3934 lib/rx.c:6201
+msgid "Invalid character class name"
+msgstr "Nome da classe de caracteres inválida"
+
+#: src/copyin.c:816 src/copyout.c:243 src/copypass.c:397
+msgid "%d blocks\n"
+msgstr "%d blocos\n"
+
+#: src/mt.c:288
+msgid "drive type = %d\n"
+msgstr "tipo do drive = %d\n"
+
+#: src/pax.c:267
+msgid "unrecognized flag `%c' for -p; recognized flags are `aemop'"
+msgstr "a opção '%c' não é reconhecida para -p; opções válidas são: 'aemop'"
+
+#. Assume -2.
+#.
+#: src/argmatch.c:88
+msgid "ambiguous"
+msgstr "ambiguo"
+
+#: src/rename.c:353
+msgid "missing regexp"
+msgstr "falta a expressão regular"
+
+#: src/copyin.c:814 src/copyout.c:241 src/copypass.c:395
+msgid "1 block\n"
+msgstr "1 bloco\n"
+
+#: lib/userspec.c:136 src/util.c:638
+msgid "virtual memory exhausted"
+msgstr "a memória virtual encheu"
+
+#: lib/makepath.c:168 lib/makepath.c:235
+msgid "cannot make directory `%s'"
+msgstr "não pôde criar o diretório '%s'"
+
+#: lib/getopt.c:562
+msgid "%s: option `%s' requires an argument\n"
+msgstr "%s: a opção '%s' requer um argumento\n"
+
+#: src/mt.c:308
+msgid "Usage: %s [-V] [-f device] [--file=device] [--help] [--version] operation [count]\n"
+msgstr "Uso: %s [-V] [-f dispositivo] [--file=dispositivo] [--help] [--version] operação [contador]\n"
+
+#: lib/regex.c:922 lib/rx.c:3931 lib/rx.c:6198
+msgid "No match"
+msgstr "Não coincide"
+
+#: src/mt.c:296
+msgid "residue count = %d\n"
+msgstr "contador residual = %d\n"
+
+#: src/cpio.c:116
+msgid ""
+"       %s {-p|--pass-through} [-0adlmuvLV] [-R [user][:.][group]]\n"
+"       [--null] [--reset-access-time] [--make-directories] [--link] [--quiet]\n"
+"       [--preserve-modification-time] [--unconditional] [--verbose] [--dot]\n"
+"       [--dereference] [--owner=[user][:.][group]] [--no-preserve-owner]\n"
+"       [--sparse] [--help] [--version] destination-directory < name-list\n"
+msgstr ""
+"       %s {-p|--pass-through} [-0adlmuvLV] [-R [usuário][:.][grupo]]\n"
+"       [--null] [--reset-access-time] [--make-directories] [--link] [--quiet]\n"
+"       [--preserve-modification-time] [--unconditional] [--verbose] [--dot]\n"
+"       [--dereference] [--owner=[usuário][:.][grupo]] [--no-preserve-owner]\n"
+"       [--sparse] [--help] [--version] diretório-de-destino < lista-de-nomes\n"
+
+#: src/mt.c:293
+msgid "drive status = %d\n"
+msgstr "estado do drive = %d\n"
+
+#: src/fmttar.c:265
+msgid "invalid header: checksum error"
+msgstr "cabeçalho inválido: erro de validação"
+
+#: lib/regex.c:928 lib/rx.c:3937 lib/rx.c:6204
+msgid "Unmatched [ or [^"
+msgstr "[ ou [^ não coincidem"
+
+#: lib/getopt.c:658
+msgid "%s: option requires an argument -- %c\n"
+msgstr "%s: a opção requer um argumento -- %c\n"
+
+#: lib/makepath.c:210 lib/makepath.c:288
+msgid "`%s' exists but is not a directory"
+msgstr "'%s' existe mas não é um diretório"
+
+#: src/cpio.c:104
+msgid ""
+"       %s {-i|--extract} [-bcdfmnrtsuvBSV] [-C bytes] [-E file] [-H format]\n"
+"       [-M message] [-R [user][:.][group]] [-I [[user@]host:]archive]\n"
+"       [-F [[user@]host:]archive] [--file=[[user@]host:]archive]\n"
+"       [--make-directories] [--nonmatching] [--preserve-modification-time]\n"
+"       [--numeric-uid-gid] [--rename] [--list] [--swap-bytes] [--swap] [--dot]\n"
+"       [--unconditional] [--verbose] [--block-size=blocks] [--swap-halfwords]\n"
+"       [--io-size=bytes] [--pattern-file=file] [--format=format]\n"
+"       [--owner=[user][:.][group]] [--no-preserve-owner] [--message=message]\n"
+"       [--force-local] [--no-absolute-filenames] [--sparse] [--only-verify-crc]\n"
+"       [--quiet] [--help] [--version] [pattern...] [< archive]\n"
+msgstr ""
+"       %s {-i|--extract} [-bcdfmnrtsuvBSV] [-C bytes] [-E arquivo] [-H formato]\n"
+"       [-M mensagem] [-R [usuário][:.][grupo]] [-I [[usuário@]máquina:]arquivo]\n"
+"       [-F [[usuário@]máquina:]arquivo] [--file=[[usuário@]máquina:]arquivo]\n"
+"       [--make-directories] [--nonmatching] [--preserve-modification-time]\n"
+"       [--numeric-uid-gid] [--rename] [--list] [--swap-bytes] [--swap] [--dot]\n"
+"       [--unconditional] [--verbose] [--block-size=blocks] [--swap-halfwords]\n"
+"       [--io-size=bytes] [--pattern-file=arquivo] [--format=formato]\n"
+"       [--owner=[usuário][:.][grupo]] [--no-preserve-owner] [--message=mensagem]\n"
+"       [--force-local] [--no-absolute-filenames] [--sparse] [--only-verify-crc]\n"
+"       [--quiet] [--help] [--version] [padrão...] [< arquivo]\n"
+
+#: src/cpio.c:178 src/cpio.c:195 src/pax.c:196
+msgid "invalid block size"
+msgstr "tamanho do bloco inválido"
+
+#: src/mt.c:217
+msgid "no tape device specified"
+msgstr "dispositivo de fita não especificado"
+
+#: src/pax.c:76
+msgid ""
+"       %s {-r|--read} [-cdiknuv] [-f archive] [-s replacement]\n"
+"       [--nonmatching] [--directories-only] [--first-pattern] [--verbose]\n"
+"       [--replace=replacement] [pattern...] [< archive]\n"
+msgstr ""
+"       %s {-r|--read} [-cdiknuv] [-f arquivo] [-s substituição]\n"
+"       [--nonmatching] [--directories-only] [--first-pattern] [--verbose]\n"
+"       [--replace=substituição] [padrão...] [< arquivo]\n"
+
+#: src/copyin.c:785 src/copyout.c:481 src/copypass.c:380
+msgid "%s: unknown file type"
+msgstr "%s: tipo de arquivo desconhecido"
+
+#: lib/getopt.c:622
+msgid "%s: invalid option -- %c\n"
+msgstr "%s: opção inválida -- %c\n"
+
+#: src/copyin.c:505 src/copyin.c:698 src/copyin.c:1064 src/copypass.c:465
+msgid "cannot link %s to %s"
+msgstr "não é possível vincular %s a %s"
+
+#: lib/userspec.c:177
+msgid "cannot get the login group of a numeric UID"
+msgstr "não foi possível obter o grupo a partir do UID numérico"
+
+#: src/mt.c:291
+msgid "drive status (low) = %d\n"
+msgstr "estado do drive (baixo) = %d\n"
+
+#: src/fmtcpio.c:169
+msgid "warning: archive header has reverse byte-order"
+msgstr "aviso: o cabeçalho do arquivo tem os bytes em ordem reversa"
+
+#: src/mt.c:298
+msgid "file number = %d\n"
+msgstr "número do arquivo = %d\n"
+
+#: lib/regex.c:924 lib/rx.c:3933 lib/rx.c:6200
+msgid "Invalid collation character"
+msgstr "Conjunto de caracteres inválido"
+
+#: src/copyin.c:546
+msgid "cannot swap bytes of %s: odd number of bytes"
+msgstr "não pôde trocar os bytes de %s: número de bytes impar"
+
+#: lib/regex.c:930 lib/rx.c:3939 lib/rx.c:6206
+msgid "Unmatched \\{"
+msgstr "\\{ não coincide"
+
+#: src/copyout.c:459
+msgid "%s: symbolic link too long"
+msgstr "%s: vínculo simbólico muito longo"
+
+#: lib/regex.c:937 lib/rx.c:3946 lib/rx.c:6213
+msgid "Unmatched ) or \\)"
+msgstr ") ou \\) não coincide"
+
+#: lib/regex.c:934 lib/rx.c:3943 lib/rx.c:6210
+msgid "Invalid preceding regular expression"
+msgstr "Expressão regular anterior inválida"
+
+#: src/copyin.c:104 src/copyin.c:121 src/copyin.c:130 src/copyin.c:139
+#: src/copyin.c:150 src/fmttar.c:369
+msgid "warning: skipped %ld bytes of junk"
+msgstr "aviso: %ld bytes ignorados"
+
+#. --option
+#.
+#: lib/getopt.c:590
+msgid "%s: unrecognized option `--%s'\n"
+msgstr "%s: opção '--%s' desconhecida\n"
+
+#. FIXME for pax we must print more info here.
+#.
+#: src/rename.c:258
+msgid "rename %s -> "
+msgstr "renomeia %s -> "
+
+#: src/rename.c:358
+msgid "null regexp"
+msgstr "expressão regular nula"
+
+#: src/copyout.c:207
+msgid "standard output is closed"
+msgstr "a saida padrão está fechada"
+
+#. Can't overwrite.  So just skip.
+#.
+#. Can't overwrite, so just skip.
+#.
+#: src/copyin.c:416 src/copypass.c:123
+msgid "%s already exists; not created"
+msgstr "%s já existe; não será criada"
+
+#: src/copyin.c:349 src/copyin.c:375 src/copyin.c:557
+msgid "%s: checksum error (0x%x, should be 0x%x)"
+msgstr "%s: erro de validação (0x%x, deveria ser 0x%x)"
+
+#: src/copyin.c:538
+msgid "cannot swap halfwords of %s: odd number of halfwords"
+msgstr "não pôde trocar as palavras de %s: número ímpar de palavras"
+
+#: lib/regex.c:927 lib/rx.c:3936 lib/rx.c:6203
+msgid "Invalid back reference"
+msgstr "Referência atrás inválida"
+
+#: src/copyout.c:166 src/copypass.c:72
+msgid "blank line ignored"
+msgstr "linha em branco ignorada"
+
+#: src/pax.c:71
+msgid ""
+"Usage: %s [-cdnv] [-f archive] [-s replacement] [--nonmatching]\n"
+"       [--directories-only] [--first-pattern] [--verbose]\n"
+"       [--replace=replacement] [pattern...] [< archive]\n"
+msgstr ""
+"Uso: %s [-cdnv] [-f arquivo] [-s substituição] [--nonmatching]\n"
+"       [--directories-only] [--first-pattern] [--verbose]\n"
+"       [--replace=substituição] [padrão...] [< arquivo]\n"
+
+#: lib/regex.c:929 lib/rx.c:3938 lib/rx.c:6205
+msgid "Unmatched ( or \\("
+msgstr "( ou \\( não coincidem"
+
+#: src/fmtcpio.c:321 src/fmtcpio.c:351
+msgid "%s: truncating inode number"
+msgstr "%s: truncando número do inode"
+
+#: src/copyout.c:315
+msgid "%s: file name too long"
+msgstr "%s: nome do arquivo muito longo"
+
+#: src/cpio.c:345
+msgid "GNU cpio version %s\n"
+msgstr "GNU cpio versão %s\n"
+
+#: src/argmatch.c:86
+msgid "invalid"
+msgstr "inválido"
+
+#: src/pax.c:326
+msgid "GNU pax version %s\n"
+msgstr "GNU pax versão %s\n"
+
+#: lib/regex.c:931 lib/rx.c:3940 lib/rx.c:6207
+msgid "Invalid content of \\{\\}"
+msgstr "Conteúdo de \\{\\} inválido"
+
+#: lib/regex.c:932 lib/rx.c:3941 lib/rx.c:6208
+msgid "Invalid range end"
+msgstr "Fim de Faixa inválida"
+
+#: src/mt.c:295
+msgid "sense key error = %d\n"
+msgstr "erro na chave = %d\n"
+
+#: lib/regex.c:926 lib/rx.c:3935 lib/rx.c:6202
+msgid "Trailing backslash"
+msgstr "Barra invertida no final"
+
+#: lib/userspec.c:162
+msgid "can not omit both user and group"
+msgstr "não omita o usuário e o grupo simultâneamente"
+
+#: lib/regex.c:923 lib/rx.c:3932 lib/rx.c:6199
+msgid "Invalid regular expression"
+msgstr "expressão regular inválida"
+
+#: src/mt.c:200
+msgid "tape operation"
+msgstr "operação de fita"
+
+#: lib/userspec.c:171
+msgid "invalid user"
+msgstr "usuário inválido"
+
+#: lib/regex.c:5114
+msgid "No previous regular expression"
+msgstr "Não há expressão regular anterior"
+
+#: src/pax.c:81
+msgid ""
+"       %s {-w|--write} [-cdnv] [-f archive] [-s replacement]\n"
+"       [--nonmatching] [--directories-only] [--first-pattern] [--verbose]\n"
+"       [--replace=replacement] [pattern...] [< archive]\n"
+msgstr ""
+"       %s {-w|--write} [-cdnv] [-f arquivo] [-s substituição]\n"
+"       [--nonmatching] [--directories-only] [--first-pattern] [--verbose]\n"
+"       [--replace=substituição] [padrão...] [< arquivo]\n"
+
+#: src/mt.c:290
+msgid "drive status (high) = %d\n"
+msgstr "estado do drive (alto) = %d\n"
+
+#: src/copyin.c:407 src/copypass.c:116
+msgid "%s not created: newer or same age version exists"
+msgstr "%s não criado: ele é mais novo ou da mesma data da versão existente"
+
+#: src/rename.c:372
+msgid "%s while compiling pattern"
+msgstr "%s durante a compilação do padrão"
+
+#: src/rename.c:393
+msgid "invalid regexp modifier `%c'"
+msgstr "modificador de expressão inválido '%c'"
+
+#: src/rtapelib.c:243
+msgid "exec/tcp: service not available"
+msgstr "exec/tcp: serviço não disponível"
+
+#: src/rtapelib.c:406
+msgid "cannot execute remote shell"
+msgstr "não pôde executar o interpretador (shell) remoto"
+
+#: src/util.c:140 src/util.c:143 src/util.c:191
+msgid "write error"
+msgstr "erro de escrita"
+
+#: src/util.c:257 src/util.c:437
+msgid "read error"
+msgstr "erro de leitura"
+
+#: src/util.c:260
+msgid "premature end of file"
+msgstr "fim de arquivo prematuro"
+
+#: src/util.c:543 src/util.c:591
+msgid "File %s shrunk by %ld bytes, padding with zeros"
+msgstr "Arquivo %s reduzido em %ld bytes, preenchendo com zeros"
+
+#: src/util.c:546 src/util.c:594
+msgid "Read error at byte %ld in file %s, padding with zeros"
+msgstr "Erro de leitura no byte %ld do arquivo %s, preenchendo com zeros"
+
+#: src/util.c:675 src/util.c:681
+msgid "cannot seek on output"
+msgstr "não foi possível se posicionar na saida"
+
+#: src/util.c:933
+msgid "Found end of tape.  Load next tape and press RETURN. "
+msgstr "Fim de fita encontrado. Coloque a próxima fita e tecle ENTER"
+
+#: src/util.c:936
+msgid "Found end of tape.  To continue, type device/file name when ready.\n"
+msgstr "Fim da fita. Para continuar, digite o nome do dispositivo/arquivo quando pronto.\n"
+
+#: src/util.c:959
+msgid "To continue, type device/file name when ready.\n"
+msgstr "Para continuar, digite o nome do dispositivo/arquivo quanto estiver pronto.\n"
+
+#: src/util.c:984
+msgid "internal error: tape descriptor changed from %d to %d"
+msgstr "erro interno: o descritor da fita foi alterado de %d para %d"

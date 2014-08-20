@@ -1,0 +1,1 @@
+../gnulib/m4/printf-posix.m4
