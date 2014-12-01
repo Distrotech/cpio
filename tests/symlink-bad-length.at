@@ -42,7 +42,7 @@ test $? -eq 2
 ],
 [0],
 [-rw-rw-r--   1 10029    10031          13 Nov 25 13:52 FILE
-],[cpio: LINK: stored filename length too big
+],[cpio: LINK: stored filename length is out of range
 cpio: premature end of file
 ])
 
