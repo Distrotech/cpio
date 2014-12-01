@@ -124,10 +124,30 @@ tape_skip_padding (int in_file_des, off_t offset)
   if (pad != 0)
     tape_toss_input (in_file_des, pad);
 }
-
+
+static char *
+get_link_name (struct cpio_file_stat *file_hdr, int in_file_des)
+{
+  off_t n = file_hdr->c_filesize + 1;
+  char *link_name;
+  
+  if (n == 0 || n > SIZE_MAX)
+    {
+      error (0, 0, _("%s: stored filename length too big"), file_hdr->c_name);
+      link_name = NULL;
+    }
+  else
+    {
+      link_name = xmalloc (n);
+      tape_buffered_read (link_name, in_file_des, file_hdr->c_filesize);
+      link_name[file_hdr->c_filesize] = '\0';
+      tape_skip_padding (in_file_des, file_hdr->c_filesize);
+    }
+  return link_name;
+}
 
 static void
-list_file(struct cpio_file_stat* file_hdr, int in_file_des)
+list_file (struct cpio_file_stat* file_hdr, int in_file_des)
 {
   if (verbose_flag)
     {
@@ -136,21 +156,16 @@ list_file(struct cpio_file_stat* file_hdr, int in_file_des)
 	{
 	  if (archive_format != arf_tar && archive_format != arf_ustar)
 	    {
-	      char *link_name = NULL;	/* Name of hard and symbolic links.  */
-
-	      link_name = (char *) xmalloc ((unsigned int) file_hdr->c_filesize + 1);
-	      link_name[file_hdr->c_filesize] = '\0';
-	      tape_buffered_read (link_name, in_file_des, file_hdr->c_filesize);
-	      long_format (file_hdr, link_name);
-	      free (link_name);
-	      tape_skip_padding (in_file_des, file_hdr->c_filesize);
-	      return;
+	      char *link_name = get_link_name (file_hdr, in_file_des);
+	      if (link_name)
+		{
+		  long_format (file_hdr, link_name);
+		  free (link_name);
+		}
 	    }
 	  else
-	    {
-	      long_format (file_hdr, file_hdr->c_tar_linkname);
-	      return;
-	    }
+	    long_format (file_hdr, file_hdr->c_tar_linkname);
+	  return;
 	}
       else
 #endif
@@ -643,10 +658,7 @@ copyin_link(struct cpio_file_stat *file_hdr, int in_file_des)
           tape_skip_padding (in_file_des, file_hdr->c_filesize);
           return;
         }
-      link_name = (char *) xmalloc ((unsigned int) file_hdr->c_filesize + 1);
-      link_name[file_hdr->c_filesize] = '\0';
-      tape_buffered_read (link_name, in_file_des, file_hdr->c_filesize);
-      tape_skip_padding (in_file_des, file_hdr->c_filesize);
+      link_name = get_link_name (file_hdr, in_file_des);
     }
   else
     {

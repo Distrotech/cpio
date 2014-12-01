@@ -51,6 +51,8 @@ TESTSUITE_AT = \
  setstat04.at\
  setstat05.at\
  symlink.at\
+ symlink-bad-length.at\
+ symlink-long.at\
  symlink-to-stdout.at\
  version.at
 
