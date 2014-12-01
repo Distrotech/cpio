@@ -13,7 +13,7 @@
 .\"
 .\" You should have received a copy of the GNU General Public License
 .\" along with GNU cpio.  If not, see <http://www.gnu.org/licenses/>.
-.TH CPIO 1 "January 30, 2014" "CPIO" "GNU CPIO"
+.TH CPIO 1 "December 1, 2014" "CPIO" "GNU CPIO"
 .SH NAME
 cpio \- copy files to and from archives
 .SH SYNOPSIS
@@ -29,7 +29,7 @@ cpio \- copy files to and from archives
 [\fB\-\-block\-size=\fIblocks\fR] [\fB\-\-dereference\fR]
 [\fB\-\-io\-size=\fIBYTES\fR] [\fB\-\-quiet\fR]
 [\fB\-\-force\-local\fR] [\fB\-\-rsh\-command=\fICOMMAND\fR]
-< \fIname-list\fR [\fB>\fR \fIarchive\fR]
+\fB<\fR \fIname-list\fR [\fB>\fR \fIarchive\fR]
 
 .B cpio
 {\fB\-i\fR|\fB\-\-extract\fR} [\fB\-bcdfmnrtsuvBSV\fR] [\fB\-C\fR \fIBYTES\fR]
@@ -262,6 +262,14 @@ in the archive, without actually extracting the files.
 .BR \-A ", " \-\-append
 Append to an existing archive.
 .TP
+.BR \-\-device\-independent ", " \-\-reproducible
+Create reproducible archives.  This is equivalent to
+.BR "\-\-ignore\-devno \-\-renumber\-inodes" .
+.TP
+.B \-\-ignore\-devno
+Store 0 in the device number field of each archive member, instead of
+the actual device number.
+.TP
 \fB\-O\fR [[\fIUSER\fB@\fR]\fIHOST\fB:\fR]\fIARCHIVE-NAME\fR
 Use \fIARCHIVE-NAME\fR instead of standard output. Optional \fIUSER\fR and
 \fIHOST\fR specify the user and host names in case of a remote
@@ -269,6 +277,9 @@ archive.
 
 The output archive name can be specified wither using this option, or
 using \fB\-F\fR (\fB\-\-file\fR), but not both.
+.TP
+.B \-\-renumber\-inodes
+Renumber inodes when storing them in the archive.
 .SS Operation modifiers valid only in copy-pass mode
 .TP
 .BR \-l ", " \-\-link

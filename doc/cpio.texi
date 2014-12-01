@@ -461,6 +461,10 @@ Set the I/O block size to the given @var{number} of bytes.
 @item -d
 @itemx --make-directories
 Create leading directories where needed.
+@item --device-independent
+@itemx --reproducible
+Create reproducible archives.  This is equivalent to
+@option{--ignore-devno --renumber-inodes}.
 @item -D @var{dir}
 @itemx --directory=@var{dir}
 Change to directory @var{dir}
@@ -483,6 +487,9 @@ Treat the archive file as local, even if its name contains colons.
 @itemx --format=@var{format}
 Use given archive format.  @xref{format}, for a list of available
 formats.
+@item --ignore-devno
+Store 0 in the device number field of each archive member, instead of
+the actual device number.
 @item -l
 @itemx --link
 Link files instead of copying them, when possible.
@@ -512,6 +519,8 @@ Use @var{command} instead of @command{rsh} to access remote archives.
 @item -r
 @itemx --rename
 Interactively rename files
+@item --renumber-inodes
+Renumber inodes when storing them in the archive.
 @item -R
 @itemx --owner=[@var{user}][:.][@var{group}]
 Set the ownership of all files created to the specified @var{user}

@@ -58,7 +58,10 @@ enum cpio_options {
   FORCE_LOCAL_OPTION,            
   DEBUG_OPTION,                  
   BLOCK_SIZE_OPTION,             
-  TO_STDOUT_OPTION
+  TO_STDOUT_OPTION,
+  RENUMBER_INODES_OPTION,
+  IGNORE_DEVNO_OPTION,
+  DEVICE_INDEPENDENT_OPTION
 };
 
 const char *program_authors[] =
@@ -190,6 +193,13 @@ static struct argp_option options[] = {
    N_("Append to an existing archive."), GRID+1 },
   {NULL, 'O', N_("[[USER@]HOST:]FILE-NAME"), 0,
    N_("Archive filename to use instead of standard output. Optional USER and HOST specify the user and host names in case of a remote archive"), GRID+1 },
+  {"renumber-inodes", RENUMBER_INODES_OPTION, NULL, 0,
+   N_("Renumber inodes") },
+  {"ignore-devno", IGNORE_DEVNO_OPTION, NULL, 0,
+   N_("Don't store device numbers") },
+  {"device-independent", DEVICE_INDEPENDENT_OPTION, NULL, 0,
+   N_("Create device-independent (reproducible) archives") },
+  {"reproducible", 0, NULL, OPTION_ALIAS },
 #undef GRID
   
   /* ********** */
@@ -441,7 +451,19 @@ crc newc odc bin ustar tar (all-caps also recognized)"), arg));
 	USAGE_ERROR ((0, 0, _("Mode already defined")));
       copy_function = process_copy_pass;
       break;
-	  
+
+    case IGNORE_DEVNO_OPTION:
+      ignore_devno_option = 1;
+      break;
+      
+    case RENUMBER_INODES_OPTION:
+      renumber_inodes_option = 1;
+      break;
+
+    case DEVICE_INDEPENDENT_OPTION:
+      ignore_devno_option = renumber_inodes_option = 1;
+      break;
+      
     case RSH_COMMAND_OPTION:
       rsh_command_option = arg;
       break;
@@ -592,6 +614,8 @@ process_args (int argc, char *argv[])
       CHECK_USAGE (xstat != lstat, "--dereference", "--extract");
       CHECK_USAGE (append_flag, "--append", "--extract");
       CHECK_USAGE (output_archive_name, "-O", "--extract");
+      CHECK_USAGE (renumber_inodes_option, "--renumber-inodes", "--extract");
+      CHECK_USAGE (ignore_devno_option, "--ignore-devno", "--extract");
       if (to_stdout_option)
 	{
 	  CHECK_USAGE (create_dir_flag, "--make-directories", "--to-stdout");
@@ -649,6 +673,9 @@ process_args (int argc, char *argv[])
 	archive_format = arf_binary;
       if (output_archive_name)
 	archive_name = output_archive_name;
+
+      if (!arf_stores_inode_p (archive_format))
+	renumber_inodes_option = ignore_devno_option = 0;
     }
   else
     {
@@ -675,6 +702,9 @@ process_args (int argc, char *argv[])
       CHECK_USAGE (no_abs_paths_flag, "--absolute-pathnames",
 		   "--pass-through");
       CHECK_USAGE (to_stdout_option, "--to-stdout", "--pass-through");
+      CHECK_USAGE (renumber_inodes_option, "--renumber-inodes",
+		   "--pass-through");
+      CHECK_USAGE (ignore_devno_option, "--ignore-devno", "--pass-through");
       
       directory_name = argv[index];
     }

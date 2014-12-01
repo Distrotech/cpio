@@ -56,6 +56,8 @@ extern int only_verify_crc_flag;
 extern int no_abs_paths_flag;
 extern unsigned int warn_option;
 extern mode_t newdir_umask;
+extern int renumber_inodes_option;
+extern int ignore_devno_option;
 
 /* Values for warn_option */
 #define CPIO_WARN_NONE     0
@@ -171,8 +173,8 @@ void create_all_directories (char *name);
 void prepare_append (int out_file_des);
 char *find_inode_file (ino_t node_num,
 		       unsigned long major_num, unsigned long minor_num);
-void add_inode (ino_t node_num, char *file_name,
-	        unsigned long major_num, unsigned long minor_num);
+struct inode_val *add_inode (ino_t node_num, char *file_name,
+			     unsigned long major_num, unsigned long minor_num);
 int open_archive (char *file);
 void tape_offline (int tape_des);
 void get_next_reel (int tape_des);
@@ -218,3 +220,5 @@ void delay_set_stat (char const *file_name, struct stat *st,
 int repair_delayed_set_stat (struct cpio_file_stat *file_hdr);
 void apply_delayed_set_stat (void);
      
+int arf_stores_inode_p (enum archive_format arf);
+

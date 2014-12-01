@@ -195,3 +195,7 @@ int (*xstat) ();
 void (*copy_function) () = 0;
 
 char *change_directory_option;
+
+int renumber_inodes_option;
+int ignore_devno_option;
+

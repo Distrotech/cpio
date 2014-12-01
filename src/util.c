@@ -692,6 +692,7 @@ struct inode_val
   ino_t inode;
   unsigned long major_num;
   unsigned long minor_num;
+  ino_t trans_inode;
   char *file_name;
 };
 
@@ -715,8 +716,8 @@ inode_val_compare (const void *val1, const void *val2)
          && ival1->minor_num == ival2->minor_num;
 }
 
-char *
-find_inode_file (ino_t node_num, unsigned long major_num,
+static struct inode_val *
+find_inode_val (ino_t node_num, unsigned long major_num,
 		 unsigned long minor_num)
 {
   struct inode_val sample;
@@ -728,32 +729,78 @@ find_inode_file (ino_t node_num, unsigned long major_num,
   sample.inode = node_num;
   sample.major_num = major_num;
   sample.minor_num = minor_num;
-  ival = hash_lookup (hash_table, &sample);
+  return hash_lookup (hash_table, &sample);
+}
+
+char *
+find_inode_file (ino_t node_num, unsigned long major_num,
+		 unsigned long minor_num)
+{
+  struct inode_val *ival = find_inode_val (node_num, major_num, minor_num);
   return ival ? ival->file_name : NULL;
 }
 
 /* Associate FILE_NAME with the inode NODE_NUM.  (Insert into hash table.)  */
 
-void
+static ino_t next_inode;
+
+struct inode_val *
 add_inode (ino_t node_num, char *file_name, unsigned long major_num,
 	   unsigned long minor_num)
 {
   struct inode_val *temp;
-  struct inode_val *e;
+  struct inode_val *e = NULL;
   
   /* Create new inode record.  */
   temp = (struct inode_val *) xmalloc (sizeof (struct inode_val));
   temp->inode = node_num;
   temp->major_num = major_num;
   temp->minor_num = minor_num;
-  temp->file_name = xstrdup (file_name);
+  temp->file_name = file_name ? xstrdup (file_name) : NULL;
+
+  if (renumber_inodes_option)
+    temp->trans_inode = next_inode++;
+  else
+    temp->trans_inode = temp->inode;
 
   if (!((hash_table
 	 || (hash_table = hash_initialize (0, 0, inode_val_hasher,
 					   inode_val_compare, 0)))
 	&& (e = hash_insert (hash_table, temp))))
     xalloc_die ();
-  /* FIXME: e is not used */
+  return e;
+}
+
+static ino_t
+get_inode_and_dev (struct cpio_file_stat *hdr, struct stat *st)
+{
+  if (renumber_inodes_option)
+    {
+      if (st->st_nlink > 1)
+	{
+	  struct inode_val *ival = find_inode_val (st->st_ino,
+						   major (st->st_dev),
+						   minor (st->st_dev));
+	  if (!ival)
+	    ival = add_inode (st->st_ino, NULL,
+			      major (st->st_dev), minor (st->st_dev));
+	  hdr->c_ino = ival->trans_inode;
+	}
+      else
+	hdr->c_ino = next_inode++;
+    }
+  else
+    hdr->c_ino = st->st_ino;
+  if (ignore_devno_option)
+    {
+      hdr->c_dev_maj = 0;
+      hdr->c_dev_min = 0;
+    }
+  else
+    {
+      hdr->c_dev_maj = major (st->st_dev);
+      hdr->c_dev_min = minor (st->st_dev);
+    }
 }
 
 
@@ -1211,9 +1258,8 @@ sparse_write (int fildes, char *buf, size_t nbytes, bool flush)
 void
 stat_to_cpio (struct cpio_file_stat *hdr, struct stat *st)
 {
-  hdr->c_dev_maj = major (st->st_dev);
-  hdr->c_dev_min = minor (st->st_dev);
-  hdr->c_ino = st->st_ino;
+  get_inode_and_dev (hdr, st);
+
   /* For POSIX systems that don't define the S_IF macros,
      we can't assume that S_ISfoo means the standard Unix
      S_IFfoo bit(s) are set.  So do it manually, with a
@@ -1620,6 +1666,7 @@ change_dir ()
 			 (warn_option & CPIO_WARN_INTERDIR) ?
 			 _("Creating directory `%s'") : NULL))
 	    exit (PAXEXIT_FAILURE);
+
 	  if (chdir (change_directory_option) == 0)
 	    return;
 	}
@@ -1627,3 +1674,20 @@ change_dir ()
 	     _("cannot change to directory `%s'"), change_directory_option);
     }
 }
+
+/* Return true if the archive format ARF stores inode numbers */
+int
+arf_stores_inode_p (enum archive_format arf)
+{
+  switch (arf)
+    {
+    case arf_tar:
+    case arf_ustar:
+      return 0;
+
+    default:
+      break;
+    }
+  return 1;
+}
+  
