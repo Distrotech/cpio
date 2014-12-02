@@ -138,7 +138,7 @@ get_link_name (struct cpio_file_stat *file_hdr, int in_file_des)
     }
   else
     {
-      link_name = xmalloc (file_hdr->c_filesize);
+      link_name = xmalloc (file_hdr->c_filesize + 1);
       tape_buffered_read (link_name, in_file_des, file_hdr->c_filesize);
       link_name[file_hdr->c_filesize] = '\0';
       tape_skip_padding (in_file_des, file_hdr->c_filesize);
