@@ -24,9 +24,9 @@ AT_SETUP([symlink-bad-length])
 AT_KEYWORDS([symlink-long copyout])
 
 AT_DATA([ARCHIVE.base64],
-[x3ECCJ1jtIHoA2QAAQAAAIlUwl0FAAAADQBGSUxFAABzb21lIGNvbnRlbnQKAMdxAgidHv+h6ANk
-AAEAAACJVHFtBQD/////TElOSwAARklMRcdxAgieHqSB6ANkAAEAAACJVDJuBgAAABIARklMRTIA
-c29tZSBtb3JlIGNvbnRlbnQKx3EAAAAAAAAAAAAAAQAAAAAAAAALAAAAAABUUkFJTEVSISEhAAAA
+[x3EjAIBAtIEtJy8nAQAAAHRUYW0FAAAADQBGSUxFAABzb21lIGNvbnRlbnQKAMdxIwBgQ/+hLScv
+JwEAAAB0VEhuBQD/////TElOSwAARklMRcdxAAAAAAAAAAAAAAEAAAAAAAAACwAAAAAAVFJBSUxF
+UiEhIQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -35,25 +35,30 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
 ])
 
+# The exact error message and exit status depend on the host architecture,
+# therefore strderr is filtered out and error code is not checked.
+
+# So far the only case when cpio would exit with code 0 is when it skips
+# several bytes and encounters a valid record header.  Perhaps it should
+# exit with code 2 (non-critical error), if at least one byte was skipped,
+# but that could hurt backward compatibility.
+
 AT_CHECK([
 base64 -d ARCHIVE.base64 > ARCHIVE || AT_SKIP_TEST
-TZ=UTC cpio -ntv < ARCHIVE 2>stderr
-rc=$?
+TZ=UTC cpio -ntv < ARCHIVE 2>stderr 
 cat stderr | grep -v \
     -e 'stored filename length is out of range' \
     -e 'premature end of file' \
     -e 'archive header has reverse byte-order' \
     -e 'memory exhausted' \
+    -e 'skipped [[0-9][0-9]*] bytes of junk' \
+    -e '[[0-9][0-9]*] block' \
     >&2
 echo >&2 STDERR
-test "$rc" -ne 0
 ],
-[1],
-[-rw-rw-r--   1 1000     100            13 Dec 11 09:02 FILE
--rw-r--r--   1 1000     100            18 Dec 11 10:13 FILE2
-],[cpio: warning: skipped 4 bytes of junk
-1 block
-STDERR
+[0],
+[-rw-rw-r--   1 10029    10031          13 Nov 25 11:52 FILE
+],[STDERR
 ])
 
 AT_CLEANUP

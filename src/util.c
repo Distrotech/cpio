@@ -209,10 +209,7 @@ tape_fill_input_buffer (int in_des, int num_bytes)
   if (input_size < 0)
     error (PAXEXIT_FAILURE, errno, _("read error"));
   if (input_size == 0)
-    {
-      error (0, 0, _("premature end of file"));
-      exit (PAXEXIT_FAILURE);
-    }
+    error (PAXEXIT_FAILURE, 0, _("premature end of file"));
   input_bytes += input_size;
 }
 
