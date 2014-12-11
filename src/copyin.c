@@ -645,7 +645,7 @@ copyin_device (struct cpio_file_stat* file_hdr)
 }
 
 static void
-copyin_link(struct cpio_file_stat *file_hdr, int in_file_des)
+copyin_link (struct cpio_file_stat *file_hdr, int in_file_des)
 {
   char *link_name = NULL;	/* Name of hard and symbolic links.  */
   int res;			/* Result of various function calls.  */
@@ -659,6 +659,8 @@ copyin_link(struct cpio_file_stat *file_hdr, int in_file_des)
           return;
         }
       link_name = get_link_name (file_hdr, in_file_des);
+      if (!link_name)
+	return;
     }
   else
     {
@@ -1012,7 +1014,7 @@ read_in_header (struct cpio_file_stat *file_hdr, int in_des)
 
   file_hdr->c_tar_linkname = NULL;
 
-  tape_buffered_read (magic.str, in_des, 6L);
+  tape_buffered_read (magic.str, in_des, sizeof (magic.str));
   while (1)
     {
       if (append_flag)
@@ -1057,8 +1059,8 @@ read_in_header (struct cpio_file_stat *file_hdr, int in_des)
 	  break;
 	}
       bytes_skipped++;
-      memmove (magic.str, magic.str + 1, 5);
-      tape_buffered_read (magic.str, in_des, 1L);
+      memmove (magic.str, magic.str + 1, sizeof (magic.str) - 1);
+      tape_buffered_read (magic.str + sizeof (magic.str) - 1, in_des, 1L);
     }
 }
 
