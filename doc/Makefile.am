@@ -26,9 +26,14 @@ if PU_RMT_COND
   RMT_8=rmt.8
 endif
 
-EXTRA_DIST = gendocs_template mt.1 rmt.8
+EXTRA_DIST = gendocs.sh gendocs_template mt.1 rmt.8
+
+GENDOCS=$(srcdir)/gendocs.sh
 
 # Make sure you set TEXINPUT 
 manual:
+	rm -rf manual
 	TEXINPUTS=$(srcdir):$(top_srcdir)/scripts:$$TEXINPUTS \
-	  gendocs.sh cpio 'GNU cpio manual'
+	  MAKEINFO="$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS)" \
+	  TEXI2DVI="texi2dvi -t @finalout" \
+	  $(GENDOCS) --no-copy-images $(PACKAGE) '$(PACKAGE_NAME) manual'
