@@ -1425,7 +1425,7 @@ process_copy_in ()
 	}
       else if (table_flag)
 	{
-	  list_file(&file_hdr, in_file_des);
+	  list_file (&file_hdr, in_file_des);
 	}
       else if (append_flag)
 	{

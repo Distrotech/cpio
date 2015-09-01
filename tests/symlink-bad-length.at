@@ -57,7 +57,7 @@ cat stderr | grep -v \
 echo >&2 STDERR
 ],
 [0],
-[-rw-rw-r--   1 10029    10031          13 Nov 25 11:52 FILE
+[-rw-rw-r--   1 10029    10031          13 Nov 25  2014 FILE
 ],[STDERR
 ])
 

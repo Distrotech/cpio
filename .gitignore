@@ -25,9 +25,7 @@ config.status
 configure
 core
 gnu
-gnulib
 lib
 m4
-paxutils
 rmt
 stamp-h1
