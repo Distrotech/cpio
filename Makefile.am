@@ -19,7 +19,7 @@
 
 ACLOCAL_AMFLAGS = -I m4 -I am
 
-SUBDIRS = doc headers gnu lib rmt src po tests
+SUBDIRS = doc gnu lib rmt src po tests
 
 AM_DISTCHECK_CONFIGURE_FLAGS = --enable-mt
 

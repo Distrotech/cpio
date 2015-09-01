@@ -93,7 +93,6 @@ AM_MISSING_PROG([AUTOM4TE], [autom4te])
 
 AC_CONFIG_FILES([Makefile
  doc/Makefile
- headers/Makefile
  gnu/Makefile
  lib/Makefile
  rmt/Makefile
