@@ -16,7 +16,7 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_INIT([GNU cpio], [2.11.90], [bug-cpio@gnu.org],,
+AC_INIT([GNU cpio], [2.12], [bug-cpio@gnu.org],,
         [http://www.gnu.org/software/cpio])
 AC_CONFIG_SRCDIR(src/cpio.h)
 AC_CONFIG_AUX_DIR([build-aux])

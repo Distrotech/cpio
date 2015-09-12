@@ -5,7 +5,7 @@ See the end of file for copying conditions.
 
 Please send cpio bug reports to <bug-cpio@gnu.org>.
 
-Version 2.11.90 - Git
+Version 2.12 - Sergey Poznyakoff, 2015-09-12
 
 * Improved documentation.
 * Manpages are installed by make install.

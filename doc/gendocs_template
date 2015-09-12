@@ -30,11 +30,9 @@
 	alt=" [image of the head of a GNU] "
 	width="129" height="122" />
 </a>
-<a href="/philosophy/gif.html">(no gifs due to patent problems)</a>
 </p>
-<hr />
 
-The manual for %%PACKAGE%% is available in the following formats:</p>
+<p>The manual for %%PACKAGE%% is available in the following formats:</p>
 
 <ul>
   <li><a href="%%PACKAGE%%.html">HTML 
