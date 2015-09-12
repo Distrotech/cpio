@@ -1,71 +1,58 @@
-This is GNU cpio, a program to manage archives of files.
-As of version 2.0, it supports the features of the System V release 4
-cpio, including support for tar archives.
+This is the GNU cpio package
+============================
 
-This package also includes rmt, the remote tape server, and mt, a tape
-drive control program; these two programs will only be compiled if
-your system supports remote command execution, and tape drive control
-operations, respectively.
+* Introduction
+==============
 
-See the file INSTALL for compilation and installation instructions for Unix.
+GNU cpio copies files between archives and directories.  It supports
+the following archive formats: old binary cpio, old portable cpio, SVR4
+cpio with and without checksum, HP cpio, and various tar formats.
 
-For non-Unix systems [ Note:  The non-Unix makefiles have not been tested
-                       for this release ]
+This file contains brief information about configuring and compiling
+GNU cpio.  It is *not* intended as a replacement for the documentation,
+and is provided as a brief reference only.
 
-makefile.pc is a makefile for Turbo C or C++ or Borland C++ on MS-DOS.
+The complete documentation for GNU cpio is available in the subdirectory
+doc.  To read it without installing the package run `info -f doc/cpio.info',
+or `man ./doc/cpio.1'.
 
-makefile.os2 is a makefile for MS C and GNU C (emx/gcc) on OS/2.
-cpio.def is a linker definition file for the MS C OS/2 version.
+The documentation in various formats is also available online at
+<http://www.gnu.org/software/cpio/manual/>.
 
+* Building
 
-The main advantages of GNU cpio over Unix versions are:
+A usual three-stage procedure applies:
 
-* It can access tape drives on other hosts using TCP/IP.
+ ./configure
+ make
+ make install
 
-* `-o' and `-p' can copy symbolic links either as symbolic links or,
-with `-L', as the files they point to.
+See the file INSTALL for generic options to ./configure.
 
-* `-i' automatically recognizes the archive format and tries to
-recover from corrupted archives.
+* Bug reporting.
 
-* The output of '-itv' looks like 'ls -l'.
+Please send bug reports and suggestions to <bug-cpio@gnu.org>.
 
-* It accepts long-named options as well as traditional
-single-character options.
+
+* Copyright information
 
-A few features of other versions of cpio are missing from GNU cpio, including:
+Copyright (C) 2003-2007, 2009-2010, 2014-2015 Free Software Foundation, Inc.
 
-* The `-6' option to support Sixth Edition Unix cpio archives with `-i'.
+   Permission is granted to anyone to make or distribute verbatim copies
+   of this document as received, in any medium, provided that the
+   copyright notice and this permission notice are preserved,
+   thus giving the recipient permission to redistribute in turn.
 
-* An option to limit volume size, like afio -s.
-
-
-GNU cpio supports the POSIX.1 "ustar" tar format.  GNU tar supports a
-somewhat different, early draft of that format.  That draft format has
-a slightly different magic number in the tar header and doesn't
-include the path prefix part of the header, which allows storing file
-names that are longer than 100 characters.  GNU cpio knows to
-recognize the nonstandard GNU tar "ustar" archives.
-
-The following patch to GNU tar 1.11.1 makes GNU tar recognize standard
-"ustar" archives, such as GNU cpio produces, except that it won't use
-the path prefix.  Without this patch, GNU tar thinks that standard
-"ustar" archives are old-format tar archives and can not use the extra
-information that "ustar" format contains.  If you use this patch,
-remember that you will lose the beginnings of paths that are longer
-than 100 characters.  That's why it's not an official part of GNU tar.
-(Adding support for the path prefix to GNU tar is not trivial.)
-
---- list.c.orig Mon Sep 14 17:04:03 1992
-+++ list.c      Wed Oct 14 14:02:28 1992
-@@ -439,7 +439,7 @@
-                st->st_ctime = from_oct(1+12, header->header.ctime);
-        }
- 
--       if (0==strcmp(header->header.magic, TMAGIC)) {
-+       if (0==strncmp(header->header.magic, TMAGIC, 5)) {
-                /* Unix Standard tar archive */
-                *stdp = 1;
-                if (wantug) {
-
-Mail suggestions and bug reports for GNU cpio to bug-cpio@gnu.org.
+   Permission is granted to distribute modified versions
+   of this document, or of portions of it,
+   under the above conditions, provided also that they
+   carry prominent notices stating who last changed them.
+
+Local variables:
+mode: outline
+paragraph-separate: "[ 	]*$"
+eval: (add-hook 'write-file-hooks 'time-stamp)
+time-stamp-start: "changes. "
+time-stamp-format: "%:y-%02m-%02d"
+time-stamp-end: "\n"
+end:

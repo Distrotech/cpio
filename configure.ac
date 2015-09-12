@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl This file is part of GNU cpio
-dnl Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2014 Free Software
+dnl Copyright (C) 2003-2007, 2009-2010, 2014-2015 Free Software
 dnl Foundation, Inc.
 dnl
 dnl This program is free software; you can redistribute it and/or modify
@@ -82,7 +82,7 @@ AC_CHECK_DECLS([errno, getpwnam, getgrnam, getgrgid, strdup, strerror, getenv, a
 # Gettext.
 AM_ICONV
 AM_GNU_GETTEXT([external], [need-formatstring-macros])
-AM_GNU_GETTEXT_VERSION(0.18)
+AM_GNU_GETTEXT_VERSION(0.19)
 
 LIBS="$LIBS $LIB_CLOCK_GETTIME"
 

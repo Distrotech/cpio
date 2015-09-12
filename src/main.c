@@ -1,5 +1,5 @@
 /* main.c - main program and argument processing for cpio.
-   Copyright (C) 1990-1992, 2001, 2003-2007, 2009-2010, 2014 Free
+   Copyright (C) 1990-1992, 2001, 2003-2007, 2009-2010, 2014-2015 Free
    Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify

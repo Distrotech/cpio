@@ -6,15 +6,6 @@ into two parts, the messages are in somehow arbitrary order.
 * Bug reports
 --------------
 
-**    cpio -d bug (fwd) (score: 47)
-          Author: Christian Smith <csmith@micromuse.com>
-          Date: Wed, 14 Nov 2001 02:06:46 +0000 (GMT)
-          This was bounced from bug-cpio@bogus.example.com I guess that
-          isn't set up yet. -- /"\ \ / ASCII RIBBON CAMPAIGN - AGAINST
-          HTML MAIL X - AGAINST MS ATTACHMENTS / \ $ cpio --version GNU
-          cpio version 2
-          /archive/html/bug-gnu-utils/2001-11/msg00170.html (4,548 bytes)
-          
 **    bug in cpio with tapechange in copy-in-mode (score: 34)
           Author: Bernd =?ISO-8859-1?Q?Sch=FCler?=
           <b.schueler@eckert-buerotechnik.de>
@@ -25,24 +16,6 @@ into two parts, the messages are in somehow arbitrary order.
           sure, if the pr
           /archive/html/bug-gnu-utils/2002-08/msg00122.html (4,518 bytes)
           
-**   Re: bug in cpio? (score: 40)
-          Author: kasal@matsrv.math.cas.cz (Stepan Kasal)
-          Date: Thu, 13 Jun 2002 07:44:14 +0000 (UTC)
-          Hallo, the following option should help: -d, --make-directories
-          Create leading directories where needed. Details: cpio won't
-          create the directory for the file. Observe: kasal$ echo
-          /home/kasal/tmp/db
-          /archive/html/bug-gnu-utils/2002-06/msg00306.html (4,862 bytes)
-          
-**   cpio 2.4.2 bug? (score: 40)
-          Author: "H.J. Thomassen" <H.J.Thomassen@ATComputing.nl>
-          Date: Thu, 10 Jan 2002 18:09:10 +0100 (CET)
-          Hello, We use GNU-cpio 2.4.2 and have the following problem:
-          Short: Assume I have a directory with two filenames, which are
-          hardlinks to the same i-node. I make a crc-cpio archive with
-          both files; th
-          /archive/html/bug-gnu-utils/2002-01/msg00161.html (5,624 bytes)
-
 ** These two seem to be related: 
 ***  cpio copy-in and multiply-linked files (score: 35)
           Author: Chris Jaeger <cjaeger@ensim.com>
